@@ -110,10 +110,37 @@ local function SpawnEntity(entityName)
 
     lastEntitySpawnTime = workspace:GetServerTimeNow()
 
-    local success, err = pcall(function()
-        loadstring(game:HttpGet(entityURLs[entityName]))()
-        print("🎮 Spawning: " .. entityName)
-    end)
+local success, err = pcall(function()
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Hardcore Debug",
+        Text = entityName .. " DOWNLOADING",
+        Duration = 5
+    })
+
+    local code = game:HttpGet(entityURLs[entityName])
+
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Hardcore Debug",
+        Text = entityName .. " DOWNLOADED",
+        Duration = 5
+    })
+
+    local func = loadstring(code)
+
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Hardcore Debug",
+        Text = entityName .. " LOADSTRING OK",
+        Duration = 5
+    })
+
+    func()
+
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Hardcore Debug",
+        Text = entityName .. " SCRIPT STARTED",
+        Duration = 5
+    })
+end)
 
     if not success then
         game:GetService("StarterGui"):SetCore("SendNotification", {
