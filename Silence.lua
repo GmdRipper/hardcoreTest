@@ -99,40 +99,34 @@ local function Silence()
 
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "Silence Debug",
-    Text = "SEARCHING MODULE EVENTS",
+    Text = "SEARCHING ALL REPLICATEDSTORAGE",
     Duration = 5
 })
 
 local moduleEvents = nil
 
-if game.ReplicatedStorage:FindFirstChild("ModuleClients") then
-    local moduleClients = game.ReplicatedStorage.ModuleClients
+for _, obj in ipairs(game.ReplicatedStorage:GetDescendants()) do
+    if obj.Name == "Module_Events" then
+        moduleEvents = obj
 
-    if moduleClients:FindFirstChild("Module_Events") then
-        moduleEvents = moduleClients.Module_Events
-    end
-end
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Silence Debug",
+            Text = "FOUND: " .. obj:GetFullName(),
+            Duration = 8
+        })
 
-if not moduleEvents and game.ReplicatedStorage:FindFirstChild("ModulesShared") then
-    if game.ReplicatedStorage.ModulesShared:FindFirstChild("Module_Events") then
-        moduleEvents = game.ReplicatedStorage.ModulesShared.Module_Events
+        break
     end
 end
 
 if not moduleEvents then
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "Silence Debug",
-        Text = "MODULE EVENTS NOT FOUND",
-        Duration = 5
+        Text = "MODULE EVENTS NOT FOUND ANYWHERE",
+        Duration = 8
     })
     return
 end
-
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Silence Debug",
-    Text = "MODULE EVENTS FOUND",
-    Duration = 5
-})
 
 local required = require(moduleEvents)
 local currentRooms = workspace:FindFirstChild("CurrentRooms")
