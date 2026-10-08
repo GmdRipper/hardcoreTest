@@ -170,11 +170,18 @@ end
 local roomExit = lastRoom:FindFirstChild("RoomExit")
 
 if not roomExit then
+    local objects = ""
+
+    for _, obj in ipairs(lastRoom:GetChildren()) do
+        objects = objects .. obj.Name .. ", "
+    end
+
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "Rebound Debug",
-        Text = "ROOMEXIT NOT FOUND",
-        Duration = 5
+        Text = "OBJECTS: " .. objects,
+        Duration = 8
     })
+
     return
 end
 
