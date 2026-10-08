@@ -12,14 +12,14 @@ local opened = false
 -- SIMPLE CONFIG
 -- ============================================
 local CONFIG = {
-    RIPPER_DELAY = {80, 100},
-    REBOUND_DELAY = {90, 120},
+    RIPPER_DELAY = {120, 160},
+    REBOUND_DELAY = {160, 200},
     FROSTBITE_DELAY = {180, 300},
     FROSTBITE_MIN_ROOM = 20,
     CEASE_DELAY = {60, 90},
     A60_DELAY = {500, 600},
     SILENCE_DELAY = {180, 300},
-    DEERGOD_DELAY = {250, 401},
+    DEERGOD_DELAY = {250, 400},
     SHOCKER_DELAY = {25, 50},
 }
 -- ============================================
