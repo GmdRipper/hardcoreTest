@@ -141,14 +141,54 @@ local function Rebound()
 
     if not entity then return end
 
-    local function GetLastRoom()
-        return currentRooms:FindFirstChild(plusRoom)
-    end
-    local entityPart = entity.PrimaryPart or entity:FindFirstChildWhichIsA("BasePart")
-    entityPart.CFrame = GetLastRoom().RoomExit.CFrame + Vector3.new(0,0.6,0)
-    entityPart.CanCollide = false
-    entityPart.Anchored = true
-    wait(4)
+local function GetLastRoom()
+    return currentRooms:FindFirstChild(plusRoom)
+end
+
+local entityPart = entity.PrimaryPart or entity:FindFirstChildWhichIsA("BasePart")
+
+if not entityPart then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Rebound Debug",
+        Text = "PART NOT FOUND",
+        Duration = 5
+    })
+    return
+end
+
+local lastRoom = GetLastRoom()
+
+if not lastRoom then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Rebound Debug",
+        Text = "NEXT ROOM NOT FOUND: " .. tostring(plusRoom),
+        Duration = 5
+    })
+    return
+end
+
+local roomExit = lastRoom:FindFirstChild("RoomExit")
+
+if not roomExit then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Rebound Debug",
+        Text = "ROOMEXIT NOT FOUND",
+        Duration = 5
+    })
+    return
+end
+
+entityPart.CFrame = roomExit.CFrame + Vector3.new(0,0.6,0)
+entityPart.CanCollide = false
+entityPart.Anchored = true
+
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Rebound Debug",
+    Text = "SPAWN POSITION SET",
+    Duration = 5
+})
+
+wait(4)
 	if workspace:FindFirstChild("SeekMovingNewClone") or workspace:FindFirstChild("SeekMoving") then
 		entityPart.CanCollide = false
 		entityPart.Anchored = false
