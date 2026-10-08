@@ -1,6 +1,8 @@
 -- [[ HARDCORE WITH PROPER MULTIPLAYER SYNC (FIXED) ]]
 repeat task.wait() until game:IsLoaded()
 
+print("🔥 HARDCORE SCRIPT STARTED")
+
 local Player = game.Players.LocalPlayer
 local LatestRoom = game.ReplicatedStorage.GameData.LatestRoom
 local TS = game:GetService("TweenService")
