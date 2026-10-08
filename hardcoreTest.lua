@@ -64,7 +64,7 @@ end
 local entityURLs = {
     Ripper = "https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/refs/heads/main/ripper.lua",
     Rebound = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/Rebound.lua",
-    DeerGod = "https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/refs/heads/main/deergod.lua",
+    DeerGod = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/DeerGod.lua",
     Cease = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/Cease.lua",
     Shocker = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldShocker.lua",
     Silence = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/Silence.lua",
