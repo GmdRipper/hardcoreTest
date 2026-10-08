@@ -1,41 +1,45 @@
 -- XENO GITHUB MODEL LOADER (.rbxm / .rbxmx)
+
 local G = getgenv()
 local ReplicatedStorage = game.ReplicatedStorage
 
--- Garantindo que a função exista no ambiente Global
+-- ============================================
+-- MODEL LOADER
+-- ============================================
+
 G.LoadGithubModel = function(url)
     if not (writefile and getcustomasset and request) then
         return nil
     end
-    
-    -- Generate consistent filename from URL
+
     local function generateFileName(url)
         local hash = 0
+
         for i = 1, #url do
             hash = (hash * 31 + string.byte(url, i)) % 2^32
         end
+
         return "deer_god_" .. tostring(hash) .. ".rbxm"
     end
-    
+
     local fileName = generateFileName(url)
-    
-    -- Check if file exists and try to load it
+
     local success, exists = pcall(function()
         return isfile and isfile(fileName)
     end)
-    
+
     if success and exists then
         local assetId = getcustomasset(fileName)
+
         local loadSuccess, result = pcall(function()
             return game:GetObjects(assetId)[1]
         end)
-        
+
         if loadSuccess and result then
             return result
         end
     end
-    
-    -- Download new model if not exists or failed to load
+
     local response = request({
         Url = url,
         Method = "GET"
@@ -44,30 +48,32 @@ G.LoadGithubModel = function(url)
     if response.StatusCode ~= 200 then
         return nil
     end
-    
+
     writefile(fileName, response.Body)
 
     local assetId = getcustomasset(fileName)
 
-    local success, result = pcall(function()
+    local loadSuccess, result = pcall(function()
         return game:GetObjects(assetId)[1]
     end)
-    
-    if success and result then
+
+    if loadSuccess and result then
         return result
     end
 
     return nil
 end
 
-local G = getgenv()
+
+-- ============================================
+-- AUDIO LOADER
+-- ============================================
 
 G.LoadGithubAudio = function(url)
     if not (writefile and getcustomasset and request) then
         return nil
     end
 
-    -- Bypass de Cache
     local cleanUrl = url .. "?t=" .. math.random(1, 100000)
 
     local response = request({
@@ -83,28 +89,34 @@ G.LoadGithubAudio = function(url)
         return nil
     end
 
-    -- Nome único para evitar conflitos de escrita
     local fileName = "deergodchase_" .. tick() .. ".mp3"
-    
+
     writefile(fileName, response.Body)
-    
+
     local success, assetId = pcall(function()
         return getcustomasset(fileName)
     end)
 
     if success then
-        print("✅ Áudio Rebound carregado com sucesso!")
         return assetId
     end
-    
+
     warn("Erro no getcustomasset: " .. tostring(assetId))
+
     return nil
 end
 
+
+-- ============================================
+-- DEER GOD
+-- ============================================
+
 local function DeerGod()
+
     local ambruhspeed = 15
     local DEF_SPEED = 99999
     local storer = ambruhspeed
+
     local ambruhheight = Vector3.new(0, 3.4, 0)
 
     local repStorage = game.ReplicatedStorage
@@ -112,30 +124,71 @@ local function DeerGod()
     local latestRoom = gameData.LatestRoom
     local currentRooms = workspace.CurrentRooms
 
-    local entity = nil
     local killed = false
+
+
+    -- ============================================
+    -- LOAD ENTITY
+    -- ============================================
 
     local deergodId = "rbxassetid://12262883448"
 
-    local entity = game:GetObjects(deergodId)[1]
+    local entity
+
+    local success, result = pcall(function()
+        return game:GetObjects(deergodId)[1]
+    end)
+
+    if success then
+        entity = result
+    end
+
     if not entity then
+        warn("DeerGod: failed to load entity")
         return
     end
 
     entity.Parent = workspace
 
+    local entityPart = entity:FindFirstChildWhichIsA("BasePart")
+
+    if not entityPart then
+        warn("DeerGod: no BasePart found")
+        entity:Destroy()
+        return
+    end
+
+
+    -- ============================================
+    -- CHASE MUSIC
+    -- ============================================
+
     local chaseTheme = G.LoadGithubAudio(
         "https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/main/DeerGodChaseTheme.mp3"
     )
 
-    local chaseMusic = Instance.new("Sound")
-    chaseMusic.Parent = workspace
-    chaseMusic.SoundId = chaseTheme
-    chaseMusic.Volume = 3
-    chaseMusic.Looped = true
-    chaseMusic:Play()
+    local chaseMusic
 
-    local cameraShaker = require(game.ReplicatedStorage.CameraShaker)
+    if chaseTheme then
+
+        chaseMusic = Instance.new("Sound")
+        chaseMusic.Parent = workspace
+        chaseMusic.SoundId = chaseTheme
+        chaseMusic.Volume = 3
+        chaseMusic.Looped = true
+        chaseMusic:Play()
+
+    end
+
+
+    -- ============================================
+    -- CAMERA SHAKE
+    -- ============================================
+
+    local cameraShaker = require(
+        game.ReplicatedStorage.CameraShaker
+    )
+
     local camera = workspace.CurrentCamera
 
     local camShake = cameraShaker.new(
@@ -147,135 +200,252 @@ local function DeerGod()
 
     camShake:Start()
 
+
     -- ============================================
-    -- ENTITY PART
+    -- SAVE ROOMS FOR PERMANENT FLICKER
     -- ============================================
 
-    local entityPart = entity:FindFirstChildWhichIsA("BasePart")
+    local flickerRooms = {}
 
-    if not entityPart then
-        return
+    -- Только комнаты, существующие
+    -- в момент появления DeerGod
+    for i = 1, latestRoom.Value do
+
+        local room = currentRooms:FindFirstChild(
+            tostring(i)
+        )
+
+        if room then
+            table.insert(flickerRooms, room)
+        end
+
     end
+
 
     -- ============================================
     -- PERMANENT LIGHT FLICKER
     -- ============================================
 
-    local moduleEvents
+    task.spawn(function()
 
-    for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
-        if obj.Name == "Module_Events" then
-            moduleEvents = obj
-            break
-        end
-    end
+        while true do
 
-    if moduleEvents then
-        local events = require(moduleEvents)
-        local flickerRooms = {}
+            -- TURN LIGHTS OFF
+            for _, room in ipairs(flickerRooms) do
 
-        -- Запоминаем только комнаты,
-        -- которые существуют в момент появления DeerGod
-        for i = 1, latestRoom.Value do
-            local room = currentRooms:FindFirstChild(tostring(i))
+                if room and room.Parent then
 
-            if room then
-                table.insert(flickerRooms, room)
-            end
-        end
+                    for _, obj in ipairs(room:GetDescendants()) do
 
-        -- Бесконечное мигание этих комнат
-        task.spawn(function()
-            while true do
-                for _, room in ipairs(flickerRooms) do
-                    if room and room.Parent and events.flickerLights then
-                        events.flickerLights(room)
+                        if obj:IsA("PointLight")
+                            or obj:IsA("SpotLight")
+                            or obj:IsA("SurfaceLight") then
+
+                            obj.Enabled = false
+
+                        end
+
                     end
+
                 end
 
-                task.wait(0.1)
             end
-        end)
-    end
+
+
+            task.wait(0.12)
+
+
+            -- TURN LIGHTS ON
+            for _, room in ipairs(flickerRooms) do
+
+                if room and room.Parent then
+
+                    for _, obj in ipairs(room:GetDescendants()) do
+
+                        if obj:IsA("PointLight")
+                            or obj:IsA("SpotLight")
+                            or obj:IsA("SurfaceLight") then
+
+                            obj.Enabled = true
+
+                        end
+
+                    end
+
+                end
+
+            end
+
+
+            task.wait(0.12)
+
+        end
+
+    end)
+
 
     -- ============================================
     -- TARGET DETECTION
     -- ============================================
 
     local function canSeeTarget(target, size)
-        if killed == true then
+
+        if killed then
             return
         end
 
+
         local function isBossActive()
+
             local room = latestRoom.Value
 
             if room == 50 or room == 100 then
                 return true
             end
-            
-            -- Check for any playing music in ReplicatedStorage
-            -- that might indicate a cutscene
-            for _, sound in pairs(game.ReplicatedStorage:GetDescendants()) do
+
+
+            for _, sound in pairs(
+                game.ReplicatedStorage:GetDescendants()
+            ) do
+
                 if sound:IsA("Sound")
                     and sound.IsPlaying
-                    and (sound.Name:find("Music") or sound.Name == "Shade") then
+                    and (
+                        sound.Name:find("Music")
+                        or sound.Name == "Shade"
+                    ) then
+
                     return true
+
                 end
+
             end
 
             return false
+
         end
+
 
         if isBossActive() then
             return
         end
 
+
         local origin = entityPart.Position
+
         local direction =
-            (target.HumanoidRootPart.Position - origin).unit * size
+            (target.HumanoidRootPart.Position - origin).Unit
+            * size
 
-        local ray = Ray.new(origin, direction)
 
-        local hit, pos = workspace:FindPartOnRay(ray, entityPart)
+        local ray = Ray.new(
+            origin,
+            direction
+        )
+
+
+        local hit, pos = workspace:FindPartOnRay(
+            ray,
+            entityPart
+        )
+
 
         if hit then
+
             if hit:IsDescendantOf(target) then
+
                 killed = true
+
                 return true
+
             end
+
         else
+
             return false
+
         end
+
     end
+
+
+    -- ============================================
+    -- MOVEMENT TIME
+    -- ============================================
 
     local function GetTime(dist, speed)
         return dist / speed
     end
 
+
     wait(1)
 
+
     -- ============================================
-    -- PLAYER DAMAGE
+    -- DAMAGE / DEATH
     -- ============================================
 
-    spawn(function()
-        while entity ~= nil and entityPart ~= nil do
-            wait(0.01)
+    task.spawn(function()
 
-            local v = game.Players.LocalPlayer
+        while entity
+            and entity.Parent
+            and entityPart
+            and entityPart.Parent do
 
-            if v.Character ~= nil
-                and v.Character.HumanoidRootPart then
+            task.wait(0.01)
 
-                if canSeeTarget(v.Character, 50)
-                    and not v.Character:GetAttribute("Hiding") then
 
-                    v.Character.Humanoid:TakeDamage(100)
+            local player =
+                game.Players.LocalPlayer
 
-                    game.ReplicatedStorage
-                        .GameStats["Player_" .. v.Character.Name]
-                        .Total.DeathCause.Value = "Deer God"
+
+            if player.Character
+                and player.Character:FindFirstChild(
+                    "HumanoidRootPart"
+                ) then
+
+
+                local character = player.Character
+
+
+                if canSeeTarget(
+                    character,
+                    50
+                )
+                and not character:GetAttribute("Hiding") then
+
+
+                    local humanoid =
+                        character:FindFirstChildOfClass(
+                            "Humanoid"
+                        )
+
+
+                    if humanoid then
+
+                        humanoid:TakeDamage(100)
+
+                    end
+
+
+                    local stats =
+                        game.ReplicatedStorage.GameStats
+                        :FindFirstChild(
+                            "Player_" .. character.Name
+                        )
+
+
+                    if stats
+                        and stats:FindFirstChild("Total")
+                        and stats.Total:FindFirstChild(
+                            "DeathCause"
+                        ) then
+
+                        stats.Total.DeathCause.Value =
+                            "Deer God"
+
+                    end
+
 
                     local hints = {
                         "You died to Dear god...",
@@ -283,78 +453,123 @@ local function DeerGod()
                         "Avoid eye contact!"
                     }
 
-                    if ReplicatedStorage:FindFirstChild("RemotesFolder") then
-                        local remotesFolder =
-                            ReplicatedStorage:FindFirstChild("RemotesFolder")
 
-                        firesignal(
-                            remotesFolder.DeathHint.OnClientEvent,
-                            hints,
-                            "Blue"
+                    local remotesFolder =
+                        ReplicatedStorage:FindFirstChild(
+                            "RemotesFolder"
                         )
 
-                    elseif ReplicatedStorage:FindFirstChild("Bricks") then
-                        local remotesFolder =
-                            ReplicatedStorage:FindFirstChild("Bricks")
 
-                        firesignal(
-                            remotesFolder.DeathHint.OnClientEvent,
-                            hints,
-                            "Blue"
-                        )
+                    if not remotesFolder then
+
+                        remotesFolder =
+                            ReplicatedStorage:FindFirstChild(
+                                "Bricks"
+                            )
+
                     end
+
+
+                    if remotesFolder
+                        and remotesFolder:FindFirstChild(
+                            "DeathHint"
+                        ) then
+
+                        firesignal(
+                            remotesFolder.DeathHint.OnClientEvent,
+                            hints,
+                            "Blue"
+                        )
+
+                    end
+
                 end
+
             end
+
         end
+
     end)
 
+
     -- ============================================
-    -- CAMERA SHAKE
+    -- EARTHQUAKE EFFECT
     -- ============================================
 
-    spawn(function()
-        while entity ~= nil and entityPart ~= nil do
-            wait(1.6)
+    task.spawn(function()
 
-            if entity.Parent ~= nil
-                and entityPart.Parent ~= nil then
+        while entity
+            and entity.Parent
+            and entityPart
+            and entityPart.Parent do
+
+            task.wait(1.6)
+
+            if entity.Parent
+                and entityPart.Parent then
 
                 camShake:Shake(
                     cameraShaker.Presets.Earthquake
                 )
+
             end
+
         end
+
     end)
 
+
     -- ============================================
-    -- ENTITY MOVEMENT
+    -- MOVE THROUGH ROOMS
     -- ============================================
 
     ambruhspeed = DEF_SPEED
 
+
     for i = 1, latestRoom.Value + 1 do
-        if currentRooms:FindFirstChild(i) then
 
-            local room = currentRooms[i]
+        local room =
+            currentRooms:FindFirstChild(
+                tostring(i)
+            )
 
-            if room and room:FindFirstChild("Nodes") then
 
-                local nodes = room:FindFirstChild("Nodes")
+        if room
+            and room:FindFirstChild("Nodes") then
 
-                for v = 1, #nodes:GetChildren() do
 
-                    if nodes:FindFirstChild(v) then
+            local nodes =
+                room:FindFirstChild("Nodes")
 
-                        local node = nodes[v]
 
-                        local dist =
-                            (entityPart.Position - node.Position).magnitude
+            for v = 1, #nodes:GetChildren() do
 
-                        local jerk = game.TweenService:Create(
+                local node =
+                    nodes:FindFirstChild(
+                        tostring(v)
+                    )
+
+
+                if node then
+
+                    local dist =
+                        (
+                            entityPart.Position
+                            - node.Position
+                        ).Magnitude
+
+
+                    local tween =
+                        game.TweenService:Create(
+
                             entityPart,
 
                             TweenInfo.new(
-                                GetTime(dist, ambruhspeed),
+                                GetTime(
+                                    dist,
+                                    ambruhspeed
+                                ),
+
                                 Enum.EasingStyle.Linear,
                                 Enum.EasingDirection.Out,
                                 0,
@@ -363,83 +578,219 @@ local function DeerGod()
                             ),
 
                             {
-                                CFrame = node.CFrame + ambruhheight
+                                CFrame =
+                                    node.CFrame
+                                    + ambruhheight
                             }
+
                         )
 
-                        jerk:Play()
-                        jerk.Completed:Wait()
 
-                        ambruhspeed = storer
-                    end
+                    tween:Play()
+                    tween.Completed:Wait()
+
+
+                    ambruhspeed = storer
+
                 end
+
             end
+
         end
+
     end
 
+
     -- ============================================
-    -- REMOVE ENTITY
+    -- REMOVE DEER GOD
     -- ============================================
 
-    game.TweenService:Create(
-        entityPart,
-        TweenInfo.new(1.5),
-        {
-            CFrame = entityPart.CFrame * CFrame.new(0, -80, 0)
-        }
-    ):Play()
+    if entityPart and entityPart.Parent then
 
-    game.Debris:AddItem(entity, 1.5)
+        local disappearTween =
+            game.TweenService:Create(
 
-    wait(1.5)
+                entityPart,
 
-    chaseMusic:Destroy()
+                TweenInfo.new(1.5),
 
-    wait(2)
+                {
+                    CFrame =
+                        entityPart.CFrame
+                        * CFrame.new(0, -80, 0)
+                }
+
+            )
+
+        disappearTween:Play()
+
+    end
+
+
+    game.Debris:AddItem(
+        entity,
+        1.5
+    )
+
+
+    task.wait(1.5)
+
+
+    if chaseMusic then
+        chaseMusic:Destroy()
+    end
+
+
+    task.wait(2)
+
 
     -- ============================================
     -- ACHIEVEMENT
     -- ============================================
 
-    local AchievementModule =
+    local player =
         game.Players.LocalPlayer
-        .PlayerGui
-        .MainUI
-        .Initiator
-        .Main_Game
-        .RemoteListener
-        .Modules
-        .AchievementUnlock
 
-    if AchievementModule == nil then
+
+    local playerGui =
+        player:FindFirstChild("PlayerGui")
+
+
+    if not playerGui then
         return
     end
 
-    if workspace:FindFirstChild("DeerGodAchievement") then
+
+    local mainUI =
+        playerGui:FindFirstChild("MainUI")
+
+
+    if not mainUI then
         return
     end
 
-    if not game.ReplicatedStorage:FindFirstChild("ModulesShared") then
+
+    local initiator =
+        mainUI:FindFirstChild("Initiator")
+
+
+    if not initiator then
         return
     end
 
-    local dataModule =
-        require(
-            game:GetService("ReplicatedStorage")
-            :WaitForChild("ModulesShared")
-            :WaitForChild("Achievements")
+
+    local mainGame =
+        initiator:FindFirstChild("Main_Game")
+
+
+    if not mainGame then
+        return
+    end
+
+
+    local remoteListener =
+        mainGame:FindFirstChild("RemoteListener")
+
+
+    if not remoteListener then
+        return
+    end
+
+
+    local modules =
+        remoteListener:FindFirstChild("Modules")
+
+
+    if not modules then
+        return
+    end
+
+
+    local AchievementModule =
+        modules:FindFirstChild(
+            "AchievementUnlock"
         )
 
-    local unlockFunc = require(AchievementModule)
 
-    if not workspace:FindFirstChild("DeerGodAchievement") then
-        unlockFunc(nil, "DeerGod")
+    if not AchievementModule then
+        return
     end
 
-    local ObtainedBadge = Instance.new("BoolValue")
-    ObtainedBadge.Name = "DeerGodAchievement"
-    ObtainedBadge.Value = true
-    ObtainedBadge.Parent = workspace
+
+    if workspace:FindFirstChild(
+        "DeerGodAchievement"
+    ) then
+
+        return
+
+    end
+
+
+    local modulesShared =
+        ReplicatedStorage:FindFirstChild(
+            "ModulesShared"
+        )
+
+
+    if not modulesShared then
+        return
+    end
+
+
+    local achievements =
+        modulesShared:FindFirstChild(
+            "Achievements"
+        )
+
+
+    if not achievements then
+        return
+    end
+
+
+    local dataModule =
+        require(achievements)
+
+
+    local unlockFunc =
+        require(AchievementModule)
+
+
+    if not workspace:FindFirstChild(
+        "DeerGodAchievement"
+    ) then
+
+        unlockFunc(
+            nil,
+            "DeerGod"
+        )
+
+    end
+
+
+    local ObtainedBadge =
+        Instance.new("BoolValue")
+
+
+    ObtainedBadge.Name =
+        "DeerGodAchievement"
+
+    ObtainedBadge.Value =
+        true
+
+    ObtainedBadge.Parent =
+        workspace
+
 end
 
-pcall(DeerGod)
+
+-- ============================================
+-- START
+-- ============================================
+
+local success, err =
+    pcall(DeerGod)
+
+if not success then
+    warn("DeerGod ERROR:", err)
+end
