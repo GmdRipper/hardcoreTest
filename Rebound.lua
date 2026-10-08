@@ -143,6 +143,12 @@ local function Rebound()
         })
 
         entity.Parent = workspace
+
+		game:GetService("StarterGui"):SetCore("SendNotification", {
+        	Title = "Rebound Debug",
+        	Text = "MODEL IN WORKSPACE",
+        	Duration = 5
+        })
     else
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "Rebound Debug",
@@ -157,6 +163,19 @@ end
         return currentRooms:FindFirstChild(plusRoom)
     end
     local entityPart = entity.PrimaryPart or entity:FindFirstChildWhichIsA("BasePart")
+	if entityPart then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Rebound Debug",
+        Text = "PART FOUND",
+        Duration = 5
+    })
+else
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Rebound Debug",
+        Text = "NO BASEPART",
+        Duration = 5
+    })
+end
     entityPart.CFrame = GetLastRoom().RoomExit.CFrame + Vector3.new(0,0.6,0)
     entityPart.CanCollide = false
     entityPart.Anchored = true
