@@ -73,7 +73,7 @@ local entityURLs = {
 }
 
 local lastEntitySpawnTime = 0
-local ENTITY_SPAWN_COOLDOWN = 0
+local ENTITY_SPAWN_COOLDOWN = 10
 local isPlayerAlive = true
 
 local function CanSpawnEntity(entityName)
