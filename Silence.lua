@@ -134,10 +134,10 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Duration = 5
 })
 
-local required = require(game.ReplicatedStorage.ModuleClients.Module_Events)
-    local currentRooms = workspace:FindFirstChild("CurrentRooms")
-    local latestRoomInt = game.ReplicatedStorage.GameData.LatestRoom
-    local latestRoomModel = currentRooms:FindFirstChild(latestRoomInt.Value)
+local required = require(moduleEvents)
+local currentRooms = workspace:FindFirstChild("CurrentRooms")
+local latestRoomInt = game.ReplicatedStorage.GameData.LatestRoom
+local latestRoomModel = currentRooms:FindFirstChild(latestRoomInt.Value)
 local playerGui = game.Players.LocalPlayer.PlayerGui
 
 game:GetService("StarterGui"):SetCore("SendNotification", {
