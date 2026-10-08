@@ -133,12 +133,16 @@ local function Rebound()
 	local rawURL = "https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/main/rebounderlol.rbxm"
 	
 	if G.LoadGithubModel then
-        entity = G.LoadGithubModel(rawURL)
-        if entity then
-            entity.Parent = workspace
-        end
-    end
+    entity = G.LoadGithubModel(rawURL)
 
+    if entity then
+        print("✅ REBOUND MODEL LOADED")
+        entity.Parent = workspace
+        print("✅ REBOUND MODEL PARENT:", entity.Parent:GetFullName())
+    else
+        warn("❌ REBOUND MODEL FAILED TO LOAD")
+    end
+end
     if not entity then return end
 
     local function GetLastRoom()
