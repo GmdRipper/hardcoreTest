@@ -133,49 +133,18 @@ local function Rebound()
 	local rawURL = "https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/main/rebounderlol.rbxm"
 	
 	if G.LoadGithubModel then
-    entity = G.LoadGithubModel(rawURL)
-
-    if entity then
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Rebound Debug",
-            Text = "MODEL LOADED",
-            Duration = 5
-        })
-
-        entity.Parent = workspace
-
-		game:GetService("StarterGui"):SetCore("SendNotification", {
-        	Title = "Rebound Debug",
-        	Text = "MODEL IN WORKSPACE",
-        	Duration = 5
-        })
-    else
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Rebound Debug",
-            Text = "MODEL FAILED TO LOAD",
-            Duration = 5
-        })
+        entity = G.LoadGithubModel(rawURL)
+        if entity then
+            entity.Parent = workspace
+        end
     end
-end
+
     if not entity then return end
 
     local function GetLastRoom()
         return currentRooms:FindFirstChild(plusRoom)
     end
     local entityPart = entity.PrimaryPart or entity:FindFirstChildWhichIsA("BasePart")
-	if entityPart then
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Rebound Debug",
-        Text = "PART FOUND",
-        Duration = 5
-    })
-else
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Rebound Debug",
-        Text = "NO BASEPART",
-        Duration = 5
-    })
-end
     entityPart.CFrame = GetLastRoom().RoomExit.CFrame + Vector3.new(0,0.6,0)
     entityPart.CanCollide = false
     entityPart.Anchored = true
@@ -351,79 +320,49 @@ if isBossActive() then return end
 end
 local function SpawnReb()
     local maxRebounds = 3
-
     local rebarrival = G.LoadGithubAudio("https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/main/Warning.mp3")
     local arrival = Instance.new("Sound")
     arrival.SoundId = rebarrival
     arrival.Parent = workspace
     arrival.Volume = 5
-    arrival:Play()
-    game.Debris:AddItem(arrival, 10)
-
+    arrival:Play() game.Debris:AddItem(arrival, 10)
     local cameraShaker = require(game.ReplicatedStorage.CameraShaker)
     local camera = workspace.CurrentCamera
 
     local camShake = cameraShaker.new(Enum.RenderPriority.Camera.Value, function(cf)
         camera.CFrame = camera.CFrame * cf
     end)
-
     local Warn = Instance.new("ColorCorrectionEffect", game.Lighting)
     Warn.TintColor = Color3.fromRGB(65, 138, 255)
     Warn.Saturation = -0.7
     Warn.Contrast = 0.2
-
     game.TweenService:Create(Warn, TweenInfo.new(15), {
         TintColor = Color3.fromRGB(255, 255, 255),
         Saturation = 0,
         Contrast = 0
-    }):Play()
-
-    game.Debris:AddItem(Warn, 15)
-
+    }):Play()                                                  game.Debris:AddItem(Warn, 15)
     camShake:Start()
     camShake:ShakeOnce(10, 3, 0.1, 6, 2, 0.5)
-
-    -- Первый запуск Rebound
-    local success, err = pcall(Rebound)
-    if not success then
-        warn("❌ REBOUND ERROR:", err)
-    end
-
+    pcall(Rebound)
     while maxRebounds > 0 do
         game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait()
-        task.wait(2)
-
-        -- Следующие попытки Rebound
-        local success, err = pcall(Rebound)
-        if not success then
-            warn("❌ REBOUND ERROR:", err)
-        end
-
+        wait(2)
+        pcall(Rebound)
         maxRebounds = maxRebounds - 1
     end
-
-    local AchievementModule = game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules.AchievementUnlock
-    if AchievementModule == nil then return end
-
-    if workspace:FindFirstChild("ReboundAchievement") then return end
-    if not game.ReplicatedStorage:FindFirstChild("ModulesShared") then return end
-
-    local dataModule = require(
-        game:GetService("ReplicatedStorage")
-        :WaitForChild("ModulesShared")
-        :WaitForChild("Achievements")
-    )
-
-    local unlockFunc = require(AchievementModule)
-
-    if not workspace:FindFirstChild("ReboundAchievement") then
-        unlockFunc(nil, "Rebound")
-    end
-
-    local ObtainedBadge = Instance.new("BoolValue")
-    ObtainedBadge.Name = "ReboundAchievement"
-    ObtainedBadge.Value = true
-    ObtainedBadge.Parent = workspace
+	local AchievementModule = game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules.AchievementUnlock
+	if AchievementModule == nil then return end
+	if workspace:FindFirstChild("ReboundAchievement") then return end
+	if not game.ReplicatedStorage:FindFirstChild("ModulesShared") then return end
+	local dataModule = require(game:GetService("ReplicatedStorage"):WaitForChild("ModulesShared"):WaitForChild("Achievements"))
+	local unlockFunc = require(AchievementModule)
+	if not workspace:FindFirstChild("ReboundAchievement") then
+		unlockFunc(nil, "Rebound") 
+	end
+	local ObtainedBadge = Instance.new("BoolValue")
+	ObtainedBadge.Name = "ReboundAchievement"
+	ObtainedBadge.Value = true
+	ObtainedBadge.Parent = workspace
 end
 
 pcall(SpawnReb)
