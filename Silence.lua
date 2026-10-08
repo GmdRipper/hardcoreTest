@@ -61,6 +61,11 @@ G.LoadGithubModel = function(url)
 end
 
 local function Silence()
+	game:GetService("StarterGui"):SetCore("SendNotification", {
+	    Title = "Silence Debug",
+	    Text = "SILENCE FUNCTION ENTERED",
+	    Duration = 5
+	})
     local currentRooms = workspace.CurrentRooms
     local latestRoom = game.ReplicatedStorage.GameData.LatestRoom
     local ambruhspeed = 15
