@@ -75,16 +75,49 @@ local function Silence()
     --required.flickerLights(latestRoomModel, 74)
     local rawUrl = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/main/oldSilence.rbxm"
     -- CORREÇÃO DE ESCOPO: Atribuindo o retorno à variável local correta
-    if G.LoadGithubModel then
-        entity = G.LoadGithubModel(rawUrl)
-        if entity then
-            entity.Parent = workspace
-        end
+if G.LoadGithubModel then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Silence Debug",
+        Text = "LOADING MODEL",
+        Duration = 4
+    })
+
+    entity = G.LoadGithubModel(rawUrl)
+
+    if entity then
+        entity.Parent = workspace
+
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Silence Debug",
+            Text = "MODEL LOADED",
+            Duration = 4
+        })
+    else
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Silence Debug",
+            Text = "MODEL = NIL",
+            Duration = 5
+        })
     end
+end
 
-    if not entity then return end -- Se falhar, para aqui sem quebrar o resto
+if not entity then return end
 
-    local entityPart = entity:FindFirstChildWhichIsA("BasePart")
+local entityPart = entity:FindFirstChildWhichIsA("BasePart")
+
+if entityPart then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Silence Debug",
+        Text = "BASEPART FOUND",
+        Duration = 4
+    })
+else
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Silence Debug",
+        Text = "NO BASEPART",
+        Duration = 5
+    })
+end
 
     wait(1)
     local function canSeeTarget(target, size)
