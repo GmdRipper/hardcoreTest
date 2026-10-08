@@ -222,4 +222,14 @@ if isBossActive() then return end
     entityPart.CanCollide = false
     game.Debris:AddItem(entity, 5)
 end
-pcall(ceasetheroom)
+local success, err = pcall(ceasetheroom)
+
+if not success then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Cease ERROR",
+        Text = tostring(err),
+        Duration = 10
+    })
+
+    warn("CEASE ERROR:", err)
+end
