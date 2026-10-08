@@ -116,13 +116,6 @@ local function SpawnEntity(entityName)
 
     return true
 end
-    if not success then
-        warn("Failed to spawn " .. entityName .. ": " .. tostring(err))
-        return false
-    end
-
-    return true
-end
 
 -- ============================================
 -- SYNC LISTENER
