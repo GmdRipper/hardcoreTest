@@ -16,11 +16,10 @@ local CONFIG = {
     REBOUND_DELAY = {90, 120},
     FROSTBITE_DELAY = {180, 300},
     FROSTBITE_MIN_ROOM = 20,
-
     CEASE_DELAY = {60, 90},
     A60_DELAY = {500, 600},
     SILENCE_DELAY = {180, 300},
-    DEERGOD_DELAY = {20, 40},
+    DEERGOD_DELAY = {250, 400},
     SHOCKER_DELAY = {25, 50},
 }
 -- ============================================
