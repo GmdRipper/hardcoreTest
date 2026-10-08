@@ -66,18 +66,32 @@ local function Silence()
 	    Text = "SILENCE FUNCTION ENTERED",
 	    Duration = 5
 	})
-    local currentRooms = workspace.CurrentRooms
-    local latestRoom = game.ReplicatedStorage.GameData.LatestRoom
-    local ambruhspeed = 15
-    local ambruhheight = Vector3.new(0,3.4,0)
-    local DEF_SPEED = 99999
-    local storer = ambruhspeed
-    local entity = nil
-    local killed = false
-	if not game.ReplicatedStorage:FindFirstChild("ModuleClients") then return end
-    if not game.ReplicatedStorage.ModuleClients:FindFirstChild("Module_Events") then return end
-    if not workspace:FindFirstChild("CurrentRooms") then return end
-    local required = require(game.ReplicatedStorage.ModuleClients.Module_Events)
+local currentRooms = workspace.CurrentRooms
+local latestRoom = game.ReplicatedStorage.GameData.LatestRoom
+local ambruhspeed = 15
+local ambruhheight = Vector3.new(0,3.4,0)
+local DEF_SPEED = 99999
+local storer = ambruhspeed
+local entity = nil
+local killed = false
+
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Silence Debug",
+    Text = "BEFORE MODULE CHECK",
+    Duration = 5
+})
+
+if not game.ReplicatedStorage:FindFirstChild("ModuleClients") then return end
+if not game.ReplicatedStorage.ModuleClients:FindFirstChild("Module_Events") then return end
+if not workspace:FindFirstChild("CurrentRooms") then return end
+
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Silence Debug",
+    Text = "MODULE CHECK OK",
+    Duration = 5
+})
+
+local required = require(game.ReplicatedStorage.ModuleClients.Module_Events)
     local currentRooms = workspace:FindFirstChild("CurrentRooms")
     local latestRoomInt = game.ReplicatedStorage.GameData.LatestRoom
     local latestRoomModel = currentRooms:FindFirstChild(latestRoomInt.Value)
