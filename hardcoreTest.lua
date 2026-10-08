@@ -73,7 +73,7 @@ local entityURLs = {
 }
 
 local lastEntitySpawnTime = 0
-local ENTITY_SPAWN_COOLDOWN = 10
+local ENTITY_SPAWN_COOLDOWN = 0
 local isPlayerAlive = true
 
 local function CanSpawnEntity(entityName)
@@ -98,53 +98,24 @@ local function CanSpawnEntity(entityName)
 end
 
 local function SpawnEntity(entityName)
-    if not isPlayerAlive then
-        warn("SPAWN BLOCKED: player dead")
-        return false
-    end
-
-    if not entityURLs[entityName] then
-        warn("SPAWN BLOCKED: no URL for " .. entityName)
-        return false
-    end
-
-    if not CanSpawnEntity(entityName) then
-        warn("SPAWN BLOCKED BY CanSpawnEntity: " .. entityName)
-        return false
-    end
-
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Hardcore Debug",
-        Text = "STARTING " .. entityName,
-        Duration = 5
-    })
+    if not isPlayerAlive then return false end
+    if not entityURLs[entityName] then return false end
+    if not CanSpawnEntity(entityName) then return false end
 
     lastEntitySpawnTime = workspace:GetServerTimeNow()
 
     local success, err = pcall(function()
         loadstring(game:HttpGet(entityURLs[entityName]))()
+        print("🎮 Spawning: " .. entityName)
     end)
 
     if not success then
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Hardcore Debug",
-            Text = entityName .. " ERROR: " .. tostring(err),
-            Duration = 8
-        })
-
         warn("Failed to spawn " .. entityName .. ": " .. tostring(err))
         return false
     end
 
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Hardcore Debug",
-        Text = entityName .. " SCRIPT STARTED",
-        Duration = 5
-    })
-
     return true
 end
-
     if not success then
         warn("Failed to spawn " .. entityName .. ": " .. tostring(err))
         return false
