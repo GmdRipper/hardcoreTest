@@ -13,11 +13,11 @@ local opened = false
 -- ============================================
 local CONFIG = {
     RIPPER_DELAY = {90, 120},
-    REBOUND_DELAY = {20, 40},
+    REBOUND_DELAY = {90, 120},
     FROSTBITE_DELAY = {180, 300},
     FROSTBITE_MIN_ROOM = 20,
 
-    CEASE_DELAY = {60, 90},
+    CEASE_DELAY = {20, 40},
     A60_DELAY = {400, 500},
     SILENCE_DELAY = {180, 300},
     DEERGOD_DELAY = {250, 400},
@@ -65,7 +65,7 @@ local entityURLs = {
     Ripper = "https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/refs/heads/main/ripper.lua",
     Rebound = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/Rebound.lua",
     DeerGod = "https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/refs/heads/main/deergod.lua",
-    Cease = "https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/refs/heads/main/cease.lua",
+    Cease = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/Cease.lua",
     Shocker = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldShocker.lua",
     Silence = "https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/refs/heads/main/silence.lua",
     A60 = "https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/refs/heads/main/a60.lua",
