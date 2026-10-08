@@ -1,6 +1,12 @@
 -- XENO GITHUB MODEL LOADER (.rbxm / .rbxmx)
 local G = getgenv()
 
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Silence Debug",
+    Text = "SILENCE FILE STARTED",
+    Duration = 5
+})
+
 -- Garantindo que a função exista no ambiente Global
 G.LoadGithubModel = function(url)
     if not (writefile and getcustomasset and request) then
