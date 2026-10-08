@@ -61,19 +61,41 @@ G.LoadGithubModel = function(url)
 end
 
 local function Silence()
-	game:GetService("StarterGui"):SetCore("SendNotification", {
-	    Title = "Silence Debug",
-	    Text = "SILENCE FUNCTION ENTERED",
-	    Duration = 5
-	})
-local currentRooms = workspace.CurrentRooms
-local latestRoom = game.ReplicatedStorage.GameData.LatestRoom
-local ambruhspeed = 15
-local ambruhheight = Vector3.new(0,3.4,0)
-local DEF_SPEED = 99999
-local storer = ambruhspeed
-local entity = nil
-local killed = false
+
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Silence Debug",
+        Text = "SILENCE FUNCTION ENTERED",
+        Duration = 5
+    })
+
+    local currentRooms = workspace.CurrentRooms
+
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Silence Debug",
+        Text = "CURRENT ROOMS OK",
+        Duration = 5
+    })
+
+    local latestRoom = game.ReplicatedStorage.GameData.LatestRoom
+
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Silence Debug",
+        Text = "LATEST ROOM OK",
+        Duration = 5
+    })
+
+    local ambruhspeed = 15
+    local ambruhheight = Vector3.new(0,3.4,0)
+    local DEF_SPEED = 99999
+    local storer = ambruhspeed
+    local entity = nil
+    local killed = false
+
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Silence Debug",
+        Text = "VARIABLES OK",
+        Duration = 5
+    })
 
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "Silence Debug",
