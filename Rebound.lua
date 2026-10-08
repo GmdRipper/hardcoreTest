@@ -167,7 +167,7 @@ if not lastRoom then
     return
 end
 
-local roomExit = lastRoom:FindFirstChild("RoomExit")
+local roomExit = lastRoom:FindFirstChild("RoomEnd")
 
 if not roomExit then
     local objects = ""
