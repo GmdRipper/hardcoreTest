@@ -65,12 +65,8 @@ local function Silence()
     local latestRoomInt = game.ReplicatedStorage.GameData.LatestRoom
     local latestRoomModel = currentRooms:FindFirstChild(latestRoomInt.Value)
     local playerGui = game.Players.LocalPlayer.PlayerGui
-    local remotesFolde = nil
-    if game.ReplicatedStorage:FindFirstChild("RemotesFolder") then remotesFolde = game.ReplicatedStorage:FindFirstChild("RemotesFolder") end
     local moduleScripts = {
-	      Module_Events = require(game.ReplicatedStorage.ModuleClients.Module_Events),
-	      Main_Game = require(playerGui.MainUI.Initiator.Main_Game),
-	      Earthquake = require(remotesFolde.RequestAsset:InvokeServer("Earthquake"))
+        Module_Events = require(game.ReplicatedStorage.ModuleClients.Module_Events)
     }
     --required.flickerLights(latestRoomModel, 74)
     local rawUrl = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/main/oldSilence.rbxm"
