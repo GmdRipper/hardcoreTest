@@ -149,9 +149,13 @@ wait(1)
             if room and room:FindFirstChild("Nodes") then
                 local nodes = room:FindFirstChild("Nodes")
 
-               if moduleScripts.Module_Events and moduleScripts.Module_Events.shatter then
-    moduleScripts.Module_Events.shatter(room)
-end
+               	if moduleScripts.Module_Events and moduleScripts.Module_Events.shatter then
+    				moduleScripts.Module_Events.shatter(room)
+				end
+
+				if moduleScripts.Module_Events and moduleScripts.Module_Events.breakLights then
+    				moduleScripts.Module_Events.breakLights(room)
+				end
 
                 for v = 1, #nodes:GetChildren() do
                     local node = nodes:FindFirstChild(tostring(v))
