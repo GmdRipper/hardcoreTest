@@ -64,11 +64,25 @@ local function Silence()
     local currentRooms = workspace:FindFirstChild("CurrentRooms")
     local latestRoomInt = game.ReplicatedStorage.GameData.LatestRoom
     local latestRoomModel = currentRooms:FindFirstChild(latestRoomInt.Value)
-    local playerGui = game.Players.LocalPlayer.PlayerGui
-    local moduleScripts = {
-        Module_Events = require(game.ReplicatedStorage.ModuleClients.Module_Events)
-    }
-    --required.flickerLights(latestRoomModel, 74)
+local playerGui = game.Players.LocalPlayer.PlayerGui
+
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Silence Debug",
+    Text = "BEFORE MODULES",
+    Duration = 4
+})
+
+local moduleScripts = {
+    Module_Events = require(game.ReplicatedStorage.ModuleClients.Module_Events)
+}
+
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Silence Debug",
+    Text = "MODULES OK",
+    Duration = 4
+})
+
+--required.flickerLights(latestRoomModel, 74)
     local rawUrl = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/main/oldSilence.rbxm"
     -- CORREÇÃO DE ESCOPO: Atribuindo o retorno à variável local correta
 if G.LoadGithubModel then
