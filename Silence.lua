@@ -253,7 +253,9 @@ end
             if room and room:FindFirstChild("Nodes") then
                 local nodes = room:FindFirstChild("Nodes")
 
-                moduleScripts.Module_Events.shatter(room)
+               if moduleScripts.Module_Events and moduleScripts.Module_Events.shatter then
+    moduleScripts.Module_Events.shatter(room)
+end
 
                 for v = 1, #nodes:GetChildren() do
                     local node = nodes:FindFirstChild(tostring(v))
