@@ -3,10 +3,6 @@
 local G = getgenv()
 local ReplicatedStorage = game.ReplicatedStorage
 
--- ============================================
--- MODEL LOADER
--- ============================================
-
 G.LoadGithubModel = function(url)
     if not (writefile and getcustomasset and request) then
         return nil
@@ -102,7 +98,6 @@ G.LoadGithubAudio = function(url)
     end
 
     warn("Erro no getcustomasset: " .. tostring(assetId))
-
     return nil
 end
 
@@ -116,7 +111,6 @@ local function DeerGod()
     local ambruhspeed = 15
     local DEF_SPEED = 99999
     local storer = ambruhspeed
-
     local ambruhheight = Vector3.new(0, 3.4, 0)
 
     local repStorage = game.ReplicatedStorage
@@ -133,15 +127,7 @@ local function DeerGod()
 
     local deergodId = "rbxassetid://12262883448"
 
-    local entity
-
-    local success, result = pcall(function()
-        return game:GetObjects(deergodId)[1]
-    end)
-
-    if success then
-        entity = result
-    end
+    local entity = game:GetObjects(deergodId)[1]
 
     if not entity then
         warn("DeerGod: failed to load entity")
@@ -150,7 +136,8 @@ local function DeerGod()
 
     entity.Parent = workspace
 
-    local entityPart = entity:FindFirstChildWhichIsA("BasePart")
+    local entityPart =
+        entity:FindFirstChildWhichIsA("BasePart")
 
     if not entityPart then
         warn("DeerGod: no BasePart found")
@@ -160,12 +147,39 @@ local function DeerGod()
 
 
     -- ============================================
+    -- LOAD MODULE_EVENTS
+    -- ============================================
+
+    local moduleEvents
+
+    for _, obj in ipairs(
+        ReplicatedStorage:GetDescendants()
+    ) do
+
+        if obj.Name == "Module_Events" then
+            moduleEvents = obj
+            break
+        end
+
+    end
+
+    local moduleScripts = {}
+
+    if moduleEvents then
+        moduleScripts.Module_Events =
+            require(moduleEvents)
+    end
+
+
+    -- ============================================
     -- CHASE MUSIC
     -- ============================================
 
-    local chaseTheme = G.LoadGithubAudio(
-        "https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/main/DeerGodChaseTheme.mp3"
-    )
+    local chaseTheme =
+        G.LoadGithubAudio(
+            "https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/main/DeerGodChaseTheme.mp3"
+        )
+
 
     local chaseMusic
 
@@ -185,127 +199,55 @@ local function DeerGod()
     -- CAMERA SHAKE
     -- ============================================
 
-    local cameraShaker = require(
-        game.ReplicatedStorage.CameraShaker
-    )
-
-    local camera = workspace.CurrentCamera
-
-    local camShake = cameraShaker.new(
-        Enum.RenderPriority.Camera.Value,
-        function(cf)
-            camera.CFrame = camera.CFrame * cf
-        end
-    )
-
-    camShake:Start()
-
-
-    -- ============================================
-    -- SAVE ROOMS FOR PERMANENT FLICKER
-    -- ============================================
-
-    local flickerRooms = {}
-
-    -- Только комнаты, существующие
-    -- в момент появления DeerGod
-    for i = 1, latestRoom.Value do
-
-        local room = currentRooms:FindFirstChild(
-            tostring(i)
+    local cameraShaker =
+        require(
+            game.ReplicatedStorage.CameraShaker
         )
 
-        if room then
-            table.insert(flickerRooms, room)
-        end
+    local camera =
+        workspace.CurrentCamera
 
-    end
-
-
-    -- ============================================
-    -- PERMANENT LIGHT FLICKER
-    -- ============================================
-
-    task.spawn(function()
-
-        while true do
-
-            -- TURN LIGHTS OFF
-            for _, room in ipairs(flickerRooms) do
-
-                if room and room.Parent then
-
-                    for _, obj in ipairs(room:GetDescendants()) do
-
-                        if obj:IsA("PointLight")
-                            or obj:IsA("SpotLight")
-                            or obj:IsA("SurfaceLight") then
-
-                            obj.Enabled = false
-
-                        end
-
-                    end
-
-                end
-
+    local camShake =
+        cameraShaker.new(
+            Enum.RenderPriority.Camera.Value,
+            function(cf)
+                camera.CFrame =
+                    camera.CFrame * cf
             end
+        )
 
-
-            task.wait(0.12)
-
-
-            -- TURN LIGHTS ON
-            for _, room in ipairs(flickerRooms) do
-
-                if room and room.Parent then
-
-                    for _, obj in ipairs(room:GetDescendants()) do
-
-                        if obj:IsA("PointLight")
-                            or obj:IsA("SpotLight")
-                            or obj:IsA("SurfaceLight") then
-
-                            obj.Enabled = true
-
-                        end
-
-                    end
-
-                end
-
-            end
-
-
-            task.wait(0.12)
-
-        end
-
-    end)
+    camShake:Start()
 
 
     -- ============================================
     -- TARGET DETECTION
     -- ============================================
 
-    local function canSeeTarget(target, size)
+    local function canSeeTarget(
+        target,
+        size
+    )
 
-        if killed then
+        if killed == true then
             return
         end
 
 
         local function isBossActive()
 
-            local room = latestRoom.Value
+            local room =
+                latestRoom.Value
 
-            if room == 50 or room == 100 then
+            if room == 50
+                or room == 100 then
+
                 return true
+
             end
 
 
             for _, sound in pairs(
-                game.ReplicatedStorage:GetDescendants()
+                ReplicatedStorage:GetDescendants()
             ) do
 
                 if sound:IsA("Sound")
@@ -331,28 +273,36 @@ local function DeerGod()
         end
 
 
-        local origin = entityPart.Position
+        local origin =
+            entityPart.Position
+
 
         local direction =
-            (target.HumanoidRootPart.Position - origin).Unit
-            * size
+            (
+                target.HumanoidRootPart.Position
+                - origin
+            ).Unit * size
 
 
-        local ray = Ray.new(
-            origin,
-            direction
-        )
+        local ray =
+            Ray.new(
+                origin,
+                direction
+            )
 
 
-        local hit, pos = workspace:FindPartOnRay(
-            ray,
-            entityPart
-        )
+        local hit, pos =
+            workspace:FindPartOnRay(
+                ray,
+                entityPart
+            )
 
 
         if hit then
 
-            if hit:IsDescendantOf(target) then
+            if hit:IsDescendantOf(
+                target
+            ) then
 
                 killed = true
 
@@ -373,47 +323,50 @@ local function DeerGod()
     -- MOVEMENT TIME
     -- ============================================
 
-    local function GetTime(dist, speed)
+    local function GetTime(
+        dist,
+        speed
+    )
+
         return dist / speed
+
     end
 
 
-    wait(1)
+    task.wait(1)
 
 
     -- ============================================
-    -- DAMAGE / DEATH
+    -- PLAYER DAMAGE
     -- ============================================
 
     task.spawn(function()
 
-        while entity
-            and entity.Parent
-            and entityPart
-            and entityPart.Parent do
+        while entity ~= nil
+            and entityPart ~= nil do
 
             task.wait(0.01)
-
 
             local player =
                 game.Players.LocalPlayer
 
 
-            if player.Character
+            if player.Character ~= nil
                 and player.Character:FindFirstChild(
                     "HumanoidRootPart"
                 ) then
 
-
-                local character = player.Character
+                local character =
+                    player.Character
 
 
                 if canSeeTarget(
                     character,
                     50
                 )
-                and not character:GetAttribute("Hiding") then
-
+                and not character:GetAttribute(
+                    "Hiding"
+                ) then
 
                     local humanoid =
                         character:FindFirstChildOfClass(
@@ -422,21 +375,22 @@ local function DeerGod()
 
 
                     if humanoid then
-
                         humanoid:TakeDamage(100)
-
                     end
 
 
                     local stats =
-                        game.ReplicatedStorage.GameStats
+                        ReplicatedStorage.GameStats
                         :FindFirstChild(
-                            "Player_" .. character.Name
+                            "Player_"
+                            .. character.Name
                         )
 
 
                     if stats
-                        and stats:FindFirstChild("Total")
+                        and stats:FindFirstChild(
+                            "Total"
+                        )
                         and stats.Total:FindFirstChild(
                             "DeathCause"
                         ) then
@@ -493,20 +447,18 @@ local function DeerGod()
 
 
     -- ============================================
-    -- EARTHQUAKE EFFECT
+    -- EARTHQUAKE
     -- ============================================
 
     task.spawn(function()
 
-        while entity
-            and entity.Parent
-            and entityPart
-            and entityPart.Parent do
+        while entity ~= nil
+            and entityPart ~= nil do
 
             task.wait(1.6)
 
-            if entity.Parent
-                and entityPart.Parent then
+            if entity.Parent ~= nil
+                and entityPart.Parent ~= nil then
 
                 camShake:Shake(
                     cameraShaker.Presets.Earthquake
@@ -521,6 +473,7 @@ local function DeerGod()
 
     -- ============================================
     -- MOVE THROUGH ROOMS
+    -- AND BREAK LIGHTS
     -- ============================================
 
     ambruhspeed = DEF_SPEED
@@ -528,69 +481,97 @@ local function DeerGod()
 
     for i = 1, latestRoom.Value + 1 do
 
-        local room =
-            currentRooms:FindFirstChild(
-                tostring(i)
-            )
+        if currentRooms:FindFirstChild(
+            tostring(i)
+        ) then
+
+            local room =
+                currentRooms[
+                    tostring(i)
+                ]
 
 
-        if room
-            and room:FindFirstChild("Nodes") then
+            if room
+                and room:FindFirstChild(
+                    "Nodes"
+                ) then
 
 
-            local nodes =
-                room:FindFirstChild("Nodes")
+                -- ====================================
+                -- BREAK LIGHTS IN THIS ROOM
+                -- ====================================
+
+                if moduleScripts.Module_Events
+                    and moduleScripts.Module_Events.breakLights then
+
+                    moduleScripts.Module_Events.breakLights(
+                        room
+                    )
+
+                end
 
 
-            for v = 1, #nodes:GetChildren() do
+                -- ====================================
+                -- MOVE THROUGH NODES
+                -- ====================================
 
-                local node =
-                    nodes:FindFirstChild(
-                        tostring(v)
+                local nodes =
+                    room:FindFirstChild(
+                        "Nodes"
                     )
 
 
-                if node then
+                for v = 1, #nodes:GetChildren() do
 
-                    local dist =
-                        (
-                            entityPart.Position
-                            - node.Position
-                        ).Magnitude
-
-
-                    local tween =
-                        game.TweenService:Create(
-
-                            entityPart,
-
-                            TweenInfo.new(
-                                GetTime(
-                                    dist,
-                                    ambruhspeed
-                                ),
-
-                                Enum.EasingStyle.Linear,
-                                Enum.EasingDirection.Out,
-                                0,
-                                false,
-                                0
-                            ),
-
-                            {
-                                CFrame =
-                                    node.CFrame
-                                    + ambruhheight
-                            }
-
+                    local node =
+                        nodes:FindFirstChild(
+                            tostring(v)
                         )
 
 
-                    tween:Play()
-                    tween.Completed:Wait()
+                    if node then
+
+                        local dist =
+                            (
+                                entityPart.Position
+                                - node.Position
+                            ).Magnitude
 
 
-                    ambruhspeed = storer
+                        local jerk =
+                            game.TweenService:Create(
+
+                                entityPart,
+
+                                TweenInfo.new(
+                                    GetTime(
+                                        dist,
+                                        ambruhspeed
+                                    ),
+
+                                    Enum.EasingStyle.Linear,
+                                    Enum.EasingDirection.Out,
+                                    0,
+                                    false,
+                                    0
+                                ),
+
+                                {
+                                    CFrame =
+                                        node.CFrame
+                                        + ambruhheight
+                                }
+
+                            )
+
+
+                        jerk:Play()
+                        jerk.Completed:Wait()
+
+                        ambruhspeed =
+                            storer
+
+                    end
 
                 end
 
@@ -605,7 +586,8 @@ local function DeerGod()
     -- REMOVE DEER GOD
     -- ============================================
 
-    if entityPart and entityPart.Parent then
+    if entityPart
+        and entityPart.Parent then
 
         local disappearTween =
             game.TweenService:Create(
@@ -617,7 +599,11 @@ local function DeerGod()
                 {
                     CFrame =
                         entityPart.CFrame
-                        * CFrame.new(0, -80, 0)
+                        * CFrame.new(
+                            0,
+                            -80,
+                            0
+                        )
                 }
 
             )
@@ -651,10 +637,10 @@ local function DeerGod()
     local player =
         game.Players.LocalPlayer
 
-
     local playerGui =
-        player:FindFirstChild("PlayerGui")
-
+        player:FindFirstChild(
+            "PlayerGui"
+        )
 
     if not playerGui then
         return
@@ -662,8 +648,9 @@ local function DeerGod()
 
 
     local mainUI =
-        playerGui:FindFirstChild("MainUI")
-
+        playerGui:FindFirstChild(
+            "MainUI"
+        )
 
     if not mainUI then
         return
@@ -671,8 +658,9 @@ local function DeerGod()
 
 
     local initiator =
-        mainUI:FindFirstChild("Initiator")
-
+        mainUI:FindFirstChild(
+            "Initiator"
+        )
 
     if not initiator then
         return
@@ -680,8 +668,9 @@ local function DeerGod()
 
 
     local mainGame =
-        initiator:FindFirstChild("Main_Game")
-
+        initiator:FindFirstChild(
+            "Main_Game"
+        )
 
     if not mainGame then
         return
@@ -689,8 +678,9 @@ local function DeerGod()
 
 
     local remoteListener =
-        mainGame:FindFirstChild("RemoteListener")
-
+        mainGame:FindFirstChild(
+            "RemoteListener"
+        )
 
     if not remoteListener then
         return
@@ -698,8 +688,9 @@ local function DeerGod()
 
 
     local modules =
-        remoteListener:FindFirstChild("Modules")
-
+        remoteListener:FindFirstChild(
+            "Modules"
+        )
 
     if not modules then
         return
@@ -710,7 +701,6 @@ local function DeerGod()
         modules:FindFirstChild(
             "AchievementUnlock"
         )
-
 
     if not AchievementModule then
         return
@@ -731,7 +721,6 @@ local function DeerGod()
             "ModulesShared"
         )
 
-
     if not modulesShared then
         return
     end
@@ -742,14 +731,9 @@ local function DeerGod()
             "Achievements"
         )
 
-
     if not achievements then
         return
     end
-
-
-    local dataModule =
-        require(achievements)
 
 
     local unlockFunc =
@@ -771,7 +755,6 @@ local function DeerGod()
     local ObtainedBadge =
         Instance.new("BoolValue")
 
-
     ObtainedBadge.Name =
         "DeerGodAchievement"
 
@@ -785,12 +768,15 @@ end
 
 
 -- ============================================
--- START
+-- START DEER GOD
 -- ============================================
 
 local success, err =
     pcall(DeerGod)
 
 if not success then
-    warn("DeerGod ERROR:", err)
+    warn(
+        "DeerGod ERROR:",
+        err
+    )
 end
