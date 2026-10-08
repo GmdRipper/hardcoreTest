@@ -103,9 +103,44 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Duration = 5
 })
 
-if not game.ReplicatedStorage:FindFirstChild("ModuleClients") then return end
-if not game.ReplicatedStorage.ModuleClients:FindFirstChild("Module_Events") then return end
-if not workspace:FindFirstChild("CurrentRooms") then return end
+if not game.ReplicatedStorage:FindFirstChild("ModuleClients") then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Silence Debug",
+        Text = "NO MODULECLIENTS",
+        Duration = 5
+    })
+    return
+end
+
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Silence Debug",
+    Text = "MODULECLIENTS OK",
+    Duration = 5
+})
+
+if not game.ReplicatedStorage.ModuleClients:FindFirstChild("Module_Events") then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Silence Debug",
+        Text = "NO MODULE EVENTS",
+        Duration = 5
+    })
+    return
+end
+
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Silence Debug",
+    Text = "MODULE EVENTS OK",
+    Duration = 5
+})
+
+if not workspace:FindFirstChild("CurrentRooms") then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Silence Debug",
+        Text = "NO CURRENT ROOMS",
+        Duration = 5
+    })
+    return
+end
 
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "Silence Debug",
