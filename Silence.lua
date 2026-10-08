@@ -1,18 +1,5 @@
 -- XENO GITHUB MODEL LOADER (.rbxm / .rbxmx)
 local G = getgenv()
-
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Silence Debug",
-    Text = "SILENCE FILE STARTED",
-    Duration = 5
-})
-
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Silence Debug",
-    Text = "REACHED AFTER STARTED",
-    Duration = 5
-})
-
 -- Garantindo que a função exista no ambiente Global
 G.LoadGithubModel = function(url)
     if not (writefile and getcustomasset and request) then
@@ -61,70 +48,24 @@ G.LoadGithubModel = function(url)
 end
 
 local function Silence()
-
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Silence Debug",
-        Text = "SILENCE FUNCTION ENTERED",
-        Duration = 5
-    })
-
     local currentRooms = workspace.CurrentRooms
-
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Silence Debug",
-        Text = "CURRENT ROOMS OK",
-        Duration = 5
-    })
-
     local latestRoom = game.ReplicatedStorage.GameData.LatestRoom
-
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Silence Debug",
-        Text = "LATEST ROOM OK",
-        Duration = 5
-    })
-
     local ambruhspeed = 15
     local ambruhheight = Vector3.new(0,3.4,0)
     local DEF_SPEED = 99999
     local storer = ambruhspeed
     local entity = nil
     local killed = false
-
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Silence Debug",
-        Text = "VARIABLES OK",
-        Duration = 5
-    })
-
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Silence Debug",
-    Text = "SEARCHING ALL REPLICATEDSTORAGE",
-    Duration = 5
-})
-
-local moduleEvents = nil
+	local moduleEvents = nil
 
 for _, obj in ipairs(game.ReplicatedStorage:GetDescendants()) do
     if obj.Name == "Module_Events" then
         moduleEvents = obj
-
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Silence Debug",
-            Text = "FOUND: " .. obj:GetFullName(),
-            Duration = 8
-        })
-
         break
     end
 end
 
 if not moduleEvents then
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Silence Debug",
-        Text = "MODULE EVENTS NOT FOUND ANYWHERE",
-        Duration = 8
-    })
     return
 end
 
@@ -133,71 +74,26 @@ local currentRooms = workspace:FindFirstChild("CurrentRooms")
 local latestRoomInt = game.ReplicatedStorage.GameData.LatestRoom
 local latestRoomModel = currentRooms:FindFirstChild(latestRoomInt.Value)
 local playerGui = game.Players.LocalPlayer.PlayerGui
-
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Silence Debug",
-    Text = "BEFORE MODULES",
-    Duration = 4
-})
-
 local moduleScripts = {
     Module_Events = require(moduleEvents)
 }
-
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Silence Debug",
-    Text = "MODULES OK",
-    Duration = 4
-})
-
 --required.flickerLights(latestRoomModel, 74)
     local rawUrl = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/main/oldSilence.rbxm"
     -- CORREÇÃO DE ESCOPO: Atribuindo o retorno à variável local correta
 if G.LoadGithubModel then
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Silence Debug",
-        Text = "LOADING MODEL",
-        Duration = 4
-    })
-
     entity = G.LoadGithubModel(rawUrl)
 
     if entity then
         entity.Parent = workspace
-
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Silence Debug",
-            Text = "MODEL LOADED",
-            Duration = 4
-        })
     else
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Silence Debug",
-            Text = "MODEL = NIL",
-            Duration = 5
-        })
     end
 end
 
 if not entity then return end
 
 local entityPart = entity:FindFirstChildWhichIsA("BasePart")
-
-if entityPart then
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Silence Debug",
-        Text = "BASEPART FOUND",
-        Duration = 4
-    })
-else
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Silence Debug",
-        Text = "NO BASEPART",
-        Duration = 5
-    })
-end
-
-    wait(1)
+	
+wait(1)
     local function canSeeTarget(target, size)
         if killed == true then
             return
@@ -305,10 +201,5 @@ end
 local success, err = pcall(Silence)
 
 if not success then
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Silence ERROR",
-        Text = tostring(err),
-        Duration = 10
-    })
     warn("Silence ERROR:", err)
 end
