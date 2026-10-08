@@ -1,7 +1,7 @@
 -- XENO GITHUB MODEL LOADER (.rbxm / .rbxmx)
 local G = getgenv()
 local ReplicatedStorage = game.ReplicatedStorage
-local remotesFolder = ReplicatedStorage:WaitForChild("RemotesFolder")
+local remotesFolder = ReplicatedStorage:FindFirstChild("RemotesFolder")
 
 G.LoadGithubModel = function(url)
     if not (writefile and getcustomasset and request) then return nil end
