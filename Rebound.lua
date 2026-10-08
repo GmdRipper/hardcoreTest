@@ -349,17 +349,30 @@ if isBossActive() then return end
         end
     end)
 
-    for i = latestRoom.Value, 1, -1 do
-        if currentRooms:FindFirstChild(i) then
-            local room = currentRooms[i]
-            if room and room:FindFirstChild("RoomEntrance") then
-                local abc = room:FindFirstChild("RoomEntrance")
-                local jerk = game.TweenService:Create(entityPart, TweenInfo.new(speed, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0,false,0), {CFrame = abc.CFrame + Vector3.new(0,0.9,0)})
-                jerk:Play()
-                jerk.Completed:Wait()
-            end
+for i = latestRoom.Value, 1, -1 do
+    local room = currentRooms:FindFirstChild(i)
+
+    if room then
+        local roomStart = room:FindFirstChild("RoomStart")
+
+        if roomStart then
+            local jerk = game.TweenService:Create(
+                entityPart,
+                TweenInfo.new(
+                    speed,
+                    Enum.EasingStyle.Sine,
+                    Enum.EasingDirection.Out
+                ),
+                {
+                    CFrame = roomStart.CFrame + Vector3.new(0, 0.9, 0)
+                }
+            )
+
+            jerk:Play()
+            jerk.Completed:Wait()
         end
     end
+end
 
     entityPart.Anchored = false
     entityPart.CanCollide = false
