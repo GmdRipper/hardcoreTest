@@ -465,7 +465,7 @@ task.spawn(function()
                 if stamina >= maxStamina then isExhausted = false end
             elseif crouching then
                 char:SetAttribute("SpeedBoost", 0)
-                hum.WalkSpeed = 7
+                hum.WalkSpeed = 10
                 stamina = math.min(maxStamina, stamina + 0.9)
                 if breathSound then breathSound:Stop() end
             elseif sprinting and isMoving and stamina > 5 then
@@ -476,7 +476,7 @@ task.spawn(function()
                 if breathSound then breathSound:Stop() end
             else
                 char:SetAttribute("SpeedBoost", 0)
-                hum.WalkSpeed = 14
+                hum.WalkSpeed = 15
                 stamina = math.min(maxStamina, stamina + 0.7)
                 if breathSound then breathSound:Stop() end
             end
