@@ -1,72 +1,61 @@
--- XENO GITHUB MODEL LOADER (.rbxm / .rbxmx)
-
+-- XENO GITHUB MODEL LOADER (.rbxm)
 local G = getgenv()
 local ReplicatedStorage = game.ReplicatedStorage
 local remotesFolder = ReplicatedStorage:FindFirstChild("RemotesFolder")
 
 G.LoadGithubModel = function(url)
-    if not (writefile and getcustomasset and request) then
-        return nil
-    end
-
-    -- Generate consistent filename from URL
+    if not (writefile and getcustomasset and request) then return nil end
+    
     local function generateFileName(url)
         local hash = 0
-
         for i = 1, #url do
             hash = (hash * 31 + string.byte(url, i)) % 2^32
         end
-
         return "cease_" .. tostring(hash) .. ".rbxm"
     end
-
+    
     local fileName = generateFileName(url)
-
-    -- Check if file exists and try to load it
+    
     local success, exists = pcall(function()
         return isfile and isfile(fileName)
     end)
-
+    
     if success and exists then
         local assetId = getcustomasset(fileName)
-
         local loadSuccess, result = pcall(function()
             return game:GetObjects(assetId)[1]
         end)
-
+        
         if loadSuccess and result then
             return result
         end
     end
-
-    -- Download new model if not exists or failed to load
+    
     local response = request({
         Url = url,
         Method = "GET"
     })
-
+    
     if response.StatusCode ~= 200 then
         return nil
     end
-
+    
     writefile(fileName, response.Body)
 
     local assetId = getcustomasset(fileName)
 
-    local loadSuccess, result = pcall(function()
+    local success, result = pcall(function()
         return game:GetObjects(assetId)[1]
     end)
-
-    if loadSuccess and result then
+    
+    if success and result then
         return result
     end
 
     return nil
 end
 
-
 local function ceasetheroom()
-
     local ambruhspeed = 45
     local DEF_SPEED = 9999
     local storer = ambruhspeed
@@ -80,63 +69,34 @@ local function ceasetheroom()
     local entity = nil
     local killed = false
 
-    local rawUrl =
-        "https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/main/Cease.rbxm"
+    local rawUrl = "https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/main/Cease.rbxm"
 
+    local cameraShaker = require(game.ReplicatedStorage.CameraShaker)
+    local camera = workspace.CurrentCamera
 
-    -- ============================================
-    -- CAMERA SHAKE
-    -- ============================================
-
-    local cameraShaker =
-        require(game.ReplicatedStorage.CameraShaker)
-
-    local camera =
-        workspace.CurrentCamera
-
-    local camShake =
-        cameraShaker.new(
-            Enum.RenderPriority.Camera.Value,
-            function(cf)
-                camera.CFrame =
-                    camera.CFrame * cf
-            end
-        )
-
-    camShake:Start()
-
-    camShake:Shake(
-        cameraShaker.Presets.Earthquake
+    local camShake = cameraShaker.new(
+        Enum.RenderPriority.Camera.Value,
+        function(cf)
+            camera.CFrame = camera.CFrame * cf
+        end
     )
 
-
-    -- ============================================
-    -- LOAD MODEL
-    -- ============================================
+    camShake:Start()
+    camShake:Shake(cameraShaker.Presets.Earthquake)
 
     if G.LoadGithubModel then
-
-        entity =
-            G.LoadGithubModel(rawUrl)
+        entity = G.LoadGithubModel(rawUrl)
 
         if entity then
             entity.Parent = workspace
         end
-
     end
-
 
     if not entity then
         return
     end
 
-
-    -- ============================================
-    -- SILENCE SOUND
-    -- ============================================
-
-    local silenceSound =
-        entity:FindFirstChild("Silence")
+    local silenceSound = entity:FindFirstChild("Silence")
 
     if not silenceSound then
         return
@@ -144,268 +104,152 @@ local function ceasetheroom()
 
     silenceSound:Play()
 
-
-    local entityPart =
-        entity:FindFirstChildWhichIsA("BasePart")
-
-    if not entityPart then
-        return
-    end
-
+    local entityPart = entity:FindFirstChildWhichIsA("BasePart")
 
     -- ============================================
-    -- LIGHT COLOR
+    -- CEASE LIGHT COLOR
     -- ============================================
 
-    local tweenLights =
-        TweenInfo.new(1)
+    local tweenLights = TweenInfo.new(1)
 
+    -- Первый цвет
     local color = {
-        Color = Color3.fromRGB(
-            0,
-            0,
-            255
-        )
+        Color = Color3.fromRGB(70, 70, 255)
     }
 
-
-    for _, v in pairs(
-        currentRooms:GetDescendants()
-    ) do
-
+    for i, v in pairs(currentRooms:GetDescendants()) do
         if v:IsA("Light") then
-
             game.TweenService:Create(
                 v,
                 tweenLights,
                 color
             ):Play()
 
-
-            if v.Parent.Name ==
-                "LightFixture" then
-
+            if v.Parent.Name == "LightFixture" then
                 game.TweenService:Create(
                     v.Parent,
                     tweenLights,
                     color
                 ):Play()
-
             end
-
         end
-
     end
 
-
+    -- Второй, более тёмный цвет
     local secondColor = {
-        Color = Color3.fromRGB(
-            0,
-            0,
-            155
-        )
+        Color = Color3.fromRGB(40, 40, 200)
     }
 
-
     delay(3, function()
-
-        for _, v in pairs(
-            currentRooms:GetDescendants()
-        ) do
-
+        for i, v in pairs(currentRooms:GetDescendants()) do
             if v:IsA("Light") then
-
                 game.TweenService:Create(
                     v,
                     tweenLights,
                     secondColor
                 ):Play()
 
-
-                if v.Parent.Name ==
-                    "LightFixture" then
-
+                if v.Parent.Name == "LightFixture" then
                     game.TweenService:Create(
                         v.Parent,
                         tweenLights,
                         secondColor
                     ):Play()
-
                 end
-
             end
-
         end
-
     end)
-
 
     wait(2)
 
-
     -- ============================================
-    -- TARGET DETECTION
+    -- LINE OF SIGHT
     -- ============================================
 
-    local function canSeeTarget(
-        target,
-        size
-    )
-
+    local function canSeeTarget(target, size)
         if killed == true then
             return
         end
 
-
         local function isBossActive()
+            local room = latestRoom.Value
 
-            local room =
-                latestRoom.Value
-
-            if room == 50
-                or room == 100 then
-
+            if room == 50 or room == 100 then
                 return true
-
             end
-
-
-            for _, sound in pairs(
-                game.ReplicatedStorage:GetDescendants()
-            ) do
-
+            
+            for _, sound in pairs(game.ReplicatedStorage:GetDescendants()) do
                 if sound:IsA("Sound")
                     and sound.IsPlaying
-                    and (
-                        sound.Name:find("Music")
-                        or sound.Name == "Shade"
-                    ) then
+                    and (sound.Name:find("Music") or sound.Name == "Shade") then
 
                     return true
-
                 end
-
             end
 
             return false
-
         end
-
 
         if isBossActive() then
             return
         end
 
-
-        local origin =
-            entityPart.Position
-
-
+        local origin = entityPart.Position
         local direction =
-            (
-                target.HumanoidRootPart.Position
-                - origin
-            ).Unit * size
+            (target.HumanoidRootPart.Position - origin).Unit * size
 
+        local ray = Ray.new(origin, direction)
 
-        local ray =
-            Ray.new(
-                origin,
-                direction
-            )
+        local hit, pos = workspace:FindPartOnRay(
+            ray,
+            entityPart
+        )
 
-
-        local hit, pos =
-            workspace:FindPartOnRay(
-                ray,
-                entityPart
-            )
-
-
-        if hit
-            and hit:IsDescendantOf(target) then
-
+        if hit and hit:IsDescendantOf(target) then
             killed = true
-
             return true
-
         end
 
-
         return false
-
     end
 
-
-    local function GetTime(
-        dist,
-        speed
-    )
-
+    local function GetTime(dist, speed)
         return dist / speed
-
     end
-
 
     -- ============================================
-    -- PLAYER DAMAGE / MOVEMENT DETECTION
+    -- PLAYER CHECK
     -- ============================================
 
     spawn(function()
-
         while entity ~= nil
             and entity.Parent ~= nil
             and entityPart ~= nil do
 
             wait(0.01)
 
-            local v =
-                game.Players.LocalPlayer
-
+            local v = game.Players.LocalPlayer
 
             if v.Character ~= nil
-                and v.Character:FindFirstChild(
-                    "HumanoidRootPart"
-                ) then
+                and v.Character:FindFirstChild("HumanoidRootPart") then
 
+                if canSeeTarget(v.Character, 60)
+                    and v.Character.Humanoid.MoveDirection.Magnitude > 0 then
 
-                if canSeeTarget(
-                    v.Character,
-                    60
-                )
-                and v.Character.Humanoid.MoveDirection.Magnitude > 0 then
+                    v.Character.Humanoid:TakeDamage(100)
 
-
-                    v.Character.Humanoid:TakeDamage(
-                        100
-                    )
-
-
-                    game.ReplicatedStorage
-                        .GameStats[
-                            "Player_" ..
-                            v.Character.Name
-                        ]
-                        .Total
-                        .DeathCause
-                        .Value = "Cease"
-
+                    game.ReplicatedStorage.GameStats[
+                        "Player_" .. v.Character.Name
+                    ].Total.DeathCause.Value = "Cease"
 
                     local hints = {
                         "You died to Cease...",
                         "Maybe trying to not move when he's nearby?"
                     }
 
-
-                    if ReplicatedStorage:FindFirstChild(
-                        "RemotesFolder"
-                    ) then
-
+                    if ReplicatedStorage:FindFirstChild("RemotesFolder") then
                         local remotesFolder =
-                            ReplicatedStorage:FindFirstChild(
-                                "RemotesFolder"
-                            )
-
+                            ReplicatedStorage:FindFirstChild("RemotesFolder")
 
                         firesignal(
                             remotesFolder.DeathHint.OnClientEvent,
@@ -413,35 +257,20 @@ local function ceasetheroom()
                             "Blue"
                         )
 
-
-                    elseif ReplicatedStorage:FindFirstChild(
-                        "Bricks"
-                    ) then
-
+                    elseif ReplicatedStorage:FindFirstChild("Bricks") then
                         local remotesFolder =
-                            ReplicatedStorage:FindFirstChild(
-                                "Bricks"
-                            )
-
+                            ReplicatedStorage:FindFirstChild("Bricks")
 
                         firesignal(
                             remotesFolder.DeathHint.OnClientEvent,
                             hints,
                             "Blue"
                         )
-
                     end
-
                 end
-
             end
 
-
-            -- Camera shake when Cease is nearby
             if v.Character ~= nil
-                and v.Character:FindFirstChild(
-                    "HumanoidRootPart"
-                )
                 and (
                     entityPart.Position
                     - v.Character.HumanoidRootPart.Position
@@ -455,47 +284,33 @@ local function ceasetheroom()
                     1,
                     6
                 )
-
             end
-
         end
-
     end)
 
-
     -- ============================================
-    -- MOVE THROUGH ROOMS
+    -- ENTITY MOVEMENT
     -- ============================================
 
-    ambruhspeed =
-        DEF_SPEED
-
+    ambruhspeed = DEF_SPEED
 
     for i = 1, latestRoom.Value do
 
-        local room =
-            currentRooms:FindFirstChild(
-                tostring(i)
-            )
-
+        local room = currentRooms:FindFirstChild(
+            tostring(i)
+        )
 
         if room then
 
-            local nodes =
-                room:FindFirstChild(
-                    "Nodes"
-                )
-
+            local nodes = room:FindFirstChild("Nodes")
 
             if nodes then
 
                 for v = 1, #nodes:GetChildren() do
 
-                    local node =
-                        nodes:FindFirstChild(
-                            tostring(v)
-                        )
-
+                    local node = nodes:FindFirstChild(
+                        tostring(v)
+                    )
 
                     if node then
 
@@ -505,72 +320,42 @@ local function ceasetheroom()
                                 - node.Position
                             ).Magnitude
 
+                        local jerk = game.TweenService:Create(
+                            entityPart,
 
-                        local jerk =
-                            game.TweenService:Create(
-
-                                entityPart,
-
-                                TweenInfo.new(
-                                    GetTime(
-                                        dist,
-                                        ambruhspeed
-                                    ),
-                                    Enum.EasingStyle.Linear
+                            TweenInfo.new(
+                                GetTime(
+                                    dist,
+                                    ambruhspeed
                                 ),
+                                Enum.EasingStyle.Linear
+                            ),
 
-                                {
-                                    CFrame =
-                                        node.CFrame
-                                        + ambruhheight
-                                }
-
-                            )
-
+                            {
+                                CFrame =
+                                    node.CFrame
+                                    + ambruhheight
+                            }
+                        )
 
                         jerk:Play()
                         jerk.Completed:Wait()
 
-
-                        ambruhspeed =
-                            storer
-
+                        ambruhspeed = storer
                     end
-
                 end
-
             end
-
         end
-
     end
-
-
-    -- ============================================
-    -- REMOVE ENTITY
-    -- ============================================
 
     entityPart.Anchored = false
     entityPart.CanCollide = false
 
-    game.Debris:AddItem(
-        entity,
-        5
-    )
-
+    game.Debris:AddItem(entity, 5)
 end
 
-
--- ============================================
--- START
--- ============================================
-
-local success, err =
-    pcall(ceasetheroom)
+local success, err = pcall(ceasetheroom)
 
 if not success then
-    warn(
-        "CEASE ERROR:",
-        err
-    )
+    warn("CEASE ERROR:", err)
 end
