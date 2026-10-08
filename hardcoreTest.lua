@@ -1,8 +1,6 @@
 -- [[ HARDCORE WITH PROPER MULTIPLAYER SYNC (FIXED) ]]
 repeat task.wait() until game:IsLoaded()
 
-print("🔥 HARDCORE SCRIPT STARTED")
-
 local Player = game.Players.LocalPlayer
 local LatestRoom = game.ReplicatedStorage.GameData.LatestRoom
 local TS = game:GetService("TweenService")
@@ -238,7 +236,13 @@ local function SetupMasterScheduler()
 
             -- Cease (immediate)
             if now - lastSpawnAbsolute.Cease >= spawnDelays.Cease then
-                spawnImmediate("Cease", now + 0.5)
+                print("🔥 CEASE TIMER FIRED")
+                print("🔥 Delay:", spawnDelays.Cease)
+                print("🔥 Room:", LatestRoom.Value)
+
+                local result = spawnImmediate("Cease", now + 0.5)
+                print("🔥 spawnImmediate result:", result)
+
                 lastSpawnAbsolute.Cease = now
             end
 
