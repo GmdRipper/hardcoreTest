@@ -125,15 +125,27 @@ local success, err = pcall(function()
         Duration = 5
     })
 
-    local func = loadstring(code)
+local func = loadstring(code)
 
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Hardcore Debug",
-        Text = entityName .. " LOADSTRING OK",
-        Duration = 5
-    })
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Hardcore Debug",
+    Text = entityName .. " LOADSTRING OK",
+    Duration = 5
+})
 
-    func()
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Hardcore Debug",
+    Text = entityName .. " CALLING FUNCTION",
+    Duration = 5
+})
+
+func()
+
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Hardcore Debug",
+    Text = entityName .. " FUNCTION RETURNED",
+    Duration = 5
+})
 
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "Hardcore Debug",
