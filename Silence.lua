@@ -238,4 +238,13 @@ end
 	ObtainedBadge.Parent = workspace
 end
 
-pcall(Silence)
+local success, err = pcall(Silence)
+
+if not success then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Silence ERROR",
+        Text = tostring(err),
+        Duration = 10
+    })
+    warn("Silence ERROR:", err)
+end
