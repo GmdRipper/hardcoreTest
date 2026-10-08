@@ -99,14 +99,30 @@ local function Silence()
 
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "Silence Debug",
-    Text = "BEFORE MODULE CHECK",
+    Text = "SEARCHING MODULE EVENTS",
     Duration = 5
 })
 
-if not game.ReplicatedStorage:FindFirstChild("ModuleClients") then
+local moduleEvents = nil
+
+if game.ReplicatedStorage:FindFirstChild("ModuleClients") then
+    local moduleClients = game.ReplicatedStorage.ModuleClients
+
+    if moduleClients:FindFirstChild("Module_Events") then
+        moduleEvents = moduleClients.Module_Events
+    end
+end
+
+if not moduleEvents and game.ReplicatedStorage:FindFirstChild("ModulesShared") then
+    if game.ReplicatedStorage.ModulesShared:FindFirstChild("Module_Events") then
+        moduleEvents = game.ReplicatedStorage.ModulesShared.Module_Events
+    end
+end
+
+if not moduleEvents then
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "Silence Debug",
-        Text = "NO MODULECLIENTS",
+        Text = "MODULE EVENTS NOT FOUND",
         Duration = 5
     })
     return
@@ -114,37 +130,7 @@ end
 
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "Silence Debug",
-    Text = "MODULECLIENTS OK",
-    Duration = 5
-})
-
-if not game.ReplicatedStorage.ModuleClients:FindFirstChild("Module_Events") then
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Silence Debug",
-        Text = "NO MODULE EVENTS",
-        Duration = 5
-    })
-    return
-end
-
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Silence Debug",
-    Text = "MODULE EVENTS OK",
-    Duration = 5
-})
-
-if not workspace:FindFirstChild("CurrentRooms") then
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Silence Debug",
-        Text = "NO CURRENT ROOMS",
-        Duration = 5
-    })
-    return
-end
-
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Silence Debug",
-    Text = "MODULE CHECK OK",
+    Text = "MODULE EVENTS FOUND",
     Duration = 5
 })
 
@@ -161,7 +147,7 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
 })
 
 local moduleScripts = {
-    Module_Events = require(game.ReplicatedStorage.ModuleClients.Module_Events)
+    Module_Events = require(moduleEvents)
 }
 
 game:GetService("StarterGui"):SetCore("SendNotification", {
