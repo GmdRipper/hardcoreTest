@@ -102,6 +102,12 @@ local function SpawnEntity(entityName)
     if not entityURLs[entityName] then return false end
     if not CanSpawnEntity(entityName) then return false end
 
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Hardcore Debug",
+        Text = "Trying to spawn: " .. entityName,
+        Duration = 5
+    })
+
     lastEntitySpawnTime = workspace:GetServerTimeNow()
 
     local success, err = pcall(function()
@@ -110,13 +116,24 @@ local function SpawnEntity(entityName)
     end)
 
     if not success then
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Hardcore Debug",
+            Text = entityName .. " ERROR: " .. tostring(err),
+            Duration = 8
+        })
+
         warn("Failed to spawn " .. entityName .. ": " .. tostring(err))
         return false
     end
 
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Hardcore Debug",
+        Text = entityName .. " SCRIPT STARTED",
+        Duration = 5
+    })
+
     return true
 end
-
 -- ============================================
 -- SYNC LISTENER
 -- ============================================
