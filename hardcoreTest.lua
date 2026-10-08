@@ -19,7 +19,7 @@ local CONFIG = {
     CEASE_DELAY = {60, 90},
     A60_DELAY = {500, 600},
     SILENCE_DELAY = {180, 300},
-    DEERGOD_DELAY = {250, 400},
+    DEERGOD_DELAY = {250, 401},
     SHOCKER_DELAY = {25, 50},
 }
 -- ============================================
