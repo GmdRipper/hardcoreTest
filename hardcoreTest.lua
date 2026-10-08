@@ -19,7 +19,7 @@ local CONFIG = {
 
     CEASE_DELAY = {60, 90},
     A60_DELAY = {500, 600},
-    SILENCE_DELAY = {20, 40},
+    SILENCE_DELAY = {180, 300},
     DEERGOD_DELAY = {250, 400},
     SHOCKER_DELAY = {25, 50},
 }
@@ -102,65 +102,16 @@ local function SpawnEntity(entityName)
     if not entityURLs[entityName] then return false end
     if not CanSpawnEntity(entityName) then return false end
 
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Hardcore Debug",
-        Text = "Trying to spawn: " .. entityName,
-        Duration = 5
-    })
-
     lastEntitySpawnTime = workspace:GetServerTimeNow()
 
-local success, err = pcall(function()
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Hardcore Debug",
-        Text = entityName .. " DOWNLOADING",
-        Duration = 5
-    })
+    local success, err = pcall(function()
+        local code = game:HttpGet(entityURLs[entityName])
+        local func = loadstring(code)
 
-    local code = game:HttpGet(entityURLs[entityName])
-
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Hardcore Debug",
-        Text = entityName .. " DOWNLOADED",
-        Duration = 5
-    })
-
-local func = loadstring(code)
-
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Hardcore Debug",
-    Text = entityName .. " LOADSTRING OK",
-    Duration = 5
-})
-
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Hardcore Debug",
-    Text = entityName .. " CALLING FUNCTION",
-    Duration = 5
-})
-
-func()
-
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Hardcore Debug",
-    Text = entityName .. " FUNCTION RETURNED",
-    Duration = 5
-})
-
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Hardcore Debug",
-        Text = entityName .. " SCRIPT STARTED",
-        Duration = 5
-    })
-end)
+        func()
+    end)
 
     if not success then
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Hardcore Debug",
-            Text = entityName .. " ERROR: " .. tostring(err),
-            Duration = 8
-        })
-
         warn("Failed to spawn " .. entityName .. ": " .. tostring(err))
         return false
     end
@@ -286,16 +237,9 @@ local function SetupMasterScheduler()
 
             -- Cease (immediate)
             if now - lastSpawnAbsolute.Cease >= spawnDelays.Cease then
-                print("🔥 CEASE TIMER FIRED")
-                print("🔥 Delay:", spawnDelays.Cease)
-                print("🔥 Room:", LatestRoom.Value)
-
-                local result = spawnImmediate("Cease", now + 0.5)
-                print("🔥 spawnImmediate result:", result)
-
+                spawnImmediate("Cease", now + 0.5)
                 lastSpawnAbsolute.Cease = now
             end
-
             -- A60 (immediate)
             if now - lastSpawnAbsolute.A60 >= spawnDelays.A60 then
                 spawnImmediate("A60", now + 0.5)
