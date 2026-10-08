@@ -136,11 +136,19 @@ local function Rebound()
     entity = G.LoadGithubModel(rawURL)
 
     if entity then
-        print("✅ REBOUND MODEL LOADED")
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Rebound Debug",
+            Text = "MODEL LOADED",
+            Duration = 5
+        })
+
         entity.Parent = workspace
-        print("✅ REBOUND MODEL PARENT:", entity.Parent:GetFullName())
     else
-        warn("❌ REBOUND MODEL FAILED TO LOAD")
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Rebound Debug",
+            Text = "MODEL FAILED TO LOAD",
+            Duration = 5
+        })
     end
 end
     if not entity then return end
