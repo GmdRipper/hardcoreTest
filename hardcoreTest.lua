@@ -153,12 +153,6 @@ end)
         return false
     end
 
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Hardcore Debug",
-        Text = entityName .. " SCRIPT STARTED",
-        Duration = 5
-    })
-
     return true
 end
 -- ============================================
