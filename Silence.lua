@@ -7,6 +7,12 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Duration = 5
 })
 
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Silence Debug",
+    Text = "REACHED AFTER STARTED",
+    Duration = 5
+})
+
 -- Garantindo que a função exista no ambiente Global
 G.LoadGithubModel = function(url)
     if not (writefile and getcustomasset and request) then
