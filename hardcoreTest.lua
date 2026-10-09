@@ -67,7 +67,7 @@ local entityURLs = {
     Cease = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/Cease.lua",
     Shocker = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldShocker.lua",
     Silence = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/Silence.lua",
-    A60 = "https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/refs/heads/main/a60.lua",
+    A60 = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/A60.lua",
     Frostbite = "https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/refs/heads/main/frostbite.lua"
 }
 
