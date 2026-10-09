@@ -123,20 +123,10 @@ return currentRooms:FindFirstChild(plusRoom)
 end
 local entityPart = entity.PrimaryPart or entity:FindFirstChildWhichIsA("BasePart")
 if not entityPart then
-game:GetService("StarterGui"):SetCore("SendNotification", {
-Title = "Rebound Debug",
-Text = "PART NOT FOUND",
-Duration = 5
-})
 return
 end
 local lastRoom = GetLastRoom()
 if not lastRoom then
-game:GetService("StarterGui"):SetCore("SendNotification", {
-Title = "Rebound Debug",
-Text = "NEXT ROOM NOT FOUND: " .. tostring(plusRoom),
-Duration = 5
-})
 return
 end
 local roomExit = lastRoom:FindFirstChild("RoomEnd")
@@ -145,21 +135,11 @@ local objects = ""
 for _, obj in ipairs(lastRoom:GetChildren()) do
 objects = objects .. obj.Name .. ", "
 end
-game:GetService("StarterGui"):SetCore("SendNotification", {
-Title = "Rebound Debug",
-Text = "OBJECTS: " .. objects,
-Duration = 8
-})
 return
 end
 entityPart.CFrame = roomExit.CFrame + Vector3.new(0,0.6,0)
 entityPart.CanCollide = false
 entityPart.Anchored = true
-game:GetService("StarterGui"):SetCore("SendNotification", {
-Title = "Rebound Debug",
-Text = "SPAWN POSITION SET",
-Duration = 5
-})
 wait(4)
 if workspace:FindFirstChild("SeekMovingNewClone") or workspace:FindFirstChild("SeekMoving") then
 entityPart.CanCollide = false
