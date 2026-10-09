@@ -13,7 +13,7 @@ local opened = false
 -- ============================================
 local CONFIG = {
     RIPPER_DELAY = {130, 160},
-    REBOUND_DELAY = {20, 40},
+    REBOUND_DELAY = {230, 260},
     FROSTBITE_DELAY = {220, 240},
     FROSTBITE_MIN_ROOM = 20,
     CEASE_DELAY = {150, 180},
