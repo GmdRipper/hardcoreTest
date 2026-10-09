@@ -13,11 +13,11 @@ local opened = false
 -- ============================================
 local CONFIG = {
     RIPPER_DELAY = {130, 160},
-    REBOUND_DELAY = {230, 260},
-    FROSTBITE_DELAY = {220, 240},
+    REBOUND_DELAY = {270, 300},
+    FROSTBITE_DELAY = {250, 280},
     FROSTBITE_MIN_ROOM = 20,
     CEASE_DELAY = {180, 200},
-    A60_DELAY = {550, 600},
+    A60_DELAY = {700, 750},
     SILENCE_DELAY = {400, 430},
     DEERGOD_DELAY = {450, 500},
     SHOCKER_DELAY = {25, 50},
