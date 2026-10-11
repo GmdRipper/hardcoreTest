@@ -504,8 +504,15 @@ LatestRoom.Changed:Connect(function()
     end)
 
 task.spawn(function()
-    SyncWait(40)
-    LoadEntity("Silence")
+    local c = 0
+    while true do
+        SyncWait(c + 850)
+        LoadEntity("Silence")
+        SyncWait(c + 1530)
+        LoadEntity("Silence")
+        c = c + 600
+        task.wait(1)
+    end
 end)
 
     task.spawn(function()
