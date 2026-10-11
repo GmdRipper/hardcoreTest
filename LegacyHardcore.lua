@@ -476,7 +476,7 @@ LatestRoom.Changed:Connect(function()
             if not canSpawnFrostbite then
                 canSpawnFrostbite = true
 
-                SyncWait(c + 270)
+                SyncWait(c + 330)
                 LatestRoom.Changed:Wait()
                 LoadEntity("Frostbite")
 
