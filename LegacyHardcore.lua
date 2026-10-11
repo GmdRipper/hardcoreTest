@@ -271,6 +271,10 @@ local function LoadEntity(name)
         return
     end
 
+    if LatestRoom.Value == 50 and name ~= "A60" then
+        return
+    end
+
     local url = entityURLs[name]
 
     if url then
