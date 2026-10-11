@@ -193,8 +193,16 @@ local function Silence()
         if room and room:FindFirstChild("Nodes") then
             local nodes = room:FindFirstChild("Nodes")
 
+
             if moduleScripts.Module_Events
-                and type(moduleScripts.Module_Events.breakLights) == "function" then
+                and moduleScripts.Module_Events.shatter then
+                pcall(function()
+                    moduleScripts.Module_Events.shatter(room)
+                end)
+            end
+
+            if moduleScripts.Module_Events
+                and moduleScripts.Module_Events.breakLights then
                 pcall(function()
                     moduleScripts.Module_Events.breakLights(room)
                 end)
