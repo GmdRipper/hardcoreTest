@@ -111,7 +111,7 @@ local entityURLs = {
     DeerGod = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldDeerGod.lua",
     Cease = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldCease.lua",
     Shocker = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldShocker.lua",
-    Silence = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldSilence.lua",
+    Silence = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/OldSilence.lua",
     A60 = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldA60.lua",
     Frostbite = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldFrostbite.lua"
 }
@@ -503,20 +503,10 @@ LatestRoom.Changed:Connect(function()
         end
     end)
 
-    task.spawn(function()
-        local c = 0
-
-        while true do
-            SyncWait(c + 850)
-            LoadEntity("Silence")
-
-            SyncWait(c + 1530)
-            LoadEntity("Silence")
-
-            c = c + 600
-            task.wait(1)
-        end
-    end)
+task.spawn(function()
+    SyncWait(40)
+    LoadEntity("Silence")
+end)
 
     task.spawn(function()
         local c = 0
