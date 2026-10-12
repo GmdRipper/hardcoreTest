@@ -124,6 +124,9 @@ if not startTimeValue then
     startTimeValue.Parent = workspace
 end
 
+local door51Generation = 0
+local door51StartTime = 0
+
 local function SyncWait(seconds)
     if startTimeValue.Value == 0 then
         return
@@ -134,6 +137,42 @@ local function SyncWait(seconds)
     while workspace:GetServerTimeNow() < targetTime do
         task.wait(0.5)
     end
+end
+
+local function ResettableSyncWait(seconds, baseTime, generation)
+    local targetTime = baseTime + seconds
+
+    while workspace:GetServerTimeNow() < targetTime do
+        if generation ~= door51Generation then
+            return false
+        end
+
+        task.wait(0.1)
+    end
+
+    return generation == door51Generation
+end
+
+local function ResettableRoomWait(generation)
+    local previousRoom = LatestRoom.Value
+
+    while LatestRoom.Value == previousRoom do
+        if generation ~= door51Generation then
+            return false
+        end
+
+        task.wait(0.1)
+    end
+
+    return generation == door51Generation
+end
+
+local function GetTargetSchedule()
+    if door51StartTime > 0 then
+        return door51StartTime
+    end
+
+    return startTimeValue.Value
 end
 
 local UIS = game:GetService("UserInputService")
@@ -299,8 +338,18 @@ local canSpawnA60 = false
 local canSpawnFrostbite = false
 
 local reboundForceRequested = false
-
 local opened = false
+
+LatestRoom.Changed:Connect(function()
+    if LatestRoom.Value == 51 and door51StartTime == 0 then
+        door51StartTime = workspace:GetServerTimeNow()
+        door51Generation += 1
+        reboundForceRequested = false
+
+        canSpawnRipper = false
+        canSpawnFrostbite = false
+    end
+end)
 
 LatestRoom.Changed:Connect(function()
     if opened or LatestRoom.Value ~= 1 then
@@ -330,27 +379,49 @@ LatestRoom.Changed:Connect(function()
 
     task.spawn(function()
         local c = 0
+        local seenGeneration = door51Generation
 
         while true do
+            if seenGeneration ~= door51Generation then
+                seenGeneration = door51Generation
+                c = 0
+                canSpawnRipper = false
+            end
+
             if not canSpawnRipper then
                 canSpawnRipper = true
 
-                SyncWait(c + 80)
-                LatestRoom.Changed:Wait()
-                LoadEntity("Ripper")
+                local generation = door51Generation
+                local baseTime = GetTargetSchedule()
+                local valid = ResettableSyncWait(c + 130, baseTime, generation)
 
-                SyncWait(c + 167)
-                LatestRoom.Changed:Wait()
-                LoadEntity("Ripper")
+                if valid then
+                    valid = ResettableRoomWait(generation)
+                end
 
-                c = c + 300
+                if valid then
+                    LoadEntity("Ripper")
+                    valid = ResettableSyncWait(c + 167, baseTime, generation)
+                end
 
-                task.delay(waitRipper, function()
+                if valid then
+                    valid = ResettableRoomWait(generation)
+                end
+
+                if valid then
+                    LoadEntity("Ripper")
+                    c = c + 300
+
+                    task.delay(waitRipper, function()
+                        canSpawnRipper = false
+                    end)
+                else
+                    c = 0
                     canSpawnRipper = false
-                end)
+                end
             end
 
-            task.wait(1)
+            task.wait(0.2)
         end
     end)
 
@@ -358,52 +429,47 @@ LatestRoom.Changed:Connect(function()
         local c = 0
         local stage = 1
         local nextAllowedTime = 0
+        local seenGeneration = door51Generation
 
         while true do
+            if seenGeneration ~= door51Generation then
+                seenGeneration = door51Generation
+                c = 0
+                stage = 1
+                nextAllowedTime = 0
+                reboundForceRequested = false
+            end
+
+            local generation = door51Generation
+            local baseTime = GetTargetSchedule()
+
             if reboundForceRequested then
                 reboundForceRequested = false
                 LoadEntity("Rebound")
-
-                c = workspace:GetServerTimeNow() - startTimeValue.Value
-                stage = 1
                 nextAllowedTime = workspace:GetServerTimeNow() + waitRebound
             else
                 local offset = stage == 1 and 670 or 1100
-                local targetTime = startTimeValue.Value + c + offset
+                local targetTime = baseTime + c + offset
 
                 while workspace:GetServerTimeNow() < targetTime
                     or workspace:GetServerTimeNow() < nextAllowedTime do
 
-                    if reboundForceRequested then
+                    if generation ~= door51Generation or reboundForceRequested then
                         break
                     end
 
                     task.wait(0.1)
                 end
 
-                if reboundForceRequested then
+                if generation ~= door51Generation then
+                elseif reboundForceRequested then
                     reboundForceRequested = false
                     LoadEntity("Rebound")
-
-                    c = workspace:GetServerTimeNow() - startTimeValue.Value
-                    stage = 1
                     nextAllowedTime = workspace:GetServerTimeNow() + waitRebound
                 else
-                    local previousRoom = LatestRoom.Value
+                    local valid = ResettableRoomWait(generation)
 
-                    while LatestRoom.Value == previousRoom
-                        and not reboundForceRequested do
-                        task.wait(0.1)
-                    end
-
-                    if reboundForceRequested then
-                        reboundForceRequested = false
-                        LoadEntity("Rebound")
-
-                        c = workspace:GetServerTimeNow() - startTimeValue.Value
-                        stage = 1
-                        nextAllowedTime = workspace:GetServerTimeNow() + waitRebound
-                    else
+                    if valid then
                         LoadEntity("Rebound")
                         nextAllowedTime = workspace:GetServerTimeNow() + waitRebound
 
@@ -444,7 +510,7 @@ LatestRoom.Changed:Connect(function()
             task.wait(1)
         end
     end)
-
+        
     task.spawn(function()
         local c = 0
 
@@ -471,49 +537,74 @@ LatestRoom.Changed:Connect(function()
 
     task.spawn(function()
         local c = 0
+        local seenGeneration = door51Generation
 
         while true do
+            if seenGeneration ~= door51Generation then
+                seenGeneration = door51Generation
+                c = 0
+                canSpawnFrostbite = false
+            end
+
             if not canSpawnFrostbite then
                 canSpawnFrostbite = true
 
-                SyncWait(c + 330)
-                LatestRoom.Changed:Wait()
-                LoadEntity("Frostbite")
+                local generation = door51Generation
+                local baseTime = GetTargetSchedule()
+                local valid = ResettableSyncWait(c + 330, baseTime, generation)
 
-                if math.random(1, 100) <= 95 then
-                    reboundForceRequested = true
+                if valid then
+                    valid = ResettableRoomWait(generation)
                 end
 
-                SyncWait(c + 645)
-                LatestRoom.Changed:Wait()
-                LoadEntity("Frostbite")
+                if valid then
+                    LoadEntity("Frostbite")
 
-                if math.random(1, 100) <= 95 then
-                    reboundForceRequested = true
+                    if math.random(1, 100) <= 95 then
+                        reboundForceRequested = true
+                    end
+
+                    valid = ResettableSyncWait(c + 645, baseTime, generation)
                 end
 
-                c = c + 900
+                if valid then
+                    valid = ResettableRoomWait(generation)
+                end
 
-                task.delay(waitFrostbite, function()
+                if valid then
+                    LoadEntity("Frostbite")
+
+                    if math.random(1, 100) <= 95 then
+                        reboundForceRequested = true
+                    end
+
+                    c = c + 900
+
+                    task.delay(waitFrostbite, function()
+                        canSpawnFrostbite = false
+                    end)
+                else
+                    c = 0
                     canSpawnFrostbite = false
-                end)
+                end
             end
 
-            task.wait(1)
+            task.wait(0.2)
         end
     end)
 
-task.spawn(function()
-    local c = 0
-    while true do
-        SyncWait(c + 850)
-        LoadEntity("Silence")
-        SyncWait(c + 1530)
-        LoadEntity("Silence")
-        c = c + 600
-        task.wait(1)
-    end
-end)
+    task.spawn(function()
+        local c = 0
+
+        while true do
+            SyncWait(c + 850)
+            LoadEntity("Silence")
+            SyncWait(c + 1530)
+            LoadEntity("Silence")
+            c = c + 600
+            task.wait(1)
+        end
+    end)
 
     task.spawn(function()
         local c = 0
