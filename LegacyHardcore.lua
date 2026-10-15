@@ -1,4 +1,3 @@
-
 repeat task.wait() until game:IsLoaded()
 
 local Player = game.Players.LocalPlayer
@@ -378,22 +377,25 @@ LatestRoom.Changed:Connect(function()
     end)
 
     task.spawn(function()
-        local c = 0
+        local firstAppearance = true
         local seenGeneration = door51Generation
+        local baseTime = GetTargetSchedule()
 
         while true do
             if seenGeneration ~= door51Generation then
                 seenGeneration = door51Generation
-                c = 0
+                firstAppearance = true
                 canSpawnRipper = false
+                baseTime = GetTargetSchedule()
             end
 
             if not canSpawnRipper then
                 canSpawnRipper = true
 
                 local generation = door51Generation
-                local baseTime = GetTargetSchedule()
-                local valid = ResettableSyncWait(c + 130, baseTime, generation)
+                local delayTime = firstAppearance and 130 or 167
+
+                local valid = ResettableSyncWait(delayTime, baseTime, generation)
 
                 if valid then
                     valid = ResettableRoomWait(generation)
@@ -401,23 +403,16 @@ LatestRoom.Changed:Connect(function()
 
                 if valid then
                     LoadEntity("Ripper")
-                    valid = ResettableSyncWait(c + 167, baseTime, generation)
-                end
-
-                if valid then
-                    valid = ResettableRoomWait(generation)
-                end
-
-                if valid then
-                    LoadEntity("Ripper")
-                    c = c + 300
+                    firstAppearance = false
+                    baseTime = workspace:GetServerTimeNow()
 
                     task.delay(waitRipper, function()
                         canSpawnRipper = false
                     end)
                 else
-                    c = 0
                     canSpawnRipper = false
+                    firstAppearance = true
+                    baseTime = GetTargetSchedule()
                 end
             end
 
