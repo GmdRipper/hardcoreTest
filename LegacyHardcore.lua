@@ -1,3 +1,4 @@
+
 repeat task.wait() until game:IsLoaded()
 
 local Player = game.Players.LocalPlayer
@@ -11,6 +12,31 @@ local function ShowCaption(text, duration)
         pGui.OldHardcoreCaption:Destroy()
     end
 
+    local hiddenPaintingTitles = {}
+
+    local function HidePaintingTitles()
+        for _, obj in ipairs(pGui:GetDescendants()) do
+            if (obj:IsA("TextLabel") or obj:IsA("TextButton"))
+                and obj.Name ~= "OldHardcoreCaption"
+                and obj.Text:find("This painting is titled", 1, true) then
+
+                if hiddenPaintingTitles[obj] == nil then
+                    hiddenPaintingTitles[obj] = obj.Visible
+                end
+
+                obj.Visible = false
+            end
+        end
+    end
+
+    local function RestorePaintingTitles()
+        for obj, wasVisible in pairs(hiddenPaintingTitles) do
+            if obj.Parent then
+                obj.Visible = wasVisible
+            end
+        end
+    end
+
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "OldHardcoreCaption"
     screenGui.IgnoreGuiInset = true
@@ -18,17 +44,19 @@ local function ShowCaption(text, duration)
     screenGui.Parent = pGui
 
     local captionLabel = Instance.new("TextLabel")
-    captionLabel.Size = UDim2.new(0.9, 0, 0.1, 0)
-    captionLabel.Position = UDim2.new(0.5, 0, 0.92, -60)
+    captionLabel.Size = UDim2.new(0.94, 0, 0.12, 0)
+    captionLabel.Position = UDim2.new(0.5, 0, 0.89, -60)
     captionLabel.AnchorPoint = Vector2.new(0.5, 0.5)
     captionLabel.BackgroundTransparency = 1
     captionLabel.Text = text
     captionLabel.TextColor3 = Color3.fromRGB(255, 222, 189)
-    captionLabel.TextSize = 42
+    captionLabel.TextSize = 46
     captionLabel.Font = Enum.Font.Oswald
     captionLabel.TextStrokeTransparency = 1
     captionLabel.TextWrapped = true
     captionLabel.Parent = screenGui
+
+    HidePaintingTitles()
 
     local alertSound = Instance.new("Sound")
     alertSound.SoundId = "rbxassetid://3848738542"
@@ -36,28 +64,13 @@ local function ShowCaption(text, duration)
     alertSound:Play()
     game.Debris:AddItem(alertSound, 2)
 
-    local function PaintingTitleVisible()
-        for _, obj in ipairs(pGui:GetDescendants()) do
-            if obj:IsA("TextLabel")
-                and obj ~= captionLabel
-                and obj.Visible
-                and obj.Text:find("This painting is titled", 1, true) then
-                return true
-            end
-        end
-
-        return false
-    end
-
     task.spawn(function()
         local start = os.clock()
 
-        while screenGui.Parent and os.clock() - start < (duration or 4) do
-            if PaintingTitleVisible() then
-                screenGui:Destroy()
-                return
-            end
+        while screenGui.Parent
+            and os.clock() - start < (duration or 4) do
 
+            HidePaintingTitles()
             task.wait(0.05)
         end
 
@@ -69,11 +82,13 @@ local function ShowCaption(text, duration)
             ):Play()
 
             task.wait(0.5)
-
-            if screenGui.Parent then
-                screenGui:Destroy()
-            end
         end
+
+        if screenGui.Parent then
+            screenGui:Destroy()
+        end
+
+        RestorePaintingTitles()
     end)
 end
 
@@ -395,7 +410,7 @@ LatestRoom.Changed:Connect(function()
     opened = true
     startTimeValue.Value = workspace:GetServerTimeNow()
 
-ShowCaption("Hardcore Initiated", 5)
+    ShowCaption("Hardcore Initiated", 5)
     task.wait(5.5)
 
     ShowCaption(
@@ -411,6 +426,7 @@ ShowCaption("Hardcore Initiated", 5)
     }
 
     ShowCaption(messages[math.random(1, #messages)], 5)
+
     task.spawn(function()
         local firstAppearance = true
         local seenGeneration = door51Generation
@@ -540,7 +556,7 @@ ShowCaption("Hardcore Initiated", 5)
             task.wait(1)
         end
     end)
-        
+
     task.spawn(function()
         local c = 0
 
@@ -656,7 +672,7 @@ ShowCaption("Hardcore Initiated", 5)
             task.wait(1)
         end
     end)
-        
+
     task.spawn(function()
         while true do
             task.wait(math.random(30, 70))
@@ -664,3 +680,4 @@ ShowCaption("Hardcore Initiated", 5)
         end
     end)
 end)
+
