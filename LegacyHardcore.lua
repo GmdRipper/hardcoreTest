@@ -602,15 +602,8 @@ LatestRoom.Changed:Connect(function()
     end)
 
     task.spawn(function()
-        local c = 0
-
-        while true do
-            SyncWait(c + 1500)
-            LoadEntity("DeerGod")
-
-            c = c + 2100
-            task.wait(1)
-        end
+        SyncWait(40)
+        LoadEntity("DeerGod")
     end)
 
     task.spawn(function()
