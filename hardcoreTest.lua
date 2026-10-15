@@ -18,7 +18,7 @@ local CONFIG = {
     FROSTBITE_MIN_ROOM = 20,
     CEASE_DELAY = {150, 300},
     A60_DELAY = {700, 750},
-    SILENCE_DELAY = {20, 40},
+    SILENCE_DELAY = {300, 430},
     DEERGOD_DELAY = {500, 550},
     SHOCKER_DELAY = {25, 50},
 }
