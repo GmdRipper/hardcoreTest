@@ -6,40 +6,73 @@ local TS = game:GetService("TweenService")
 
 local function ShowCaption(text, duration)
     local pGui = Player:WaitForChild("PlayerGui")
+
     if pGui:FindFirstChild("OldHardcoreCaption") then
         pGui.OldHardcoreCaption:Destroy()
     end
 
-    local screenGui = Instance.new("ScreenGui", pGui)
+    local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "OldHardcoreCaption"
     screenGui.IgnoreGuiInset = true
     screenGui.DisplayOrder = 999
+    screenGui.Parent = pGui
 
-    local captionLabel = Instance.new("TextLabel", screenGui)
-    captionLabel.Size = UDim2.new(0.6, 0, 0.05, 10)
+    local captionLabel = Instance.new("TextLabel")
+    captionLabel.Size = UDim2.new(0.9, 0, 0.1, 0)
     captionLabel.Position = UDim2.new(0.5, 0, 0.92, -60)
     captionLabel.AnchorPoint = Vector2.new(0.5, 0.5)
     captionLabel.BackgroundTransparency = 1
     captionLabel.Text = text
     captionLabel.TextColor3 = Color3.fromRGB(255, 222, 189)
-    captionLabel.TextSize = 36
+    captionLabel.TextSize = 42
     captionLabel.Font = Enum.Font.Oswald
     captionLabel.TextStrokeTransparency = 1
+    captionLabel.TextWrapped = true
+    captionLabel.Parent = screenGui
 
-    local alertSound = Instance.new("Sound", game.SoundService)
+    local alertSound = Instance.new("Sound")
     alertSound.SoundId = "rbxassetid://3848738542"
+    alertSound.Parent = game.SoundService
     alertSound:Play()
     game.Debris:AddItem(alertSound, 2)
 
-    task.delay(duration or 4, function()
-        if captionLabel.Parent then
+    local function PaintingTitleVisible()
+        for _, obj in ipairs(pGui:GetDescendants()) do
+            if obj:IsA("TextLabel")
+                and obj ~= captionLabel
+                and obj.Visible
+                and obj.Text:find("This painting is titled", 1, true) then
+                return true
+            end
+        end
+
+        return false
+    end
+
+    task.spawn(function()
+        local start = os.clock()
+
+        while screenGui.Parent and os.clock() - start < (duration or 4) do
+            if PaintingTitleVisible() then
+                screenGui:Destroy()
+                return
+            end
+
+            task.wait(0.05)
+        end
+
+        if screenGui.Parent then
             TS:Create(
                 captionLabel,
                 TweenInfo.new(0.5),
                 {TextTransparency = 1}
             ):Play()
+
             task.wait(0.5)
-            screenGui:Destroy()
+
+            if screenGui.Parent then
+                screenGui:Destroy()
+            end
         end
     end)
 end
@@ -362,24 +395,22 @@ LatestRoom.Changed:Connect(function()
     opened = true
     startTimeValue.Value = workspace:GetServerTimeNow()
 
-    task.spawn(ShowSmoothCredits)
+ShowCaption("Hardcore Initiated", 5)
+    task.wait(5.5)
 
-    ShowCaption("Old Hardcore Initiated.", 5)
-    task.wait(3)
-    ShowCaption("Have fun " .. Player.Name .. ".", 4)
-    task.wait(4)
-    ShowCaption("Stamina and Mobile support ready.", 5)
-    task.wait(5)
-    ShowCaption("If you're standing up and can't sprint, enter a closet while crouched, then leave.", 6.7)
-    task.wait(5.6)
+    ShowCaption(
+        "Made by noonie#0001 (Scripter) and Ping#1841 (Music composer and Modeler)",
+        7
+    )
+    task.wait(7.5)
 
-    task.spawn(function()
-        ShowCaption("Big Thanks to Ostah (Small YouTuber) for giving A-60 model.", 4)
-        task.wait(4)
-        ShowCaption("Also thanks to him again for giving me the model of old Frostbite.", 6)
-        task.wait(3)
-    end)
+    local messages = {
+        "Do not.",
+        "Good luck!",
+        "Have fun! (you wont)"
+    }
 
+    ShowCaption(messages[math.random(1, #messages)], 5)
     task.spawn(function()
         local firstAppearance = true
         local seenGeneration = door51Generation
