@@ -313,6 +313,10 @@ local function LoadEntity(name)
         return
     end
 
+    if LatestRoom.Value == 100 then
+        return
+    end
+
     local url = entityURLs[name]
 
     if url then
@@ -602,10 +606,26 @@ LatestRoom.Changed:Connect(function()
     end)
 
     task.spawn(function()
-        SyncWait(40)
-        LoadEntity("DeerGod")
-    end)
+        local c = 0
 
+        while true do
+            SyncWait(c + 1500)
+
+            repeat
+                if LatestRoom.Value ~= 50
+                    and not workspace:FindFirstChild("SeekMoving") then
+                    LoadEntity("DeerGod")
+                    break
+                end
+
+                task.wait(100)
+            until false
+
+            c = c + 2100
+            task.wait(1)
+        end
+    end)
+        
     task.spawn(function()
         while true do
             task.wait(math.random(30, 70))
