@@ -1,4 +1,3 @@
-
 repeat task.wait() until game:IsLoaded()
 
 local Player = game.Players.LocalPlayer
@@ -10,31 +9,6 @@ local function ShowCaption(text, duration)
 
     if pGui:FindFirstChild("OldHardcoreCaption") then
         pGui.OldHardcoreCaption:Destroy()
-    end
-
-    local hiddenPaintingTitles = {}
-
-    local function HidePaintingTitles()
-        for _, obj in ipairs(pGui:GetDescendants()) do
-            if (obj:IsA("TextLabel") or obj:IsA("TextButton"))
-                and obj.Name ~= "OldHardcoreCaption"
-                and obj.Text:find("This painting is titled", 1, true) then
-
-                if hiddenPaintingTitles[obj] == nil then
-                    hiddenPaintingTitles[obj] = obj.Visible
-                end
-
-                obj.Visible = false
-            end
-        end
-    end
-
-    local function RestorePaintingTitles()
-        for obj, wasVisible in pairs(hiddenPaintingTitles) do
-            if obj.Parent then
-                obj.Visible = wasVisible
-            end
-        end
     end
 
     local screenGui = Instance.new("ScreenGui")
@@ -56,39 +30,28 @@ local function ShowCaption(text, duration)
     captionLabel.TextWrapped = true
     captionLabel.Parent = screenGui
 
-    HidePaintingTitles()
-
     local alertSound = Instance.new("Sound")
     alertSound.SoundId = "rbxassetid://3848738542"
     alertSound.Parent = game.SoundService
     alertSound:Play()
     game.Debris:AddItem(alertSound, 2)
 
-    task.spawn(function()
-        local start = os.clock()
-
-        while screenGui.Parent
-            and os.clock() - start < (duration or 4) do
-
-            HidePaintingTitles()
-            task.wait(0.05)
+    task.delay(duration or 4, function()
+        if not screenGui.Parent then
+            return
         end
 
-        if screenGui.Parent then
-            TS:Create(
-                captionLabel,
-                TweenInfo.new(0.5),
-                {TextTransparency = 1}
-            ):Play()
+        TS:Create(
+            captionLabel,
+            TweenInfo.new(0.5),
+            {TextTransparency = 1}
+        ):Play()
 
-            task.wait(0.5)
-        end
+        task.wait(0.5)
 
         if screenGui.Parent then
             screenGui:Destroy()
         end
-
-        RestorePaintingTitles()
     end)
 end
 
@@ -680,4 +643,3 @@ LatestRoom.Changed:Connect(function()
         end
     end)
 end)
-
