@@ -106,7 +106,7 @@ else
 end
 
 local entityURLs = {
-    Ripper = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldRipper.lua",
+    Ripper = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/OldRipper.lua",
     Rebound = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldRebound.lua",
     DeerGod = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldDeerGod.lua",
     Cease = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldCease.lua",
