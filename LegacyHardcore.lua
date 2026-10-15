@@ -1,21 +1,44 @@
+
 repeat task.wait() until game:IsLoaded()
 
 local Player = game.Players.LocalPlayer
 local LatestRoom = game.ReplicatedStorage.GameData.LatestRoom
 local TS = game:GetService("TweenService")
 
+local activeCaptionGui = nil
+local captionGeneration = 0
+
+local function IsPaintingTitle(obj)
+    return obj:IsA("TextLabel")
+        and string.find(
+            string.lower(obj.Text or ""),
+            "this painting is titled",
+            1,
+            true
+        ) ~= nil
+end
+
 local function ShowCaption(text, duration)
     local pGui = Player:WaitForChild("PlayerGui")
 
-    if pGui:FindFirstChild("OldHardcoreCaption") then
-        pGui.OldHardcoreCaption:Destroy()
+    captionGeneration += 1
+    local myGeneration = captionGeneration
+
+    if activeCaptionGui then
+        activeCaptionGui:Destroy()
+        activeCaptionGui = nil
     end
+
+    duration = duration or 4
+    local endTime = os.clock() + duration
 
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "OldHardcoreCaption"
     screenGui.IgnoreGuiInset = true
     screenGui.DisplayOrder = 999
     screenGui.Parent = pGui
+
+    activeCaptionGui = screenGui
 
     local captionLabel = Instance.new("TextLabel")
     captionLabel.Size = UDim2.new(0.94, 0, 0.12, 0)
@@ -36,8 +59,98 @@ local function ShowCaption(text, duration)
     alertSound:Play()
     game.Debris:AddItem(alertSound, 2)
 
-    task.delay(duration or 4, function()
-        if not screenGui.Parent then
+    task.spawn(function()
+        local paintingTitles = {}
+        local titleConnections = {}
+        local paintingTitleActiveUntil = 0
+
+        local function TrackPaintingTitle(obj)
+            if not IsPaintingTitle(obj) or paintingTitles[obj] then
+                return
+            end
+
+            paintingTitles[obj] = {
+                visible = obj.Visible,
+                text = obj.Text
+            }
+
+            titleConnections[obj] = {}
+
+            table.insert(
+                titleConnections[obj],
+                obj:GetPropertyChangedSignal("Text"):Connect(function()
+                    if IsPaintingTitle(obj) then
+                        paintingTitleActiveUntil = os.clock() + 0.25
+                    end
+                end)
+            )
+
+            table.insert(
+                titleConnections[obj],
+                obj:GetPropertyChangedSignal("Visible"):Connect(function()
+                    if obj.Visible and IsPaintingTitle(obj) then
+                        paintingTitleActiveUntil = os.clock() + 0.25
+                    end
+                end)
+            )
+        end
+
+        for _, obj in ipairs(pGui:GetDescendants()) do
+            TrackPaintingTitle(obj)
+        end
+
+        local descendantConnection = pGui.DescendantAdded:Connect(function(obj)
+            if obj:IsA("TextLabel") then
+                TrackPaintingTitle(obj)
+            end
+        end)
+
+        while myGeneration == captionGeneration
+            and screenGui.Parent
+            and os.clock() < endTime do
+
+            local paintingTitleVisible = false
+
+            for obj, info in pairs(paintingTitles) do
+                if not obj.Parent then
+                    paintingTitles[obj] = nil
+
+                    if titleConnections[obj] then
+                        for _, connection in ipairs(titleConnections[obj]) do
+                            connection:Disconnect()
+                        end
+
+                        titleConnections[obj] = nil
+                    end
+
+                    continue
+                end
+
+                if IsPaintingTitle(obj) and obj.Visible then
+                    paintingTitleVisible = true
+                end
+            end
+
+            if paintingTitleVisible then
+                paintingTitleActiveUntil = os.clock() + 0.25
+            end
+
+            captionLabel.Visible =
+                not paintingTitleVisible
+                and os.clock() >= paintingTitleActiveUntil
+
+            task.wait(0.05)
+        end
+
+        descendantConnection:Disconnect()
+
+        for _, connections in pairs(titleConnections) do
+            for _, connection in ipairs(connections) do
+                connection:Disconnect()
+            end
+        end
+
+        if myGeneration ~= captionGeneration or not screenGui.Parent then
             return
         end
 
@@ -49,8 +162,9 @@ local function ShowCaption(text, duration)
 
         task.wait(0.5)
 
-        if screenGui.Parent then
+        if myGeneration == captionGeneration and screenGui.Parent then
             screenGui:Destroy()
+            activeCaptionGui = nil
         end
     end)
 end
