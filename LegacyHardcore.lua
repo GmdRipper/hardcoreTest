@@ -22,9 +22,9 @@ local function ShowCaption(text, duration)
     captionLabel.BackgroundTransparency = 1
     captionLabel.Text = text
     captionLabel.TextColor3 = Color3.fromRGB(255, 222, 189)
-    captionLabel.TextSize = 30
+    captionLabel.TextSize = 36
     captionLabel.Font = Enum.Font.Oswald
-    captionLabel.TextStrokeTransparency = 0
+    captionLabel.TextStrokeTransparency = 1
 
     local alertSound = Instance.new("Sound", game.SoundService)
     alertSound.SoundId = "rbxassetid://3848738542"
