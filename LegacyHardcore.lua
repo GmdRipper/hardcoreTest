@@ -364,19 +364,19 @@ LatestRoom.Changed:Connect(function()
 
     task.spawn(ShowSmoothCredits)
 
-    ShowPaintingCaption("Old Hardcore Initiated.", 5)
+    ShowCaption("Old Hardcore Initiated.", 5)
     task.wait(3)
-    ShowPaintingCaption("Have fun " .. Player.Name .. ".", 4)
+    ShowCaption("Have fun " .. Player.Name .. ".", 4)
     task.wait(4)
-    ShowPaintingCaption("Stamina and Mobile support ready.", 5)
+    ShowCaption("Stamina and Mobile support ready.", 5)
     task.wait(5)
-    ShowPaintingCaption("If you're standing up and can't sprint, enter a closet while crouched, then leave.", 6.7)
+    ShowCaption("If you're standing up and can't sprint, enter a closet while crouched, then leave.", 6.7)
     task.wait(5.6)
-    
+
     task.spawn(function()
-        ShowPaintingCaption("Big Thanks to Ostah (Small YouTuber) for giving A-60 model.", 4)
+        ShowCaption("Big Thanks to Ostah (Small YouTuber) for giving A-60 model.", 4)
         task.wait(4)
-        ShowPaintingCaption("Also thanks to him again for giving me the model of old Frostbite.", 6)
+        ShowCaption("Also thanks to him again for giving me the model of old Frostbite.", 6)
         task.wait(3)
     end)
 
