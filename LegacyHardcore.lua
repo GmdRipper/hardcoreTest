@@ -504,7 +504,7 @@ task.spawn(function()
                 stamina = math.min(maxStamina, stamina + 1)
             end
 
-            fill.BackgroundColor3 = Color3.fromRGB(213, 185, 158)
+            fill.BackgroundColor3 = Color3.fromRGB(180, 65, 55)
 
             if stamina >= maxStamina then
                 isExhausted = false
@@ -525,7 +525,7 @@ task.spawn(function()
                 stamina = math.min(maxStamina, stamina + 1)
             end
 
-            bar.BackgroundColor3 = Color3.fromRGB(213, 185, 158)
+            fill.BackgroundColor3 = Color3.fromRGB(213, 185, 158)
 
             if breathSound and breathSound.IsPlaying then
                 breathSound:Stop()
@@ -543,7 +543,7 @@ task.spawn(function()
                 stamina = math.max(0, stamina - 1)
             end
 
-            bar.BackgroundColor3 = Color3.fromRGB(213, 185, 158)
+            fill.BackgroundColor3 = Color3.fromRGB(213, 185, 158)
 
             if stamina <= 0 then
                 isExhausted = true
@@ -565,7 +565,7 @@ task.spawn(function()
                 stamina = math.min(maxStamina, stamina + 1)
             end
 
-            bar.BackgroundColor3 = Color3.fromRGB(213, 185, 158)
+            fill.BackgroundColor3 = Color3.fromRGB(213, 185, 158)
 
             if breathSound and breathSound.IsPlaying then
                 breathSound:Stop()
