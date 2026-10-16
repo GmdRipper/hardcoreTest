@@ -298,132 +298,73 @@ local function GetTargetSchedule()
     return startTimeValue.Value
 end
 
+local UIS = game:GetService("UserInputService")
+
+local stamina = 100
+local maxStamina = 100
+local isExhausted = false
+local sprinting = false
+local crouching = false
+
+local sprintTime = 6
+local drainInterval = sprintTime / 100
+local recoveryInterval = sprintTime / 50
 
 local sg = Instance.new("ScreenGui")
 sg.Name = "StaminaGui"
 sg.ResetOnSpawn = false
-sg.IgnoreGuiInset = true
-sg.Parent = Player:WaitForChild("PlayerGui")
-
-local container = Instance.new("Frame")
-container.Name = "Sprint"
-container.BackgroundTransparency = 1
-container.AnchorPoint = Vector2.new(0, 1)
-container.Position = UDim2.new(0.931555569, 0, 0.987179458, 0)
-container.Size = UDim2.new(0.0556001104, 0, 0.0756410286, 0)
-container.SizeConstraint = Enum.SizeConstraint.RelativeYY
-container.ZIndex = 1005
-container.Parent = sg
-
-local image = Instance.new("ImageLabel")
-image.Name = "ImageLabel"
-image.BackgroundColor3 = Color3.fromRGB(255, 222, 189)
-image.BackgroundTransparency = 1
-image.Size = UDim2.new(1, 0, 1, 0)
-image.Visible = false
-image.Parent = container
-
-local imageCorner = Instance.new("UICorner")
-imageCorner.CornerRadius = UDim.new(1, 0)
-imageCorner.Parent = image
-
-local padding = Instance.new("UIPadding")
-padding.PaddingBottom = UDim.new(0.3, -5)
-padding.PaddingTop = UDim.new(0.3, -5)
-padding.PaddingLeft = UDim.new(0.02, 0)
-padding.PaddingRight = UDim.new(0.05, -15)
-padding.Parent = container
+sg.Parent = game.CoreGui
 
 local bar = Instance.new("Frame")
-bar.Name = "Bar"
-bar.AnchorPoint = Vector2.new(0, 0.5)
-bar.BackgroundColor3 = Color3.fromRGB(56, 46, 39)
-bar.BackgroundTransparency = 0.7
-bar.Position = UDim2.new(-2.72600269, 0, 0.499999672, 0)
-bar.Size = UDim2.new(3.60599804, 0, 0.600000083, 0)
-bar.ZIndex = 0
-bar.Parent = container
-
-local barCorner = Instance.new("UICorner")
-barCorner.CornerRadius = UDim.new(0.25, 0)
-barCorner.Parent = bar
-
-local barPadding = Instance.new("UIPadding")
-barPadding.PaddingBottom = UDim.new(0, 4)
-barPadding.PaddingTop = UDim.new(0, 4)
-barPadding.PaddingLeft = UDim.new(0, 4)
-barPadding.PaddingRight = UDim.new(0, 4)
-barPadding.Parent = bar
+bar.Name = "Sprint"
+bar.Size = UDim2.new(0, 200, 0, 20)
+bar.Position = UDim2.new(0.5, -100, 0.9, 0)
+bar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+bar.BorderSizePixel = 0
+bar.Parent = sg
 
 local fill = Instance.new("Frame")
-fill.Name = "Fill"
-fill.AnchorPoint = Vector2.new(0, 0.5)
-fill.BackgroundColor3 = Color3.fromRGB(213, 185, 158)
-fill.Position = UDim2.new(0, 0, 0.5, 0)
+fill.Name = "Bar"
 fill.Size = UDim2.new(1, 0, 1, 0)
-fill.ZIndex = 2
+fill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+fill.BorderSizePixel = 0
 fill.Parent = bar
 
-local fillCorner = Instance.new("UICorner")
-fillCorner.CornerRadius = UDim.new(0.25, 0)
-fillCorner.Parent = fill
-
-local overlayGui = Instance.new("ScreenGui")
+local overlayGui = Instance.new("ImageLabel")
 overlayGui.Name = "erm"
-overlayGui.IgnoreGuiInset = true
-overlayGui.ResetOnSpawn = false
-overlayGui.Parent = Player:WaitForChild("PlayerGui")
-
-local overlay = Instance.new("ImageLabel")
-overlay.Name = "Overlay"
-overlay.BackgroundColor3 = Color3.new(0, 0, 0)
-overlay.BackgroundTransparency = 1
-overlay.Image = "rbxassetid://190596490"
-overlay.ImageColor3 = Color3.new(0, 0, 0)
-overlay.ImageTransparency = 1
-overlay.Size = UDim2.new(1, 0, 1, 0)
-overlay.Position = UDim2.new(0, 0, 0, 0)
-overlay.Parent = overlayGui
+overlayGui.Size = UDim2.new(1, 0, 1, 0)
+overlayGui.BackgroundTransparency = 1
+overlayGui.Image = ""
+overlayGui.Parent = bar
 
 local mobileBtn
 
 if UIS.TouchEnabled then
-    mobileBtn = Instance.new("ImageButton")
+    mobileBtn = Instance.new("TextButton")
     mobileBtn.Name = "SprintButton"
-    mobileBtn.Size = UDim2.new(0, 80, 0, 80)
-    mobileBtn.Position = UDim2.new(0.85, 0, 0.80, 0)
-    mobileBtn.BackgroundColor3 = Color3.fromRGB(45, 35, 28)
-    mobileBtn.BackgroundTransparency = 0.25
-    mobileBtn.Image = "rbxassetid://89190879948216"
+    mobileBtn.Size = UDim2.new(0, 100, 0, 50)
+    mobileBtn.Position = UDim2.new(1, -120, 1, -180)
+    mobileBtn.Text = "SPRINT"
+    mobileBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    mobileBtn.TextColor3 = Color3.new(1, 1, 1)
     mobileBtn.Parent = sg
 
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(1, 0)
-    buttonCorner.Parent = mobileBtn
-
     mobileBtn.MouseButton1Down:Connect(function()
-        sprinting = true
+        if not isExhausted then
+            sprinting = true
+        end
     end)
 
     mobileBtn.MouseButton1Up:Connect(function()
         sprinting = false
     end)
-
-    mobileBtn.TouchEnded:Connect(function()
-        sprinting = false
-    end)
 end
 
 UIS.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then
-        return
-    end
+    if gameProcessed then return end
 
-    if input.KeyCode == Enum.KeyCode.Q then
+    if input.KeyCode == Enum.KeyCode.Q and not isExhausted then
         sprinting = true
-    elseif input.KeyCode == Enum.KeyCode.C
-        or input.KeyCode == Enum.KeyCode.LeftControl then
-        crouching = not crouching
     end
 end)
 
@@ -433,151 +374,46 @@ UIS.InputEnded:Connect(function(input)
     end
 end)
 
-local breathSound
-
-local function SetupCharacter(char)
-    local head = char:WaitForChild("Head")
-
-    if breathSound then
-        breathSound:Destroy()
-        breathSound = nil
-    end
-
-    breathSound = Instance.new("Sound")
-    breathSound.Name = "ExhaustionBreathing"
-    breathSound.SoundId = "rbxassetid://8258601891"
-    breathSound.Volume = 2.3
-    breathSound.Looped = true
-    breathSound.Parent = head
-end
-
-Player.CharacterAdded:Connect(SetupCharacter)
-
-if Player.Character then
-    task.spawn(SetupCharacter, Player.Character)
-end
-
 task.spawn(function()
-    local drainTimer = 0
-    local recoveryTimer = 0
+    while task.wait() do
+        local character = Player.Character
+        local hum = character and character:FindFirstChildOfClass("Humanoid")
 
-    while true do
-        task.wait(0.06)
+        if hum then
+            if sprinting and stamina > 0 and not isExhausted and not crouching then
+                hum.WalkSpeed = 20
+                stamina = math.max(0, stamina - 1)
 
-        local char = Player.Character
-        local hum = char and char:FindFirstChildOfClass("Humanoid")
+                if stamina <= 0 then
+                    isExhausted = true
+                    sprinting = false
+                end
+            else
+                if crouching then
+                    hum.WalkSpeed = 9
+                else
+                    hum.WalkSpeed = 12
+                end
 
-        if not hum or hum.Health <= 0 then
-            continue
-        end
+                if not sprinting then
+                    stamina = math.min(maxStamina, stamina + 0.5)
+                end
 
-        local isMoving = hum.MoveDirection.Magnitude > 0
-        local seekActive = workspace:FindFirstChild("SeekMoving")
-
-        if seekActive then
-            container.Visible = false
-            stamina = maxStamina
-            isExhausted = false
-            drainTimer = 0
-            recoveryTimer = 0
-
-            if breathSound and breathSound.IsPlaying then
-                breathSound:Stop()
-            end
-
-            continue
-        end
-
-        container.Visible = true
-
-        if isExhausted then
-            hum.WalkSpeed = 12
-            drainTimer = 0
-            recoveryTimer += 0.06
-
-            if breathSound and not breathSound.IsPlaying then
-                breathSound:Play()
-            end
-
-            if recoveryTimer >= recoveryInterval then
-                recoveryTimer = 0
-                stamina = math.min(maxStamina, stamina + 1)
-            end
-
-            fill.BackgroundColor3 = Color3.fromRGB(180, 65, 55)
-
-            if stamina >= maxStamina then
-                isExhausted = false
-                recoveryTimer = 0
-
-                if breathSound and breathSound.IsPlaying then
-                    breathSound:Stop()
+                if stamina >= maxStamina then
+                    isExhausted = false
                 end
             end
 
-        elseif crouching then
-            hum.WalkSpeed = 9
-            drainTimer = 0
-            recoveryTimer += 0.06
+            fill.Size = UDim2.new(stamina / maxStamina, 0, 1, 0)
 
-            if recoveryTimer >= recoveryInterval then
-                recoveryTimer = 0
-                stamina = math.min(maxStamina, stamina + 1)
-            end
-
-            fill.BackgroundColor3 = Color3.fromRGB(213, 185, 158)
-
-            if breathSound and breathSound.IsPlaying then
-                breathSound:Stop()
-            end
-
-        elseif sprinting and isMoving and stamina > 0 then
-            hum.WalkSpeed = 20
-            hum:SetAttribute("SpeedBoost", 4)
-
-            recoveryTimer = 0
-            drainTimer += 0.06
-
-            if drainTimer >= drainInterval then
-                drainTimer = 0
-                stamina = math.max(0, stamina - 1)
-            end
-
-            fill.BackgroundColor3 = Color3.fromRGB(213, 185, 158)
-
-            if stamina <= 0 then
-                isExhausted = true
-                sprinting = false
-                recoveryTimer = 0
-            end
-
-            if breathSound and breathSound.IsPlaying then
-                breathSound:Stop()
-            end
-
-        else
-            hum.WalkSpeed = 12
-            drainTimer = 0
-            recoveryTimer += 0.06
-
-            if recoveryTimer >= recoveryInterval then
-                recoveryTimer = 0
-                stamina = math.min(maxStamina, stamina + 1)
-            end
-
-            fill.BackgroundColor3 = Color3.fromRGB(213, 185, 158)
-
-            if breathSound and breathSound.IsPlaying then
-                breathSound:Stop()
+            if stamina > 50 then
+                fill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+            elseif stamina > 25 then
+                fill.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
+            else
+                fill.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
             end
         end
-
-        fill.Size = UDim2.new(
-            math.clamp(stamina / maxStamina, 0, 1),
-            0,
-            1,
-            0
-        )
     end
 end)
 
