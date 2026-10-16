@@ -298,63 +298,92 @@ local function GetTargetSchedule()
     return startTimeValue.Value
 end
 
-local UIS = game:GetService("UserInputService")
-local stamina = 100
-local maxStamina = 100
-local isExhausted = false
-local sprinting = false
-local crouching = false
-
-local sprintTime = 6
-local drainInterval = sprintTime / 100
-local recoveryInterval = sprintTime / 50
 
 local sg = Instance.new("ScreenGui")
 sg.Name = "StaminaGui"
 sg.ResetOnSpawn = false
+sg.IgnoreGuiInset = true
 sg.Parent = Player:WaitForChild("PlayerGui")
 
 local container = Instance.new("Frame")
 container.Name = "Sprint"
-container.Size = UDim2.new(0, 220, 0, 12)
-container.Position = UDim2.new(0.98, 0, 0.95, 0)
-container.AnchorPoint = Vector2.new(1, 1)
-container.BackgroundColor3 = Color3.fromRGB(55, 43, 35)
-container.BackgroundTransparency = 0.15
-container.BorderSizePixel = 0
-container.ClipsDescendants = true
+container.BackgroundTransparency = 1
+container.AnchorPoint = Vector2.new(0, 1)
+container.Position = UDim2.new(0.931555569, 0, 0.987179458, 0)
+container.Size = UDim2.new(0.0556001104, 0, 0.0756410286, 0)
+container.SizeConstraint = Enum.SizeConstraint.RelativeYY
+container.ZIndex = 1005
 container.Parent = sg
 
-local containerCorner = Instance.new("UICorner")
-containerCorner.CornerRadius = UDim.new(0, 4)
-containerCorner.Parent = container
+local image = Instance.new("ImageLabel")
+image.Name = "ImageLabel"
+image.BackgroundColor3 = Color3.fromRGB(255, 222, 189)
+image.BackgroundTransparency = 1
+image.Size = UDim2.new(1, 0, 1, 0)
+image.Visible = false
+image.Parent = container
+
+local imageCorner = Instance.new("UICorner")
+imageCorner.CornerRadius = UDim.new(1, 0)
+imageCorner.Parent = image
+
+local padding = Instance.new("UIPadding")
+padding.PaddingBottom = UDim.new(0.3, -5)
+padding.PaddingTop = UDim.new(0.3, -5)
+padding.PaddingLeft = UDim.new(0.02, 0)
+padding.PaddingRight = UDim.new(0.05, -15)
+padding.Parent = container
 
 local bar = Instance.new("Frame")
 bar.Name = "Bar"
-bar.Size = UDim2.new(1, 0, 1, 0)
-bar.BackgroundColor3 = Color3.fromRGB(213, 185, 158)
-bar.BorderSizePixel = 0
+bar.AnchorPoint = Vector2.new(0, 0.5)
+bar.BackgroundColor3 = Color3.fromRGB(56, 46, 39)
+bar.BackgroundTransparency = 0.7
+bar.Position = UDim2.new(-2.72600269, 0, 0.499999672, 0)
+bar.Size = UDim2.new(3.60599804, 0, 0.600000083, 0)
+bar.ZIndex = 0
 bar.Parent = container
 
 local barCorner = Instance.new("UICorner")
-barCorner.CornerRadius = UDim.new(0, 4)
+barCorner.CornerRadius = UDim.new(0.25, 0)
 barCorner.Parent = bar
 
-local stroke = Instance.new("UIStroke")
-stroke.Thickness = 1.2
-stroke.Color = Color3.fromRGB(25, 20, 17)
-stroke.Transparency = 0.15
-stroke.Parent = container
+local barPadding = Instance.new("UIPadding")
+barPadding.PaddingBottom = UDim.new(0, 4)
+barPadding.PaddingTop = UDim.new(0, 4)
+barPadding.PaddingLeft = UDim.new(0, 4)
+barPadding.PaddingRight = UDim.new(0, 4)
+barPadding.Parent = bar
+
+local fill = Instance.new("Frame")
+fill.Name = "Fill"
+fill.AnchorPoint = Vector2.new(0, 0.5)
+fill.BackgroundColor3 = Color3.fromRGB(213, 185, 158)
+fill.Position = UDim2.new(0, 0, 0.5, 0)
+fill.Size = UDim2.new(1, 0, 1, 0)
+fill.ZIndex = 2
+fill.Parent = bar
+
+local fillCorner = Instance.new("UICorner")
+fillCorner.CornerRadius = UDim.new(0.25, 0)
+fillCorner.Parent = fill
+
+local overlayGui = Instance.new("ScreenGui")
+overlayGui.Name = "erm"
+overlayGui.IgnoreGuiInset = true
+overlayGui.ResetOnSpawn = false
+overlayGui.Parent = Player:WaitForChild("PlayerGui")
 
 local overlay = Instance.new("ImageLabel")
 overlay.Name = "Overlay"
-overlay.Size = UDim2.new(1, 0, 1, 0)
+overlay.BackgroundColor3 = Color3.new(0, 0, 0)
 overlay.BackgroundTransparency = 1
 overlay.Image = "rbxassetid://190596490"
-overlay.ImageTransparency = 0.65
-overlay.ScaleType = Enum.ScaleType.Stretch
-overlay.ZIndex = 2
-overlay.Parent = container
+overlay.ImageColor3 = Color3.new(0, 0, 0)
+overlay.ImageTransparency = 1
+overlay.Size = UDim2.new(1, 0, 1, 0)
+overlay.Position = UDim2.new(0, 0, 0, 0)
+overlay.Parent = overlayGui
 
 local mobileBtn
 
@@ -475,7 +504,7 @@ task.spawn(function()
                 stamina = math.min(maxStamina, stamina + 1)
             end
 
-            bar.BackgroundColor3 = Color3.fromRGB(180, 65, 55)
+            fill.BackgroundColor3 = Color3.fromRGB(213, 185, 158)
 
             if stamina >= maxStamina then
                 isExhausted = false
@@ -543,7 +572,7 @@ task.spawn(function()
             end
         end
 
-        bar.Size = UDim2.new(
+        fill.Size = UDim2.new(
             math.clamp(stamina / maxStamina, 0, 1),
             0,
             1,
