@@ -56,9 +56,9 @@ end
 
 -- SILENCE ACHIEVEMENT
 local SilenceAchievement = {
-    Title = "Eyes Closed Ears open",
-    Desc = "Stay silent or I wont be heard",
-    Reason = "Encounter Silence",
+    Title = "Careful Listener",
+    Desc = "Shhh.. do you hear that?",
+    Reason = "Survive Silence",
     Image = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/main/SilenceAchievement.png",
     id = 600,
 }
@@ -117,7 +117,7 @@ local function Silence()
     currentRooms = workspace:FindFirstChild("CurrentRooms")
 
     local latestRoomInt = game.ReplicatedStorage.GameData.LatestRoom
-    local latestRoomModel = currentRooms:FindFirstChild(tostring(latestRoomInt.Value))
+    local latestRoomModel = currentRooms:FindFirstChild(latestRoomInt.Value)
 
     local rawUrl = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/main/oldSilence.rbxm"
 
@@ -218,8 +218,7 @@ local function Silence()
 
     ambruhspeed = DEF_SPEED
 
-    -- Extended movement range
-    for i = 1, latestRoom.Value + 4 do
+    for i = 1, latestRoom.Value + 2 do
         local room = currentRooms:FindFirstChild(tostring(i))
 
         if room and room:FindFirstChild("Nodes") then
@@ -268,7 +267,7 @@ local function Silence()
     despawnTween:Play()
     game.Debris:AddItem(entity, 1.5)
 
-    -- Show custom achievement after Silence finishes
+    -- Show the custom achievement after Silence finishes
     task.wait(1.5)
 
     local success, err = pcall(function()
