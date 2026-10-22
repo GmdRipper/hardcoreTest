@@ -13,7 +13,7 @@ runMarker.Parent = workspace
 
 local entityURLs = {
     A60 = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldA60.lua",
-    Silence = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/OldSilence.lua",
+    Silence = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/Silence.lua",
     DeerGod = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldDeerGod.lua"
 }
 
