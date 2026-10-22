@@ -14,7 +14,7 @@ runMarker.Parent = workspace
 local entityURLs = {
     A60 = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldA60.lua",
     Silence = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/Silence.lua",
-    DeerGod = "https://raw.githubusercontent.com/Anctarus7105/Entities-Spawns/7b2c558b0194901d77553d9db6712985bc7ea874/DeerGodOldSpawner.lua"
+    DeerGod = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/OldDeerGod.lua"
 }
 
 if LatestRoom.Value == 0 then
