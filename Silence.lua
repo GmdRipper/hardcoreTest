@@ -56,45 +56,18 @@ end
 
 -- SILENCE ACHIEVEMENT
 local SilenceAchievement = {
-    Title = "Careful Listener",
-    Desc = "Shhh.. do you hear that?",
-    Reason = "Survive Silence",
+    Title = "Eyes Closed Ears open",
+    Desc = "Stay silent or I wont be heard",
+    Reason = "Encounter Silence",
     Image = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/main/SilenceAchievement.png",
-    id = 600,
 }
-
-local AchievementFolder = "SilenceAchievementSaves"
-
-if not isfolder(AchievementFolder) then
-    makefolder(AchievementFolder)
-end
-
-local AchievementFile = AchievementFolder .. "/Save.txt"
-
-if not isfile(AchievementFile) then
-    writefile(AchievementFile, "")
-end
 
 local Achievements = loadstring(game:HttpGet(
     "https://raw.githubusercontent.com/MuhXd/Models/main/RegularVynixu's%20Achievement%20Modifyer"
 ))()
 
 local function AchievementsGet(Achievement)
-    local saved = string.split(readfile(AchievementFile), "|")
-    local id = " " .. tostring(Achievement.id)
-
-    if table.find(saved, id) then
-        warn("SILENCE: achievement already saved")
-        return
-    end
-
-    warn("SILENCE: calling Achievements.Get")
-
-    local result = Achievements.Get(Achievement)
-
-    warn("SILENCE: Achievements.Get returned", result)
-
-    appendfile(AchievementFile, id .. "|")
+    Achievements.Get(Achievement)
 end
 
 local function Silence()
@@ -125,7 +98,6 @@ local function Silence()
     local latestRoomInt = game.ReplicatedStorage.GameData.LatestRoom
     local latestRoomModel = currentRooms:FindFirstChild(latestRoomInt.Value)
 
-    -- local rawUrl = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/main/oldSilence.rbxm"
     local rawUrl = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/main/oldSilence.rbxm"
 
     if G.LoadGithubModel then
@@ -225,7 +197,7 @@ local function Silence()
 
     ambruhspeed = DEF_SPEED
 
-    for i = 1, latestRoom.Value + 2 do
+    for i = 1, latestRoom.Value + 4 do
         local room = currentRooms:FindFirstChild(tostring(i))
 
         if room and room:FindFirstChild("Nodes") then
@@ -275,20 +247,14 @@ local function Silence()
     game.Debris:AddItem(entity, 1.5)
 
     -- Show the custom achievement after Silence finishes
-    warn("SILENCE: reached achievement section")
-    
     task.wait(1.5)
-    
-    warn("SILENCE: calling AchievementsGet")
-    
+
     local success, err = pcall(function()
         AchievementsGet(SilenceAchievement)
     end)
-    
-    warn("SILENCE: AchievementsGet success =", success)
-    
+
     if not success then
-        warn("SILENCE achievement error: " .. tostring(err))
+        warn("Silence achievement error: " .. tostring(err))
     end
 end
 
@@ -296,6 +262,4 @@ local ok, err = pcall(Silence)
 
 if not ok then
     warn("SILENCE SCRIPT ERROR: " .. tostring(err))
-else
-    warn("SILENCE SCRIPT FINISHED")
 end
