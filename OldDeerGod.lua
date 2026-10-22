@@ -122,6 +122,89 @@ local DearGodAchievement = {
     Image = "rbxassetid://2129311966",
 }
 
+-- Dear God jumpscare
+local function ShowDearGodJumpscare()
+    task.spawn(function()
+        local player = game:GetService("Players").LocalPlayer
+
+        if not player then
+            return
+        end
+
+        local playerGui = player:FindFirstChildOfClass("PlayerGui")
+
+        if not playerGui then
+            return
+        end
+
+        -- Prevent duplicate jumpscare GUIs
+        local previousGui = playerGui:FindFirstChild("DearGodJumpscare")
+
+        if previousGui then
+            previousGui:Destroy()
+        end
+
+        local gui = Instance.new("ScreenGui")
+        gui.Name = "DearGodJumpscare"
+        gui.IgnoreGuiInset = true
+        gui.ResetOnSpawn = false
+        gui.DisplayOrder = 999999
+        gui.Parent = playerGui
+
+        -- Purple flash background
+        local flash = Instance.new("Frame")
+        flash.Name = "Flash"
+        flash.Size = UDim2.new(1, 0, 1, 0)
+        flash.Position = UDim2.new(0, 0, 0, 0)
+        flash.BackgroundColor3 = Color3.fromRGB(48, 25, 52)
+        flash.BackgroundTransparency = 0.15
+        flash.BorderSizePixel = 0
+        flash.Parent = gui
+
+        -- Jumpscare image
+        local image = Instance.new("ImageLabel")
+        image.Name = "JumpscareImage"
+        image.Size = UDim2.new(1, 0, 1, 0)
+        image.Position = UDim2.new(0, 0, 0, 0)
+        image.BackgroundTransparency = 1
+        image.Image = "rbxassetid://11394027278"
+        image.ScaleType = Enum.ScaleType.Stretch
+        image.Parent = gui
+
+        local function playJumpscareSound(soundId)
+            local sound = Instance.new("Sound")
+            sound.Name = "DearGodJumpscareSound"
+            sound.SoundId = "rbxassetid://" .. tostring(soundId)
+            sound.Volume = 0.5
+            sound.PlaybackSpeed = 1
+            sound.Parent = gui
+
+            sound:Play()
+
+            game:GetService("Debris"):AddItem(sound, 8)
+        end
+
+        -- First image and sound
+        playJumpscareSound(10483790459)
+
+        task.wait(0.65)
+
+        if not gui.Parent then
+            return
+        end
+
+        -- Second image and sound
+        image.Image = "rbxassetid://11395249153"
+        playJumpscareSound(10483837590)
+
+        task.wait(0.75)
+
+        if gui.Parent then
+            gui:Destroy()
+        end
+    end)
+end
+
 local deerGodThread = nil
 local currentEntity = nil
 
@@ -299,6 +382,9 @@ local function DeerGod()
 
                 if canSeeTarget(character, 50) and not isHiding then
                     character.Humanoid:TakeDamage(100)
+
+                    -- NEW: Show Dear God jumpscare on attack
+                    ShowDearGodJumpscare()
 
                     local gameStats = repStorage:FindFirstChild("GameStats")
 
