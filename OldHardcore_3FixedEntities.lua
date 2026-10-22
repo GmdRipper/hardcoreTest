@@ -34,7 +34,8 @@ local function SyncWait(seconds)
 end
 
 local function LoadEntity(name)
-    if workspace:FindFirstChild("SeekMoving") then
+    if workspace:FindFirstChild("SeekMoving")
+        and name ~= "DeerGod" then
         return
     end
 
@@ -64,21 +65,43 @@ end
 
 -- A60
 task.spawn(function()
-    task.wait(40)
-    LoadEntity("A60")
+    local c = 0
+    local canSpawnA60 = false
+    local waitA60 = 32
+
+    while true do
+        if not canSpawnA60 then
+            canSpawnA60 = true
+
+            SyncWait(c + 730)
+            LoadEntity("A60")
+
+            SyncWait(c + 1200)
+            LoadEntity("A60")
+
+            c = c + 910
+
+            task.delay(waitA60, function()
+                canSpawnA60 = false
+            end)
+        end
+
+        task.wait(1)
+    end
 end)
+
 -- Silence
 task.spawn(function()
     local c = 0
 
     while true do
-        SyncWait(c + 850)
+        SyncWait(c + 600)
         LoadEntity("Silence")
 
-        SyncWait(c + 1530)
+        SyncWait(c + 1000)
         LoadEntity("Silence")
 
-        c = c + 600
+        c = c + 1200
         task.wait(1)
     end
 end)
@@ -88,18 +111,13 @@ task.spawn(function()
     local c = 0
 
     while true do
-        SyncWait(c + 1500)
+        SyncWait(c + 500)
 
-        repeat
-            if LatestRoom.Value ~= 50
-                and not workspace:FindFirstChild("SeekMoving") then
-                LoadEntity("DeerGod")
-                break
-            end
-            task.wait(100)
-        until false
+        if LatestRoom.Value ~= 50 then
+            LoadEntity("DeerGod")
+        end
 
-        c = c + 2100
+        c = c + 1000
         task.wait(1)
     end
 end)
