@@ -253,6 +253,293 @@ local function DeerGod()
         return
     end
 
+
+-- XENO GITHUB MODEL LOADER (.rbxm / .rbxmx)
+local G = getgenv()
+
+G.LoadGithubModel = function(url, forceRefresh, retryCount)
+    retryCount = retryCount or 0
+
+    if retryCount >= 3 then
+        warn("Failed to load model after 3 attempts")
+        return nil
+    end
+
+    if not (writefile and getcustomasset and request and isfile and delfile) then
+        warn("Missing required functions: writefile, getcustomasset, request, isfile, or delfile")
+        return nil
+    end
+
+    forceRefresh = forceRefresh or false
+
+    local function getFileNameFromUrl(url)
+        local modelName = url:match("([^/]+)%.rbxm$") or url:match("([^/]+)%.rbxmx$") or "model"
+        modelName = modelName:gsub("[^%w_%-]", "_")
+        return "deer_god_" .. modelName .. ".rbxm"
+    end
+
+    local fileName = getFileNameFromUrl(url)
+
+    if retryCount > 0 then
+        print("Retry " .. retryCount .. ": Cleaning up...")
+        task.wait(1)
+        if isfile(fileName) then
+            pcall(function()
+                delfile(fileName)
+            end)
+        end
+    end
+
+    if forceRefresh and isfile(fileName) then
+        pcall(function()
+            delfile(fileName)
+        end)
+    end
+
+    local fileExists = isfile(fileName)
+
+    if fileExists then
+        print("Using cached file: " .. fileName)
+    else
+        print("Downloading model from: " .. url)
+
+        local response = request({
+            Url = url,
+            Method = "GET"
+        })
+
+        if response.StatusCode ~= 200 then
+            warn("Failed to download model. Status code: " .. response.StatusCode)
+            return G.LoadGithubModel(url, forceRefresh, retryCount + 1)
+        end
+
+        local writeSuccess, writeError = pcall(function()
+            writefile(fileName, response.Body)
+        end)
+
+        if not writeSuccess then
+            warn("Failed to write file: " .. tostring(writeError))
+            return G.LoadGithubModel(url, forceRefresh, retryCount + 1)
+        end
+
+        print("File saved: " .. fileName)
+    end
+
+    local assetId
+    local assetSuccess, assetResult = pcall(function()
+        return getcustomasset(fileName)
+    end)
+
+    if not assetSuccess then
+        warn("Failed to get custom asset: " .. tostring(assetResult))
+        pcall(function()
+            delfile(fileName)
+        end)
+        return G.LoadGithubModel(url, forceRefresh, retryCount + 1)
+    end
+
+    assetId = assetResult
+
+    local model
+    local loadSuccess, loadResult = pcall(function()
+        local objects = game:GetObjects(assetId)
+        if objects and #objects > 0 then
+            return objects[1]:Clone()
+        end
+        return nil
+    end)
+
+    if not loadSuccess or not loadResult then
+        warn("Failed to load model: " .. tostring(loadResult))
+        pcall(function()
+            delfile(fileName)
+        end)
+        return G.LoadGithubModel(url, forceRefresh, retryCount + 1)
+    end
+
+    model = loadResult
+    print("Model loaded successfully: " .. fileName)
+    return model
+end
+
+-- Achievement loader
+local Achievements = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/MuhXd/Models/main/RegularVynixu's%20Achievement%20Modifyer"
+))()
+
+local function AchievementsGet(Achievement)
+    Achievements.Get(Achievement)
+end
+
+local DearGodAchievement = {
+    Title = "Last Chance To Look Away",
+    Desc = "Why are you running?",
+    Reason = "Survive the rare Entity called Dear God",
+    Image = "rbxassetid://2129311966",
+}
+
+-- Dear God jumpscare
+-- Reproduces the original OLDSpawner jumpscare sequence.
+-- This function is synchronous so death happens after the animation.
+local function ShowDearGodJumpscare()
+    local Players = game:GetService("Players")
+    local TweenService = game:GetService("TweenService")
+    local Debris = game:GetService("Debris")
+
+    local player = Players.LocalPlayer
+    if not player then
+        return
+    end
+
+    local playerGui = player:FindFirstChildOfClass("PlayerGui")
+    if not playerGui then
+        return
+    end
+
+    local previousGui = playerGui:FindFirstChild("JumpscareGui")
+    if previousGui then
+        previousGui:Destroy()
+    end
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "JumpscareGui"
+    gui.IgnoreGuiInset = true
+    gui.ResetOnSpawn = false
+    gui.DisplayOrder = 999999
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+    local background = Instance.new("Frame")
+    background.Name = "Background"
+    background.BackgroundColor3 = Color3.new(0, 0, 0)
+    background.BorderSizePixel = 0
+    background.Size = UDim2.new(1, 0, 1, 0)
+    background.ZIndex = 999
+
+    local face = Instance.new("ImageLabel")
+    face.Name = "Face"
+    face.AnchorPoint = Vector2.new(0.5, 0.5)
+    face.BackgroundTransparency = 1
+    face.Position = UDim2.new(0.5, 0, 0.5, 0)
+    face.ResampleMode = Enum.ResamplerMode.Pixelated
+    face.Size = UDim2.new(0, 150, 0, 150)
+    face.Image = "rbxassetid://11394027278"
+    face.ZIndex = 1000
+
+    face.Parent = background
+    background.Parent = gui
+    gui.Parent = playerGui
+
+    -- Match the original Spawner's size calculations.
+    local absHeight = gui.AbsoluteSize.Y
+    local maxTeaseSize = absHeight / 2.5
+
+    local function loadJumpscareSound(soundId)
+        local sound = Instance.new("Sound")
+        sound.SoundId = "rbxassetid://" .. tostring(soundId)
+        sound.Volume = 0.5
+        sound.PlaybackSpeed = 1
+        sound.Parent = workspace
+        return sound
+    end
+
+    local sound1 = loadJumpscareSound(10483790459)
+    local sound2 = loadJumpscareSound(10483837590)
+
+    -- Original purple flashing effect.
+    task.spawn(function()
+        while gui.Parent do
+            background.BackgroundColor3 = Color3.fromRGB(48, 25, 52)
+            task.wait(math.random(25, 100) / 1000)
+
+            if not gui.Parent then
+                break
+            end
+
+            background.BackgroundColor3 = Color3.new(0, 0, 0)
+            task.wait(math.random(25, 100) / 1000)
+        end
+    end)
+
+    -- Original Jumpscare stage.
+    face.Image = "rbxassetid://11395249153"
+    face.Size = UDim2.new(0, maxTeaseSize, 0, maxTeaseSize)
+
+    sound1:Play()
+    sound2:Play()
+
+    local tween = TweenService:Create(
+        face,
+        TweenInfo.new(0.75),
+        {
+            Size = UDim2.new(0, absHeight * 3, 0, absHeight * 3),
+            ImageTransparency = 0.5
+        }
+    )
+
+    tween:Play()
+    task.wait(0.75)
+
+    if gui.Parent then
+        gui:Destroy()
+    end
+
+    if sound1 then
+        sound1:Destroy()
+    end
+
+    if sound2 then
+        sound2:Destroy()
+    end
+end
+
+local deerGodThread = nil
+local currentEntity = nil
+
+local function DeerGod()
+    if deerGodThread then
+        pcall(function()
+            if currentEntity then
+                currentEntity:Destroy()
+                currentEntity = nil
+            end
+        end)
+        deerGodThread = nil
+    end
+
+    local repStorage = game:GetService("ReplicatedStorage")
+    local workspace = game:GetService("Workspace")
+
+    if not repStorage:FindFirstChild("ClientModules") then
+        warn("ClientModules not found")
+        return
+    end
+
+    if not repStorage.ClientModules:FindFirstChild("Module_Events") then
+        warn("Module_Events not found")
+        return
+    end
+
+    if not workspace:FindFirstChild("CurrentRooms") then
+        warn("CurrentRooms not found")
+        return
+    end
+
+    local required = require(repStorage.ClientModules.Module_Events)
+    local currentRooms = workspace.CurrentRooms
+    local gameData = repStorage:FindFirstChild("GameData")
+
+    if not gameData then
+        warn("GameData not found")
+        return
+    end
+
+    local latestRoomInt = gameData:FindFirstChild("LatestRoom")
+
+    if not latestRoomInt then
+        warn("LatestRoom not found in GameData")
+        return
+    end
+
     local latestRoomValue = latestRoomInt.Value
     local latestRoomModel = currentRooms:FindFirstChild(tostring(latestRoomValue))
 
@@ -381,10 +668,13 @@ local function DeerGod()
                 local isHiding = character:GetAttribute("Hiding")
 
                 if canSeeTarget(character, 50) and not isHiding then
-                    character.Humanoid:TakeDamage(100)
-
-                    -- NEW: Show Dear God jumpscare on attack
+                    -- Show jumpscare before applying fatal damage.
                     ShowDearGodJumpscare()
+
+                    local humanoid = character:FindFirstChild("Humanoid")
+                    if humanoid and humanoid.Health > 0 then
+                        humanoid:TakeDamage(100)
+                    end
 
                     local gameStats = repStorage:FindFirstChild("GameStats")
 
