@@ -87,9 +87,13 @@ local function AchievementsGet(Achievement)
         return
     end
 
-    Achievements.Get(Achievement)
-    appendfile(AchievementFile, id .. "|")
-end
+    warn("SILENCE: calling Achievements.Get")
+
+    local result = Achievements.Get(Achievement)
+    
+    warn("SILENCE: Achievements.Get returned", result)
+        appendfile(AchievementFile, id .. "|")
+    end
 
 local function Silence()
     local currentRooms = workspace.CurrentRooms
