@@ -84,16 +84,18 @@ local function AchievementsGet(Achievement)
     local id = " " .. tostring(Achievement.id)
 
     if table.find(saved, id) then
+        warn("SILENCE: achievement already saved")
         return
     end
 
     warn("SILENCE: calling Achievements.Get")
 
     local result = Achievements.Get(Achievement)
-    
+
     warn("SILENCE: Achievements.Get returned", result)
-        appendfile(AchievementFile, id .. "|")
-    end
+
+    appendfile(AchievementFile, id .. "|")
+end
 
 local function Silence()
     local currentRooms = workspace.CurrentRooms
