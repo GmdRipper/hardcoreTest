@@ -14,7 +14,7 @@ runMarker.Parent = workspace
 local entityURLs = {
     A60 = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldA60.lua",
     Silence = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/Silence.lua",
-    DeerGod = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldDeerGod.lua"
+    DeerGod = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/OldDeerGod.lua"
 }
 
 if LatestRoom.Value == 0 then
@@ -95,7 +95,7 @@ task.spawn(function()
     local c = 0
 
     while true do
-        SyncWait(c + 40)
+        SyncWait(c + 500)
         LoadEntity("Silence")
 
         SyncWait(c + 800)
@@ -113,7 +113,7 @@ task.spawn(function()
 
     while true do
         if first then
-            SyncWait(c + 400)
+            SyncWait(c + 40)
             first = false
             c = c + 750
         else
