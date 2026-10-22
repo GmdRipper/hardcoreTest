@@ -13,7 +13,7 @@ runMarker.Parent = workspace
 
 local entityURLs = {
     A60 = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldA60.lua",
-    Silence = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldSilence.lua",
+    Silence = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/OldSilence.lua",
     DeerGod = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldDeerGod.lua"
 }
 
@@ -95,7 +95,7 @@ task.spawn(function()
     local c = 0
 
     while true do
-        SyncWait(c + 500)
+        SyncWait(c + 40)
         LoadEntity("Silence")
 
         SyncWait(c + 800)
