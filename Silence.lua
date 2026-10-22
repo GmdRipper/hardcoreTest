@@ -119,6 +119,7 @@ local function Silence()
     local latestRoomInt = game.ReplicatedStorage.GameData.LatestRoom
     local latestRoomModel = currentRooms:FindFirstChild(latestRoomInt.Value)
 
+    -- local rawUrl = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/main/oldSilence.rbxm"
     local rawUrl = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/main/oldSilence.rbxm"
 
     if G.LoadGithubModel then
