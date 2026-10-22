@@ -91,29 +91,28 @@ end)
 
 -- Silence
 task.spawn(function()
-    task.wait(40)
-    LoadEntity("Silence")
+    local c = 0
+
+    while true do
+        SyncWait(c + 850)
+        LoadEntity("Silence")
+
+        SyncWait(c + 1530)
+        LoadEntity("Silence")
+
+        c = c + 600
+        task.wait(1)
+    end
 end)
 
 -- DeerGod
 task.spawn(function()
-    local c = 0
+    task.wait(40)
 
-    while true do
-        SyncWait(c + 1500)
-
-        repeat
-            if LatestRoom.Value ~= 50
-                and not workspace:FindFirstChild("SeekMoving") then
-
-                LoadEntity("DeerGod")
-                break
-            end
-
-            task.wait(100)
-        until false
-
-        c = c + 2100
-        task.wait(1)
+    if LatestRoom.Value ~= 50
+        and not workspace:FindFirstChild("SeekMoving") then
+        LoadEntity("DeerGod")
+    else
+        warn("[ThreeEntityAddon] DeerGod test skipped: room 50 or Seek active")
     end
 end)
