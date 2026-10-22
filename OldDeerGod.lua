@@ -27,6 +27,7 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
     if retryCount > 0 then
         print("Retry " .. retryCount .. ": Cleaning up...")
         task.wait(1)
+
         if isfile(fileName) then
             pcall(function()
                 delfile(fileName)
@@ -87,9 +88,11 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
     local model
     local loadSuccess, loadResult = pcall(function()
         local objects = game:GetObjects(assetId)
+
         if objects and #objects > 0 then
             return objects[1]:Clone()
         end
+
         return nil
     end)
 
@@ -103,6 +106,7 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
 
     model = loadResult
     print("Model loaded successfully: " .. fileName)
+
     return model
 end
 
@@ -124,85 +128,168 @@ local DearGodAchievement = {
 
 -- Dear God jumpscare
 local function ShowDearGodJumpscare()
-    task.spawn(function()
-        local player = game:GetService("Players").LocalPlayer
+    local Players = game:GetService("Players")
+    local SoundService = game:GetService("SoundService")
+    local TweenService = game:GetService("TweenService")
+    local Debris = game:GetService("Debris")
 
-        if not player then
-            return
-        end
+    local player = Players.LocalPlayer
+    if not player then return end
 
-        local playerGui = player:FindFirstChildOfClass("PlayerGui")
+    local playerGui = player:FindFirstChildOfClass("PlayerGui")
+    if not playerGui then return end
 
-        if not playerGui then
-            return
-        end
+    -- Remove previous jumpscare
+    local previous = playerGui:FindFirstChild("JumpscareGui")
+    if previous then
+        previous:Destroy()
+    end
 
-        -- Prevent duplicate jumpscare GUIs
-        local previousGui = playerGui:FindFirstChild("DearGodJumpscare")
+    local oldVolume = SoundService.Volume
 
-        if previousGui then
-            previousGui:Destroy()
-        end
+    local gui
+    local sound1
+    local sound2
 
-        local gui = Instance.new("ScreenGui")
-        gui.Name = "DearGodJumpscare"
+    local success, err = pcall(function()
+        -- Temporarily reduce other game sounds
+        SoundService.Volume = 0.15
+
+        gui = Instance.new("ScreenGui")
+        gui.Name = "JumpscareGui"
         gui.IgnoreGuiInset = true
         gui.ResetOnSpawn = false
         gui.DisplayOrder = 999999
+        gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
         gui.Parent = playerGui
 
-        -- Purple flash background
+        -- Black background
+        local background = Instance.new("Frame")
+        background.Name = "Background"
+        background.Size = UDim2.fromScale(1, 1)
+        background.Position = UDim2.fromScale(0, 0)
+        background.BackgroundColor3 = Color3.new(0, 0, 0)
+        background.BorderSizePixel = 0
+        background.ZIndex = 1
+        background.Parent = gui
+
+        -- Purple flash behind the image
         local flash = Instance.new("Frame")
         flash.Name = "Flash"
-        flash.Size = UDim2.new(1, 0, 1, 0)
-        flash.Position = UDim2.new(0, 0, 0, 0)
+        flash.Size = UDim2.fromScale(1, 1)
+        flash.Position = UDim2.fromScale(0, 0)
         flash.BackgroundColor3 = Color3.fromRGB(48, 25, 52)
-        flash.BackgroundTransparency = 0.15
+        flash.BackgroundTransparency = 0.25
         flash.BorderSizePixel = 0
+        flash.ZIndex = 2
         flash.Parent = gui
 
-        -- Jumpscare image
-        local image = Instance.new("ImageLabel")
-        image.Name = "JumpscareImage"
-        image.Size = UDim2.new(1, 0, 1, 0)
-        image.Position = UDim2.new(0, 0, 0, 0)
-        image.BackgroundTransparency = 1
-        image.Image = "rbxassetid://11394027278"
-        image.ScaleType = Enum.ScaleType.Stretch
-        image.Parent = gui
+        -- Deer God face above the flash
+        local face = Instance.new("ImageLabel")
+        face.Name = "Face"
+        face.AnchorPoint = Vector2.new(0.5, 0.5)
+        face.Position = UDim2.fromScale(0.5, 0.5)
+        face.Size = UDim2.fromOffset(180, 180)
+        face.BackgroundTransparency = 1
+        face.Image = "rbxassetid://11394027278"
+        face.ScaleType = Enum.ScaleType.Stretch
+        face.ImageTransparency = 0
+        face.ZIndex = 3
+        face.Parent = gui
 
-        local function playJumpscareSound(soundId)
-            local sound = Instance.new("Sound")
-            sound.Name = "DearGodJumpscareSound"
-            sound.SoundId = "rbxassetid://" .. tostring(soundId)
-            sound.Volume = 0.5
-            sound.PlaybackSpeed = 1
-            sound.Parent = gui
+        -- First jumpscare sound
+        sound1 = Instance.new("Sound")
+        sound1.Name = "DearGodJumpscareSound1"
+        sound1.SoundId = "rbxassetid://10483790459"
+        sound1.Volume = 1
+        sound1.Parent = SoundService
+        Debris:AddItem(sound1, 8)
 
-            sound:Play()
-
-            game:GetService("Debris"):AddItem(sound, 8)
-        end
+        -- Second jumpscare sound
+        sound2 = Instance.new("Sound")
+        sound2.Name = "DearGodJumpscareSound2"
+        sound2.SoundId = "rbxassetid://10483837590"
+        sound2.Volume = 1
+        sound2.Parent = SoundService
+        Debris:AddItem(sound2, 8)
 
         -- First image and sound
-        playJumpscareSound(10483790459)
+        sound1:Play()
 
         task.wait(0.65)
 
-        if not gui.Parent then
+        if not gui or not gui.Parent then
             return
         end
 
         -- Second image and sound
-        image.Image = "rbxassetid://11395249153"
-        playJumpscareSound(10483837590)
+        face.Image = "rbxassetid://11395249153"
+        face.Size = UDim2.fromScale(0.5, 0.5)
 
-        task.wait(0.75)
+        sound2:Play()
 
-        if gui.Parent then
-            gui:Destroy()
+        -- Enlarge the face
+        local growTween = TweenService:Create(
+            face,
+            TweenInfo.new(
+                0.75,
+                Enum.EasingStyle.Quad,
+                Enum.EasingDirection.Out
+            ),
+            {
+                Size = UDim2.fromScale(2.5, 2.5),
+                ImageTransparency = 0.15
+            }
+        )
+
+        growTween:Play()
+
+        -- Short purple flashes behind the face
+        for i = 1, 6 do
+            if not gui or not gui.Parent then
+                break
+            end
+
+            flash.BackgroundTransparency = 0.05
+            task.wait(0.06)
+
+            if not gui or not gui.Parent then
+                break
+            end
+
+            flash.BackgroundTransparency = 0.65
+            task.wait(0.06)
         end
+
+        task.wait(0.65)
     end)
+
+    -- Always clean up and restore the game volume
+    if gui then
+        pcall(function()
+            gui:Destroy()
+        end)
+    end
+
+    if sound1 then
+        pcall(function()
+            sound1:Stop()
+            sound1:Destroy()
+        end)
+    end
+
+    if sound2 then
+        pcall(function()
+            sound2:Stop()
+            sound2:Destroy()
+        end)
+    end
+
+    SoundService.Volume = oldVolume
+
+    if not success then
+        warn("Dear God jumpscare error: " .. tostring(err))
+    end
 end
 
 local deerGodThread = nil
@@ -216,6 +303,7 @@ local function DeerGod()
                 currentEntity = nil
             end
         end)
+
         deerGodThread = nil
     end
 
@@ -283,11 +371,14 @@ local function DeerGod()
         return
     end
 
-    local camShake = cameraShaker.new(Enum.RenderPriority.Camera.Value, function(cf)
-        if camera then
-            camera.CFrame = camera.CFrame * cf
+    local camShake = cameraShaker.new(
+        Enum.RenderPriority.Camera.Value,
+        function(cf)
+            if camera then
+                camera.CFrame = camera.CFrame * cf
+            end
         end
-    end)
+    )
 
     camShake:Start()
 
@@ -341,7 +432,13 @@ local function DeerGod()
         end
 
         local origin = entityPart.Position
-        local direction = (humanoidRootPart.Position - origin).Unit * size
+        local offset = humanoidRootPart.Position - origin
+
+        if offset.Magnitude == 0 then
+            return false
+        end
+
+        local direction = offset.Unit * size
         local ray = Ray.new(origin, direction)
         local hit = workspace:FindPartOnRay(ray, entityPart)
 
@@ -357,6 +454,7 @@ local function DeerGod()
         if speed <= 0 then
             speed = 1
         end
+
         return dist / speed
     end
 
@@ -381,18 +479,19 @@ local function DeerGod()
                 local isHiding = character:GetAttribute("Hiding")
 
                 if canSeeTarget(character, 50) and not isHiding then
-                    -- Сначала скример
+                    -- First show the jumpscare
                     ShowDearGodJumpscare()
 
-                    -- Ждём перед смертью
+                    -- Then apply fatal damage
                     task.wait(1.5)
 
-                    -- Затем наносим смертельный урон
                     local humanoid = character:FindFirstChild("Humanoid")
+
                     if humanoid and humanoid.Health > 0 then
                         humanoid:TakeDamage(100)
                     end
 
+                    -- Death cause
                     local gameStats = repStorage:FindFirstChild("GameStats")
 
                     if gameStats then
@@ -407,6 +506,7 @@ local function DeerGod()
                         end
                     end
 
+                    -- Death hint
                     local bricks = repStorage:FindFirstChild("Bricks")
 
                     if bricks then
@@ -422,6 +522,7 @@ local function DeerGod()
                             end)
                         end
                     end
+
                     break
                 end
             end
@@ -490,11 +591,14 @@ local function DeerGod()
                         false,
                         0
                     ),
-                    {CFrame = node.CFrame + ambruhheight}
+                    {
+                        CFrame = node.CFrame + ambruhheight
+                    }
                 )
 
                 jerk:Play()
                 jerk.Completed:Wait()
+
                 ambruhspeed = storer
             end
         end
@@ -507,7 +611,9 @@ local function DeerGod()
         local fallTween = tweenService:Create(
             entityPart,
             TweenInfo.new(1.5),
-            {CFrame = entityPart.CFrame * CFrame.new(0, -80, 0)}
+            {
+                CFrame = entityPart.CFrame * CFrame.new(0, -80, 0)
+            }
         )
 
         fallTween:Play()
