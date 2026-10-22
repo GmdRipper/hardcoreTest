@@ -1,0 +1,2 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/thelostw3r/Mods/refs/heads/main/HardcoreMode%5BLEGACY%5D.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/OldHardcore_3FixedEntities.lua"))()
