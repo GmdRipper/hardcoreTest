@@ -269,14 +269,20 @@ local function Silence()
     game.Debris:AddItem(entity, 1.5)
 
     -- Show the custom achievement after Silence finishes
+    warn("SILENCE: reached achievement section")
+    
     task.wait(1.5)
-
+    
+    warn("SILENCE: calling AchievementsGet")
+    
     local success, err = pcall(function()
         AchievementsGet(SilenceAchievement)
     end)
-
+    
+    warn("SILENCE: AchievementsGet success =", success)
+    
     if not success then
-        warn("Silence achievement error: " .. tostring(err))
+        warn("SILENCE achievement error: " .. tostring(err))
     end
 end
 
