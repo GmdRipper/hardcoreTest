@@ -280,4 +280,10 @@ local function Silence()
     end
 end
 
-pcall(Silence)
+local ok, err = pcall(Silence)
+
+if not ok then
+    warn("SILENCE SCRIPT ERROR: " .. tostring(err))
+else
+    warn("SILENCE SCRIPT FINISHED")
+end
