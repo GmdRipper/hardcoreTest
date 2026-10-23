@@ -184,11 +184,18 @@ local function ApplySettings()
     if floors then
         floors.Text = "Floors Escaped (2)"
     end
-    Lighting.Ambient = Color3.new(0, 0, 0)
-    Lighting.Caves.Enabled = true
-    Lighting.Bloom.Enabled = true
-    Lighting.FogEnd = 75
-    Lighting.FogStart = 10
+
+Lighting.Ambient = Color3.new(0, 0, 0)
+local caves = Lighting:FindFirstChild("Caves")
+if caves then
+    caves.Enabled = true
+end
+local bloom = Lighting:FindFirstChild("Bloom")
+if bloom then
+    bloom.Enabled = false
+end
+Lighting.FogEnd = 75
+Lighting.FogStart = 10
     local room = Rooms:FindFirstChild(tostring(LatestRoom.Value))
     if room then
         ApplyCave(room)
