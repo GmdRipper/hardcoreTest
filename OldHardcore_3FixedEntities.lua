@@ -92,34 +92,24 @@ end)
 
 -- Silence
 task.spawn(function()
-    local c = 0
+    local nextTime = 0
 
     while true do
-        SyncWait(c + 500)
+        nextTime = nextTime + math.random(450, 850)
+        SyncWait(nextTime)
         LoadEntity("Silence")
 
-        SyncWait(c + 800)
-        LoadEntity("Silence")
-
-        c = c + 1200
         task.wait(1)
     end
 end)
 
 -- DeerGod
 task.spawn(function()
-    local c = 0
-    local first = true
+    local nextTime = 0
 
     while true do
-        if first then
-            SyncWait(c + 40)
-            first = false
-            c = c + 750
-        else
-            SyncWait(c + 1000)
-            c = c + 1000
-        end
+        nextTime = nextTime + math.random(350, 650)
+        SyncWait(nextTime)
 
         if LatestRoom.Value ~= 50 then
             LoadEntity("DeerGod")
