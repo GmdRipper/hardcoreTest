@@ -113,7 +113,7 @@ task.spawn(function()
 
     while true do
         if first then
-            SyncWait(c + 400)
+            SyncWait(c + 40)
             first = false
             c = c + 750
         else
