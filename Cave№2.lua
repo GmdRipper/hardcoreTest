@@ -6,6 +6,7 @@
 		Authorized People (can do anything): BasicallyAlex#8579, MuhammadGames#0017, Seek#4541, yessir12112131#0628
 		I recommend you publishing this script with loadstring.
 		MADE BY iCherryKardess#0001
+		FIXED BY GmdRipper
 
 ]]
 
@@ -43,6 +44,7 @@ local Functions = loadstring(game:HttpGet("https://raw.githubusercontent.com/Reg
 		end
 		Candle.Equipped:Connect(function()
 		    Equipped = true
+		    track:Play()
 		end)
 		Candle.Unequipped:Connect(function()
 		    track:Stop()
