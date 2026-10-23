@@ -27,7 +27,11 @@ local Functions = loadstring(game:HttpGet("https://raw.githubusercontent.com/Reg
 		AnimIdle.AnimationId = "rbxassetid://9982615727"
 		AnimIdle.Name = "IDleloplolo"
 		local cam = workspace.CurrentCamera
-		Candle.Handle.Top.Flame.GuidingLighteffect.EffectLight.LockedToPart = true
+		local candleLight = Candle.Handle.Top.Flame.GuidingLighteffect.EffectLight
+		candleLight.LockedToPart = true
+		if candleLight:IsA("PointLight") then
+		    candleLight.Range = 30
+		end
 		Candle.Handle.Material = Enum.Material.Salt
 		local track = Hum.Animator:LoadAnimation(AnimIdle)
 		track.Looped = true
@@ -38,19 +42,12 @@ local Functions = loadstring(game:HttpGet("https://raw.githubusercontent.com/Reg
 			end
 		end
 		Candle.Equipped:Connect(function()
-			for _, v in next, Hum:GetPlayingAnimationTracks() do
-				v:Stop()
-			end
-			Equipped = true
-        -- RightArm.Name = "R_Arm"
-			track:Play()
-        -- RightArm.RightShoulder.C1 = RightC1 * CFrame.Angles(math.rad(-90), math.rad(-15), 0)
+		    Equipped = true
 		end)
 		Candle.Unequipped:Connect(function()
-			RightArm.Name = "RightUpperArm"
-			track:Stop()
-			Equipped = false
-        -- RightArm.RightShoulder.C1 = RightC1
+		    track:Stop()
+		    RightArm.Name = "RightUpperArm"
+		    Equipped = false
 		end)
 		cam.ChildAdded:Connect(function(screech)
 			if screech.Name == "Screech" and math.random(1, 400) ~= 1 then
@@ -67,7 +64,7 @@ local Functions = loadstring(game:HttpGet("https://raw.githubusercontent.com/Reg
 		if plr.PlayerGui.MainUI.ItemShop.Visible then
 			CustomShop.CreateItem(Candle, {
 				Title = "Guiding Candle",
-				Desc = "Search for any clues in dark rooms", -- קг๏ςєє๔ คՇ ץ๏ยг ๏ฬภ гเรк.
+				Desc = "קг๏ςєє๔ คՇ ץ๏ยг ๏ฬภ гเรк.",
 				Image = "https://cdn.discordapp.com/attachments/1043448883407228961/1052275820275707954/Png_1.png",
 				Price = 75,
 				Stack = 1,
