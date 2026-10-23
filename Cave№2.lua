@@ -31,7 +31,7 @@ local Functions = loadstring(game:HttpGet("https://raw.githubusercontent.com/Reg
 		local candleLight = Candle.Handle.Top.Flame.GuidingLighteffect.EffectLight
 		candleLight.LockedToPart = true
 		if candleLight:IsA("PointLight") then
-		    candleLight.Range = 30
+		    candleLight.Range = 60
 		end
 		Candle.Handle.Material = Enum.Material.Salt
 		local track = Hum.Animator:LoadAnimation(AnimIdle)
