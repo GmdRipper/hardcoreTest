@@ -11,7 +11,7 @@
 ]]
 
 -- Noticement
-firesignal(game.ReplicatedStorage.Bricks.Caption.OnClientEvent, "Script made by iCherryKardes. You might need to reexecute if you are at door 51.")
+firesignal(game.ReplicatedStorage.Bricks.Caption.OnClientEvent, "Script made by iCherryKardes. Fixed by GmdRipper. You might need to reexecute if you are at door 51.")
 -- Shop Items (2)
 local Functions = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Functions.lua"))()
 		local CustomShop = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Custom%20Shop%20Items/Source.lua"))()
@@ -31,7 +31,7 @@ local Functions = loadstring(game:HttpGet("https://raw.githubusercontent.com/Reg
 		local candleLight = Candle.Handle.Top.Flame.GuidingLighteffect.EffectLight
 		candleLight.LockedToPart = true
 		if candleLight:IsA("PointLight") then
-		    candleLight.Range = 60
+		    candleLight.Range = 100
 		end
 		Candle.Handle.Material = Enum.Material.Salt
 		local track = Hum.Animator:LoadAnimation(AnimIdle)
