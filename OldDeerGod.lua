@@ -246,6 +246,8 @@ local function DeerGod()
         return
     end
 
+    -- Visibility check: a wall or another obstacle blocks the ray.
+    -- Hiding is checked separately before an attack is triggered.
     local function canSeeTarget(target, size)
         if killed then
             return false
@@ -257,17 +259,15 @@ local function DeerGod()
             return false
         end
 
-        local origin = entityPart.Position
-        local direction = (humanoidRootPart.Position - origin).Unit * size
-        local ray = Ray.new(origin, direction)
-        local hit = workspace:FindPartOnRay(ray, entityPart)
-
-        if hit and hit:IsDescendantOf(target) then
-            killed = true
-            return true
+        local offset = humanoidRootPart.Position - entityPart.Position
+        if offset.Magnitude == 0 or offset.Magnitude > size then
+            return false
         end
 
-        return false
+        local ray = Ray.new(entityPart.Position, offset)
+        local hit = workspace:FindPartOnRay(ray, entity)
+
+        return hit ~= nil and hit:IsDescendantOf(target)
     end
 
     local function GetTime(dist, speed)
@@ -295,10 +295,18 @@ local function DeerGod()
                 and character:FindFirstChild("HumanoidRootPart")
                 and character:FindFirstChild("Humanoid") then
 
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
                 local isHiding = character:GetAttribute("Hiding")
 
-                if canSeeTarget(character, 50) and not isHiding then
-                    character.Humanoid:TakeDamage(100)
+                if humanoid
+                    and humanoid.Health > 0
+                    and not isHiding
+                    and canSeeTarget(character, 50) then
+
+                    -- Mark as caught only after visibility and hiding checks pass.
+                    killed = true
+
+                    humanoid:TakeDamage(100)
 
                     local gameStats = repStorage:FindFirstChild("GameStats")
 
@@ -422,7 +430,7 @@ local function DeerGod()
         fallTween.Completed:Wait()
     end
 
-    -- Award achievement if the player survived
+    -- Award achievement if the player survived and was not caught.
     local player = game.Players.LocalPlayer
     local character = player and player.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
