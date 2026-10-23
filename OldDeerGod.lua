@@ -126,6 +126,29 @@ local DearGodAchievement = {
     Image = "rbxassetid://2129311966",
 }
 
+-- Additional chase sound loader
+local function GetGitSound(GithubSnd, SoundName)
+    if not isfile(SoundName .. ".mp3") then
+        writefile(SoundName .. ".mp3", game:HttpGet(GithubSnd))
+    end
+
+    local sound = Instance.new("Sound")
+    sound.SoundId = (getcustomasset or getsynasset)(SoundName .. ".mp3")
+    sound.Name = "DeerGodExtraChaseSound"
+    sound.Volume = 0
+    sound.Looped = true
+
+    return sound
+end
+
+-- Additional sound; original model sounds remain unchanged
+local Chase = GetGitSound(
+    "https://github.com/fernandesdasilvamariainez-coder/Roblox-Doors-Entities-Sounds/blob/main/followedlong.mp3?raw=true",
+    "followedlong"
+)
+
+Chase.Parent = workspace
+
 -- Dear God jumpscare
 local function ShowDearGodJumpscare()
     local Players = game:GetService("Players")
@@ -139,7 +162,6 @@ local function ShowDearGodJumpscare()
     local playerGui = player:FindFirstChildOfClass("PlayerGui")
     if not playerGui then return end
 
-    -- Remove previous jumpscare
     local previous = playerGui:FindFirstChild("JumpscareGui")
     if previous then
         previous:Destroy()
@@ -152,7 +174,6 @@ local function ShowDearGodJumpscare()
     local sound2
 
     local success, err = pcall(function()
-        -- Temporarily reduce other game sounds
         SoundService.Volume = 0.15
 
         gui = Instance.new("ScreenGui")
@@ -163,7 +184,6 @@ local function ShowDearGodJumpscare()
         gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
         gui.Parent = playerGui
 
-        -- Black background
         local background = Instance.new("Frame")
         background.Name = "Background"
         background.Size = UDim2.fromScale(1, 1)
@@ -173,7 +193,6 @@ local function ShowDearGodJumpscare()
         background.ZIndex = 1
         background.Parent = gui
 
-        -- Purple flash behind the image
         local flash = Instance.new("Frame")
         flash.Name = "Flash"
         flash.Size = UDim2.fromScale(1, 1)
@@ -184,7 +203,6 @@ local function ShowDearGodJumpscare()
         flash.ZIndex = 2
         flash.Parent = gui
 
-        -- Deer God face above the flash
         local face = Instance.new("ImageLabel")
         face.Name = "Face"
         face.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -197,7 +215,6 @@ local function ShowDearGodJumpscare()
         face.ZIndex = 3
         face.Parent = gui
 
-        -- First jumpscare sound
         sound1 = Instance.new("Sound")
         sound1.Name = "DearGodJumpscareSound1"
         sound1.SoundId = "rbxassetid://10483790459"
@@ -205,7 +222,6 @@ local function ShowDearGodJumpscare()
         sound1.Parent = SoundService
         Debris:AddItem(sound1, 8)
 
-        -- Second jumpscare sound
         sound2 = Instance.new("Sound")
         sound2.Name = "DearGodJumpscareSound2"
         sound2.SoundId = "rbxassetid://10483837590"
@@ -213,7 +229,6 @@ local function ShowDearGodJumpscare()
         sound2.Parent = SoundService
         Debris:AddItem(sound2, 8)
 
-        -- First image and sound
         sound1:Play()
 
         task.wait(0.65)
@@ -222,13 +237,11 @@ local function ShowDearGodJumpscare()
             return
         end
 
-        -- Second image and sound
         face.Image = "rbxassetid://11395249153"
         face.Size = UDim2.fromScale(0.5, 0.5)
 
         sound2:Play()
 
-        -- Enlarge the face
         local growTween = TweenService:Create(
             face,
             TweenInfo.new(
@@ -244,7 +257,6 @@ local function ShowDearGodJumpscare()
 
         growTween:Play()
 
-        -- Short purple flashes behind the face
         for i = 1, 6 do
             if not gui or not gui.Parent then
                 break
@@ -264,7 +276,6 @@ local function ShowDearGodJumpscare()
         task.wait(0.65)
     end)
 
-    -- Always clean up and restore the game volume
     if gui then
         pcall(function()
             gui:Destroy()
@@ -420,6 +431,17 @@ local function DeerGod()
         return
     end
 
+    -- Start the additional chase sound
+    Chase.Volume = 0
+    Chase.Looped = true
+    Chase:Play()
+
+    game:GetService("TweenService"):Create(
+        Chase,
+        TweenInfo.new(5),
+        {Volume = 0.5}
+    ):Play()
+
     local function canSeeTarget(target, size)
         if killed then
             return false
@@ -479,10 +501,8 @@ local function DeerGod()
                 local isHiding = character:GetAttribute("Hiding")
 
                 if canSeeTarget(character, 50) and not isHiding then
-                    -- First show the jumpscare
                     ShowDearGodJumpscare()
 
-                    -- Then apply fatal damage
                     task.wait(1.5)
 
                     local humanoid = character:FindFirstChild("Humanoid")
@@ -491,7 +511,6 @@ local function DeerGod()
                         humanoid:TakeDamage(100)
                     end
 
-                    -- Death cause
                     local gameStats = repStorage:FindFirstChild("GameStats")
 
                     if gameStats then
@@ -506,7 +525,6 @@ local function DeerGod()
                         end
                     end
 
-                    -- Death hint
                     local bricks = repStorage:FindFirstChild("Bricks")
 
                     if bricks then
@@ -602,6 +620,19 @@ local function DeerGod()
                 ambruhspeed = storer
             end
         end
+    end
+
+    -- Cleanup movement sound when the entity finishes
+    if Chase and Chase.Parent then
+        local fadeOut = game:GetService("TweenService"):Create(
+            Chase,
+            TweenInfo.new(1.5),
+            {Volume = 0}
+        )
+
+        fadeOut:Play()
+        fadeOut.Completed:Wait()
+        Chase:Stop()
     end
 
     -- Cleanup
