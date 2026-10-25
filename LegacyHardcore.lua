@@ -6,7 +6,7 @@ local TS = game:GetService("TweenService")
 local UIS = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 
--- Fog: approximately 25% stronger than the original
+-- Fog
 Lighting.FogStart = 7.5
 Lighting.FogEnd = 56.25
 
@@ -228,10 +228,9 @@ else
     return
 end
 
--- Frostbite is completely removed
 local entityURLs = {
     Ripper = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/OldRipper.lua",
-    Rebound = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldRebound.lua",
+    Rebound = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/OldRebound.lua",
     DeerGod = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/OldDeerGod.lua",
     Cease = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldCease.lua",
     Shocker = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/OldShocker",
