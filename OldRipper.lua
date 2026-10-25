@@ -1,21 +1,19 @@
 -- XENO GITHUB MODEL LOADER (.rbxm / .rbxmx)
 local G = getgenv()
 
--- Garantindo que a função exista no ambiente Global
 G.LoadGithubModel = function(url, retryCount)
     retryCount = retryCount or 0
-    
+
     if retryCount > 3 then
         warn("Failed to load model after 3 attempts")
         return nil
     end
-    
+
     if not (writefile and getcustomasset and request and isfile and delfile) then
         warn("Missing required functions")
         return nil
     end
-    
-    -- Generate consistent filename
+
     local function getHash(str)
         local hash = 0
         for i = 1, #str do
@@ -23,27 +21,31 @@ G.LoadGithubModel = function(url, retryCount)
         end
         return tostring(hash)
     end
-    
+
     local fileName = "ripper_" .. getHash(url) .. ".rbxm"
-    
-    -- Delete corrupted file if retrying
+
     if retryCount > 0 and isfile(fileName) then
-        pcall(function() delfile(fileName) end)
+        pcall(function()
+            delfile(fileName)
+        end)
     end
-    
-    -- Download if file doesn't exist
+
     if not isfile(fileName) then
-        local response = request({Url = url, Method = "GET"})
-        if response.StatusCode ~= 200 then 
+        local response = request({
+            Url = url,
+            Method = "GET"
+        })
+
+        if response.StatusCode ~= 200 then
             if retryCount < 3 then
                 return G.LoadGithubModel(url, retryCount + 1)
             end
-            return nil 
+            return nil
         end
+
         writefile(fileName, response.Body)
     end
-    
-    -- Load the model
+
     local assetId = getcustomasset(fileName)
     local success, result = pcall(function()
         local objects = game:GetObjects(assetId)
@@ -52,13 +54,48 @@ G.LoadGithubModel = function(url, retryCount)
         end
         return nil
     end)
-    
-    if success and result then 
-        return result 
+
+    if success and result then
+        return result
     end
-    
-    -- Failed, retry
+
     return G.LoadGithubModel(url, retryCount + 1)
+end
+
+-- RIPPER ACHIEVEMENT
+local RipperAchievement = {
+    Title = "Torn Apart",
+    Desc = "Dont leave too early..",
+    Reason = "Encounter Ripper",
+    Image = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/main/RipperAchivement.jpg",
+}
+
+local Achievements = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/MuhXd/Models/main/RegularVynixu's%20Achievement%20Modifyer"
+))()
+
+local function AchievementsGet(Achievement)
+    Achievements.Get(Achievement)
+end
+
+local function GiveRipperAchievement()
+    if workspace:FindFirstChild("RipperAchievement") then
+        return
+    end
+
+    local success, err = pcall(function()
+        AchievementsGet(RipperAchievement)
+    end)
+
+    if not success then
+        warn("Ripper achievement error: " .. tostring(err))
+        return
+    end
+
+    local obtainedBadge = Instance.new("BoolValue")
+    obtainedBadge.Name = "RipperAchievement"
+    obtainedBadge.Value = true
+    obtainedBadge.Parent = workspace
 end
 
 local function Ripper()
@@ -70,45 +107,66 @@ local function Ripper()
     local currentRooms = workspace.CurrentRooms
     local entity = nil
     local ambruhspeed = 100
-    local DEF_SPEED = 99999 -- MANTIDO original
+    local DEF_SPEED = 99999
     local storer = ambruhspeed
-    local ambruhheight = Vector3.new(0,1.2,0)
+    local ambruhheight = Vector3.new(0, 1.2, 0)
+
     local cameraShaker = require(repStorage.CameraShaker)
     local camera = workspace.CurrentCamera
-    local camShake = cameraShaker.new(Enum.RenderPriority.Camera.Value, function(cf)
-        camera.CFrame = camera.CFrame * cf
-    end)
+
+    local camShake = cameraShaker.new(
+        Enum.RenderPriority.Camera.Value,
+        function(cf)
+            camera.CFrame = camera.CFrame * cf
+        end
+    )
+
     camShake:Start()
     camShake:Shake(cameraShaker.Presets.Earthquake)
+
     local rawUrl = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/main/oldRipper.rbxml.rbxm"
 
-    -- CORREÇÃO DE ESCOPO: Atribuindo o retorno à variável local correta
     if G.LoadGithubModel then
         entity = G.LoadGithubModel(rawUrl)
+
         if entity then
             entity.Parent = workspace
         end
     end
 
-    if not entity then return end -- Se falhar, para aqui sem quebrar o resto
-    
+    if not entity then
+        return
+    end
+
     local tweenLights = TweenInfo.new(1)
-    local color = {Color = Color3.fromRGB(255, 0, 0)}
+    local color = {
+        Color = Color3.fromRGB(255, 0, 0)
+    }
+
     local spawnSound = Instance.new("Sound")
     spawnSound.Parent = workspace
     spawnSound.SoundId = "rbxassetid://9125713501"
     spawnSound.PlaybackSpeed = 0.6
     spawnSound.Volume = 10
+
     local pitchShift = Instance.new("PitchShiftSoundEffect")
     pitchShift.Parent = spawnSound
     pitchShift.Octave = 0.875
-    spawnSound:Play() game.Debris:AddItem(spawnSound, 16)
-    
+
+    spawnSound:Play()
+    game.Debris:AddItem(spawnSound, 16)
+
     local entityPart = entity:FindFirstChildWhichIsA("BasePart")
-    
-    for i, v in pairs(currentRooms:GetDescendants()) do
+
+    if not entityPart then
+        entity:Destroy()
+        return
+    end
+
+    for _, v in pairs(currentRooms:GetDescendants()) do
         if v:IsA("Light") then
             game.TweenService:Create(v, tweenLights, color):Play()
+
             if v.Parent.Name == "LightFixture" then
                 game.TweenService:Create(v.Parent, tweenLights, color):Play()
             end
@@ -116,11 +174,20 @@ local function Ripper()
     end
 
     local function canSeeTarget(target, size)
-        if killed == true then return end
+        if killed then
+            return
+        end
+
+        local targetRoot = target:FindFirstChild("HumanoidRootPart")
+        if not targetRoot then
+            return false
+        end
+
         local origin = entityPart.Position
-        local direction = (target.HumanoidRootPart.Position - origin).unit * size
+        local direction = (targetRoot.Position - origin).Unit * size
         local ray = Ray.new(origin, direction)
         local hit = workspace:FindPartOnRay(ray, entityPart)
+
         if hit then
             if hit:IsDescendantOf(target) then
                 killed = true
@@ -135,17 +202,25 @@ local function Ripper()
         return dist / speed
     end
 
-   spawn(function()
-        while entityPart ~= nil and entity ~= nil do wait(0.2)
+    task.spawn(function()
+        while entityPart ~= nil and entity ~= nil and entity.Parent do
+            task.wait(0.2)
+
             local v = game.Players.LocalPlayer
-            if v.Character ~= nil and v.Character.HumanoidRootPart then
-                if canSeeTarget(v.Character, 50) and not v.Character:GetAttribute("Hiding") then
+
+            if v.Character ~= nil and v.Character:FindFirstChild("HumanoidRootPart") then
+                if canSeeTarget(v.Character, 50)
+                    and not v.Character:GetAttribute("Hiding") then
+
                     breakMove = true
-                    -- Toda a sua lógica de GUI e Jumpscare preservada abaixo
-                    local gui = Instance.new("ScreenGui", v:WaitForChild("PlayerGui"))
+
+                    local gui = Instance.new("ScreenGui")
+                    gui.Parent = v:WaitForChild("PlayerGui")
                     gui.Name = "Noise"
                     gui.IgnoreGuiInset = true
-                    local img = Instance.new("ImageLabel", gui)
+
+                    local img = Instance.new("ImageLabel")
+                    img.Parent = gui
                     img.Size = UDim2.new(1, 0, 1, 0)
                     img.BackgroundTransparency = 1
                     img.Image = "rbxassetid://236542974"
@@ -155,59 +230,109 @@ local function Ripper()
                         local char = v.Character
                         local ripper = entityPart
                         local clone = ripper and ripper:Clone()
-                        if not clone then return end
+
+                        if not clone then
+                            return
+                        end
+
                         clone.Parent = workspace
                         clone.Position = ripper.Position
+
                         for _, x in ipairs(clone:GetDescendants()) do
                             if x:IsA("ParticleEmitter") then
-                                spawn(function() x.Rate = 9999; wait(0.25); x.TimeScale = 0.0 end)
-                            elseif x:IsA("Sound") then x.Volume = 0 end
+                                task.spawn(function()
+                                    x.Rate = 9999
+                                    task.wait(0.25)
+                                    x.TimeScale = 0
+                                end)
+                            elseif x:IsA("Sound") then
+                                x.Volume = 0
+                            end
                         end
+
                         entity:Destroy()
+
                         local static = Instance.new("Sound", workspace)
                         static.SoundId = "rbxassetid://372770465"
                         static.Volume = 10
-                        static.Pitch = 0.7
+                        static.PlaybackSpeed = 0.7
+
                         local anchor = Instance.new("Part", workspace)
                         anchor.Name = "ripperAnchor"
                         anchor.Anchored = true
                         anchor.CanCollide = false
                         anchor.Transparency = 1
                         anchor.CFrame = workspace.CurrentCamera.CFrame
-                        char:FindFirstChild("HumanoidRootPart").Anchored = true
+
+                        local root = char:FindFirstChild("HumanoidRootPart")
+                        if root then
+                            root.Anchored = true
+                        end
+
                         workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
+
                         local viewLoop = true
-                        spawn(function()
+
+                        task.spawn(function()
                             while viewLoop do
                                 workspace.CurrentCamera.CFrame = anchor.CFrame
-                                img.Image = "rbxassetid://"..({8482795900,236542974,184251462,236777652})[math.random(1,4)]
-                                game["Run Service"].RenderStepped:Wait()
+                                img.Image = "rbxassetid://" .. ({
+                                    8482795900,
+                                    236542974,
+                                    184251462,
+                                    236777652
+                                })[math.random(1, 4)]
+
+                                game:GetService("RunService").RenderStepped:Wait()
                             end
                         end)
-                        game.TweenService:Create(anchor, TweenInfo.new(0.3), {CFrame = CFrame.lookAt(anchor.Position, clone.Position)}):Play()
-                        wait(1)
-                        game.TweenService:Create(img, TweenInfo.new(2), {ImageTransparency = 0}):Play()
+
+                        game.TweenService:Create(
+                            anchor,
+                            TweenInfo.new(0.3),
+                            {
+                                CFrame = CFrame.lookAt(anchor.Position, clone.Position)
+                            }
+                        ):Play()
+
+                        task.wait(1)
+
+                        game.TweenService:Create(
+                            img,
+                            TweenInfo.new(2),
+                            {
+                                ImageTransparency = 0
+                            }
+                        ):Play()
+
                         static:Play()
-                        wait(2)
+                        task.wait(2)
+
                         viewLoop = false
-                        game.TweenService:Create(img, TweenInfo.new(1), {ImageTransparency = 1}):Play()
+
+                        game.TweenService:Create(
+                            img,
+                            TweenInfo.new(1),
+                            {
+                                ImageTransparency = 1
+                            }
+                        ):Play()
+
                         static:Destroy()
-                        local root = char:FindFirstChild("HumanoidRootPart")
-                        local humanoid = char:FindFirstChildWhichIsA("Humanoid")
 
                         if root then
                             root.Anchored = false
                         end
 
                         pcall(function()
-                            game.ReplicatedStorage.GameStats[
+                            repStorage.GameStats[
                                 "Player_" .. char.Name
                             ].Total.DeathCause.Value = "Ripper"
                         end)
 
                         pcall(function()
                             firesignal(
-                                game.ReplicatedStorage.Bricks.DeathHint.OnClientEvent,
+                                repStorage.Bricks.DeathHint.OnClientEvent,
                                 {
                                     "You died to who you call Ripper...",
                                     "It's presence is known by the red lights...",
@@ -216,8 +341,11 @@ local function Ripper()
                             )
                         end)
 
+                        local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+
                         if humanoid and humanoid.Health > 0 then
                             humanoid:TakeDamage(100)
+
                             if humanoid.Health > 0 then
                                 humanoid.Health = 0
                             end
@@ -225,53 +353,107 @@ local function Ripper()
                     end)()
                 end
             end
-            if v.Character ~= nil and v.Character.HumanoidRootPart and (entityPart.Position - v.Character.HumanoidRootPart.Position).magnitude <= 60 then
+
+            if v.Character ~= nil
+                and v.Character:FindFirstChild("HumanoidRootPart")
+                and (entityPart.Position - v.Character.HumanoidRootPart.Position).Magnitude <= 60 then
+
                 camShake:Start()
                 camShake:ShakeOnce(15, 25, 0, 2, 1, 6)
             end
-            if breakMove then break end
+
+            if breakMove then
+                break
+            end
         end
     end)
 
-    -- MOVIMENTO POR NODES ORIGINAL
-    entityPart.Ambush:Stop()
-    entityPart.Ambush.Volume = 10
-    wait(8)
-    entityPart.Ambush:Play()
-    game.TweenService:Create(entityPart.Ambush, TweenInfo.new(6), {Volume = 0.8}):Play()
+    -- ORIGINAL NODE MOVEMENT
+    if entityPart:FindFirstChild("Ambush") then
+        entityPart.Ambush:Stop()
+        entityPart.Ambush.Volume = 10
+        task.wait(8)
+        entityPart.Ambush:Play()
+
+        game.TweenService:Create(
+            entityPart.Ambush,
+            TweenInfo.new(6),
+            {
+                Volume = 0.8
+            }
+        ):Play()
+    end
+
     ambruhspeed = DEF_SPEED
 
     for i = 1, latestRoom.Value do
         local room = currentRooms:FindFirstChild(tostring(i))
+
         if room and room:FindFirstChild("Nodes") then
             local nodes = room.Nodes
+
             for v_idx = 1, #nodes:GetChildren() do
                 local node = nodes:FindFirstChild(tostring(v_idx))
+
                 if node then
-                    if breakMove then break end
-                    local dist = (entityPart.Position - node.Position).magnitude
-                    local bruh = game.TweenService:Create(entityPart, TweenInfo.new(GetTime(dist, ambruhspeed), Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0,false,0), {CFrame = node.CFrame + ambruhheight})
+                    if breakMove then
+                        break
+                    end
+
+                    local dist = (entityPart.Position - node.Position).Magnitude
+
+                    local bruh = game.TweenService:Create(
+                        entityPart,
+                        TweenInfo.new(
+                            GetTime(dist, ambruhspeed),
+                            Enum.EasingStyle.Linear,
+                            Enum.EasingDirection.Out,
+                            0,
+                            false,
+                            0
+                        ),
+                        {
+                            CFrame = node.CFrame + ambruhheight
+                        }
+                    )
+
                     bruh:Play()
                     bruh.Completed:Wait()
+
                     ambruhspeed = storer
+
                     if room.Name == tostring(latestRoom.Value) then
-                        pcall(function() room.Door.ClientOpen:FireServer() end)
+                        pcall(function()
+                            room.Door.ClientOpen:FireServer()
+                        end)
                     end
                 end
             end
         end
-        if breakMove then break end
+
+        if breakMove then
+            break
+        end
     end
 
     local slam = Instance.new("Sound", entityPart)
     slam.Volume = 10
     slam.SoundId = "rbxassetid://1837829565"
+
     camShake:Shake(cameraShaker.Presets.Explosion)
     slam:Play()
-    wait(1)
+
+    task.wait(1)
+
     entityPart.Anchored = false
     entityPart.CanCollide = false
+
     game.Debris:AddItem(entity, 5)
+
+    -- Award achievement after Ripper finishes and disappears
+    if not killed then
+        GiveRipperAchievement()
+    end
 end
 
-spawn(Ripper)
+task.spawn(Ripper)
