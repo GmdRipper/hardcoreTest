@@ -649,14 +649,14 @@ LatestRoom.Changed:Connect(function()
     ShowCaption(messages[math.random(1, #messages)], 5)
 
     -- Door-independent entities
-    StartRandomTimedEntity("Cease", 180, 230)
-    StartRandomTimedEntity("A60", 350, 400)
+    StartRandomTimedEntity("Cease", 230, 260)
+    StartRandomTimedEntity("A60", 450, 500)
     StartRandomTimedEntity("Silence", 230, 300)
     StartRandomTimedEntity("DeerGod", 150, 200)
 
     -- These retain the door-transition requirement
     StartRandomDoorEntity("Ripper", 90, 130)
-    StartRandomDoorEntity("Rebound", 160, 180)
+    StartRandomDoorEntity("Rebound", 200, 230)
 
     StartShocker()
 end)
