@@ -1,9 +1,14 @@
-
 repeat task.wait() until game:IsLoaded()
 
 local Player = game.Players.LocalPlayer
 local LatestRoom = game.ReplicatedStorage.GameData.LatestRoom
 local TS = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
+
+-- Fog: approximately 25% stronger than the original
+Lighting.FogStart = 7.5
+Lighting.FogEnd = 56.25
 
 local activeCaptionGui = nil
 local captionGeneration = 0
@@ -37,7 +42,6 @@ local function ShowCaption(text, duration)
     screenGui.IgnoreGuiInset = true
     screenGui.DisplayOrder = 999
     screenGui.Parent = pGui
-
     activeCaptionGui = screenGui
 
     local captionLabel = Instance.new("TextLabel")
@@ -69,11 +73,7 @@ local function ShowCaption(text, duration)
                 return
             end
 
-            paintingTitles[obj] = {
-                visible = obj.Visible,
-                text = obj.Text
-            }
-
+            paintingTitles[obj] = true
             titleConnections[obj] = {}
 
             table.insert(
@@ -111,7 +111,7 @@ local function ShowCaption(text, duration)
 
             local paintingTitleVisible = false
 
-            for obj, info in pairs(paintingTitles) do
+            for obj in pairs(paintingTitles) do
                 if not obj.Parent then
                     paintingTitles[obj] = nil
 
@@ -119,14 +119,9 @@ local function ShowCaption(text, duration)
                         for _, connection in ipairs(titleConnections[obj]) do
                             connection:Disconnect()
                         end
-
                         titleConnections[obj] = nil
                     end
-
-                    continue
-                end
-
-                if IsPaintingTitle(obj) and obj.Visible then
+                elseif IsPaintingTitle(obj) and obj.Visible then
                     paintingTitleVisible = true
                 end
             end
@@ -172,10 +167,11 @@ end
 local function ShowSmoothCredits()
     task.wait(3)
 
-    local creditGui = Instance.new("ScreenGui", Player.PlayerGui)
+    local creditGui = Instance.new("ScreenGui")
     creditGui.Name = "OldHardcoreCredits"
+    creditGui.Parent = Player.PlayerGui
 
-    local creditLabel = Instance.new("TextLabel", creditGui)
+    local creditLabel = Instance.new("TextLabel")
     creditLabel.Text = "Original Old Hardcore By Noonie and Ping."
     creditLabel.Font = Enum.Font.Oswald
     creditLabel.TextSize = 22
@@ -185,6 +181,7 @@ local function ShowSmoothCredits()
     creditLabel.TextXAlignment = Enum.TextXAlignment.Left
     creditLabel.Position = UDim2.new(-0.6, 0, 0.05, 0)
     creditLabel.Size = UDim2.new(0.4, 0, 0.05, 0)
+    creditLabel.Parent = creditGui
 
     local slideIn = TS:Create(
         creditLabel,
@@ -213,7 +210,10 @@ if not alreadyExecuted then
         task.wait(1)
 
         if Player.Character then
-            Player.Character.Humanoid:TakeDamage(100)
+            local hum = Player.Character:FindFirstChildOfClass("Humanoid")
+            if hum then
+                hum:TakeDamage(100)
+            end
         end
 
         return
@@ -228,15 +228,15 @@ else
     return
 end
 
+-- Frostbite is completely removed
 local entityURLs = {
     Ripper = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/OldRipper.lua",
     Rebound = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldRebound.lua",
-    DeerGod = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldDeerGod.lua",
+    DeerGod = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/OldDeerGod.lua",
     Cease = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldCease.lua",
     Shocker = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldShocker.lua",
-    Silence = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldSilence.lua",
-    A60 = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldA60.lua",
-    Frostbite = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldFrostbite.lua"
+    Silence = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/Silence.lua",
+    A60 = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/refs/heads/main/oldA60.lua"
 }
 
 local startTimeValue = workspace:FindFirstChild("OldHardcoreStartTime")
@@ -245,57 +245,6 @@ if not startTimeValue then
     startTimeValue = Instance.new("NumberValue")
     startTimeValue.Name = "OldHardcoreStartTime"
     startTimeValue.Parent = workspace
-end
-
-local door51Generation = 0
-local door51StartTime = 0
-
-local function SyncWait(seconds)
-    if startTimeValue.Value == 0 then
-        return
-    end
-
-    local targetTime = startTimeValue.Value + seconds
-
-    while workspace:GetServerTimeNow() < targetTime do
-        task.wait(0.5)
-    end
-end
-
-local function ResettableSyncWait(seconds, baseTime, generation)
-    local targetTime = baseTime + seconds
-
-    while workspace:GetServerTimeNow() < targetTime do
-        if generation ~= door51Generation then
-            return false
-        end
-
-        task.wait(0.1)
-    end
-
-    return generation == door51Generation
-end
-
-local function ResettableRoomWait(generation)
-    local previousRoom = LatestRoom.Value
-
-    while LatestRoom.Value == previousRoom do
-        if generation ~= door51Generation then
-            return false
-        end
-
-        task.wait(0.1)
-    end
-
-    return generation == door51Generation
-end
-
-local function GetTargetSchedule()
-    if door51StartTime > 0 then
-        return door51StartTime
-    end
-
-    return startTimeValue.Value
 end
 
 local UIS = game:GetService("UserInputService")
@@ -505,7 +454,6 @@ task.spawn(function()
         elseif sprinting and isMoving and stamina > 0 then
             hum.WalkSpeed = 20
             hum:SetAttribute("SpeedBoost", 4)
-
             recoveryTimer = 0
             drainTimer += 0.06
 
@@ -545,23 +493,22 @@ task.spawn(function()
 
         bar.Size = UDim2.new(
             math.clamp(stamina / maxStamina, 0, 1),
-            0,
-            1,
-            0
+            0, 1, 0
         )
     end
 end)
 
+-- Room 50: A60 and Shocker are allowed.
+-- Room 100: no room-specific restriction.
+-- Seek still blocks all entities.
 local function LoadEntity(name)
     if workspace:FindFirstChild("SeekMoving") then
         return
     end
 
-    if LatestRoom.Value == 50 and name ~= "A60" then
-        return
-    end
-
-    if LatestRoom.Value == 100 then
+    if LatestRoom.Value == 50
+        and name ~= "A60"
+        and name ~= "Shocker" then
         return
     end
 
@@ -576,33 +523,86 @@ local function LoadEntity(name)
     end
 end
 
-local waitRipper = 140
-local waitRebound = 550
-local waitCease = 74
-local waitA60 = 32
-local waitFrostbite = 195
-
-local canSpawnRipper = false
-local canSpawnRebound = false
-local canSpawnCease = false
-local canSpawnA60 = false
-local canSpawnFrostbite = false
-
-local reboundForceRequested = false
+-- Every scheduler uses this generation.
+-- Entering room 51 increments it and resets all spawn timers.
+local scheduleGeneration = 0
 local opened = false
+local resetRoom51Handled = false
 
-LatestRoom.Changed:Connect(function()
-    if LatestRoom.Value == 51 and door51StartTime == 0 then
-        door51StartTime = workspace:GetServerTimeNow()
-        door51Generation += 1
-        reboundForceRequested = false
+local function WaitSecondsOrReset(seconds, generation)
+    local endTime = os.clock() + seconds
 
-        canSpawnRipper = false
-        canSpawnFrostbite = false
+    while os.clock() < endTime do
+        if generation ~= scheduleGeneration then
+            return false
+        end
+
+        task.wait(0.1)
     end
-end)
+
+    return generation == scheduleGeneration
+end
+
+local function WaitForNextDoor(generation)
+    local previousRoom = LatestRoom.Value
+
+    while LatestRoom.Value == previousRoom do
+        if generation ~= scheduleGeneration then
+            return false
+        end
+
+        task.wait(0.05)
+    end
+
+    return generation == scheduleGeneration
+end
+
+local function StartRandomDoorEntity(name, minTime, maxTime)
+    task.spawn(function()
+        while true do
+            local generation = scheduleGeneration
+            local delayTime = math.random(minTime, maxTime)
+
+            local valid = WaitSecondsOrReset(delayTime, generation)
+
+            if valid then
+                valid = WaitForNextDoor(generation)
+            end
+
+            if generation ~= scheduleGeneration then
+                continue
+            end
+
+            if valid then
+                LoadEntity(name)
+            end
+        end
+    end)
+end
+
+local function StartShocker()
+    task.spawn(function()
+        while true do
+            local generation = scheduleGeneration
+            local delayTime = math.random(30, 70)
+
+            local valid = WaitSecondsOrReset(delayTime, generation)
+
+            if generation == scheduleGeneration and valid then
+                LoadEntity("Shocker")
+            end
+        end
+    end)
+end
 
 LatestRoom.Changed:Connect(function()
+    if LatestRoom.Value == 51 and not resetRoom51Handled then
+        resetRoom51Handled = true
+        scheduleGeneration += 1
+    elseif LatestRoom.Value ~= 51 then
+        resetRoom51Handled = false
+    end
+
     if opened or LatestRoom.Value ~= 1 then
         return
     end
@@ -627,256 +627,12 @@ LatestRoom.Changed:Connect(function()
 
     ShowCaption(messages[math.random(1, #messages)], 5)
 
-    task.spawn(function()
-        local firstAppearance = true
-        local seenGeneration = door51Generation
-        local baseTime = GetTargetSchedule()
+    StartRandomDoorEntity("Ripper", 90, 130)
+    StartRandomDoorEntity("Rebound", 160, 180)
+    StartRandomDoorEntity("Cease", 180, 230)
+    StartRandomDoorEntity("A60", 350, 400)
+    StartRandomDoorEntity("Silence", 230, 300)
+    StartRandomDoorEntity("DeerGod", 150, 200)
 
-        while true do
-            if seenGeneration ~= door51Generation then
-                seenGeneration = door51Generation
-                firstAppearance = true
-                canSpawnRipper = false
-                baseTime = GetTargetSchedule()
-            end
-
-            if not canSpawnRipper then
-                canSpawnRipper = true
-
-                local generation = door51Generation
-                local delayTime = firstAppearance and 130 or 167
-
-                local valid = ResettableSyncWait(delayTime, baseTime, generation)
-
-                if valid then
-                    valid = ResettableRoomWait(generation)
-                end
-
-                if valid then
-                    LoadEntity("Ripper")
-                    firstAppearance = false
-                    baseTime = workspace:GetServerTimeNow()
-
-                    task.delay(waitRipper, function()
-                        canSpawnRipper = false
-                    end)
-                else
-                    canSpawnRipper = false
-                    firstAppearance = true
-                    baseTime = GetTargetSchedule()
-                end
-            end
-
-            task.wait(0.2)
-        end
-    end)
-
-    task.spawn(function()
-        local c = 0
-        local stage = 1
-        local nextAllowedTime = 0
-        local seenGeneration = door51Generation
-
-        while true do
-            if seenGeneration ~= door51Generation then
-                seenGeneration = door51Generation
-                c = 0
-                stage = 1
-                nextAllowedTime = 0
-                reboundForceRequested = false
-            end
-
-            local generation = door51Generation
-            local baseTime = GetTargetSchedule()
-
-            if reboundForceRequested then
-                reboundForceRequested = false
-                LoadEntity("Rebound")
-                nextAllowedTime = workspace:GetServerTimeNow() + waitRebound
-            else
-                local offset = stage == 1 and 670 or 1100
-                local targetTime = baseTime + c + offset
-
-                while workspace:GetServerTimeNow() < targetTime
-                    or workspace:GetServerTimeNow() < nextAllowedTime do
-
-                    if generation ~= door51Generation or reboundForceRequested then
-                        break
-                    end
-
-                    task.wait(0.1)
-                end
-
-                if generation ~= door51Generation then
-                elseif reboundForceRequested then
-                    reboundForceRequested = false
-                    LoadEntity("Rebound")
-                    nextAllowedTime = workspace:GetServerTimeNow() + waitRebound
-                else
-                    local valid = ResettableRoomWait(generation)
-
-                    if valid then
-                        LoadEntity("Rebound")
-                        nextAllowedTime = workspace:GetServerTimeNow() + waitRebound
-
-                        if stage == 1 then
-                            stage = 2
-                        else
-                            c = c + 930
-                            stage = 1
-                        end
-                    end
-                end
-            end
-
-            task.wait(0.1)
-        end
-    end)
-
-    task.spawn(function()
-        local c = 0
-
-        while true do
-            if not canSpawnCease then
-                canSpawnCease = true
-
-                SyncWait(c + 160)
-                LoadEntity("Cease")
-
-                SyncWait(c + 390)
-                LoadEntity("Cease")
-
-                c = c + 390
-
-                task.delay(waitCease, function()
-                    canSpawnCease = false
-                end)
-            end
-
-            task.wait(1)
-        end
-    end)
-
-    task.spawn(function()
-        local c = 0
-
-        while true do
-            if not canSpawnA60 then
-                canSpawnA60 = true
-
-                SyncWait(c + 730)
-                LoadEntity("A60")
-
-                SyncWait(c + 1200)
-                LoadEntity("A60")
-
-                c = c + 910
-
-                task.delay(waitA60, function()
-                    canSpawnA60 = false
-                end)
-            end
-
-            task.wait(1)
-        end
-    end)
-
-    task.spawn(function()
-        local c = 0
-        local seenGeneration = door51Generation
-
-        while true do
-            if seenGeneration ~= door51Generation then
-                seenGeneration = door51Generation
-                c = 0
-                canSpawnFrostbite = false
-            end
-
-            if not canSpawnFrostbite then
-                canSpawnFrostbite = true
-
-                local generation = door51Generation
-                local baseTime = GetTargetSchedule()
-                local valid = ResettableSyncWait(c + 330, baseTime, generation)
-
-                if valid then
-                    valid = ResettableRoomWait(generation)
-                end
-
-                if valid then
-                    LoadEntity("Frostbite")
-
-                    if math.random(1, 100) <= 95 then
-                        reboundForceRequested = true
-                    end
-
-                    valid = ResettableSyncWait(c + 645, baseTime, generation)
-                end
-
-                if valid then
-                    valid = ResettableRoomWait(generation)
-                end
-
-                if valid then
-                    LoadEntity("Frostbite")
-
-                    if math.random(1, 100) <= 95 then
-                        reboundForceRequested = true
-                    end
-
-                    c = c + 900
-
-                    task.delay(waitFrostbite, function()
-                        canSpawnFrostbite = false
-                    end)
-                else
-                    c = 0
-                    canSpawnFrostbite = false
-                end
-            end
-
-            task.wait(0.2)
-        end
-    end)
-
-    task.spawn(function()
-        local c = 0
-
-        while true do
-            SyncWait(c + 850)
-            LoadEntity("Silence")
-            SyncWait(c + 1530)
-            LoadEntity("Silence")
-            c = c + 600
-            task.wait(1)
-        end
-    end)
-
-    task.spawn(function()
-        local c = 0
-
-        while true do
-            SyncWait(c + 1500)
-
-            repeat
-                if LatestRoom.Value ~= 50
-                    and not workspace:FindFirstChild("SeekMoving") then
-                    LoadEntity("DeerGod")
-                    break
-                end
-
-                task.wait(100)
-            until false
-
-            c = c + 2100
-            task.wait(1)
-        end
-    end)
-
-    task.spawn(function()
-        while true do
-            task.wait(math.random(30, 70))
-            LoadEntity("Shocker")
-        end
-    end)
+    StartShocker()
 end)
