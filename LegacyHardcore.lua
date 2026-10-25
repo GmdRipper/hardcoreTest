@@ -524,7 +524,7 @@ local function LoadEntity(name)
 end
 
 -- Every scheduler uses this generation.
--- Entering room 51 increments it and resets all spawn timers.
+-- Entering room 51 resets all spawn timers.
 local scheduleGeneration = 0
 local opened = false
 local resetRoom51Handled = false
@@ -557,6 +557,27 @@ local function WaitForNextDoor(generation)
     return generation == scheduleGeneration
 end
 
+-- Spawns when the timer expires without waiting for a door.
+local function StartRandomTimedEntity(name, minTime, maxTime)
+    task.spawn(function()
+        while true do
+            local generation = scheduleGeneration
+            local delayTime = math.random(minTime, maxTime)
+
+            local valid = WaitSecondsOrReset(delayTime, generation)
+
+            if generation ~= scheduleGeneration then
+                continue
+            end
+
+            if valid then
+                LoadEntity(name)
+            end
+        end
+    end)
+end
+
+-- Spawns only after the timer expires and the next room transition occurs.
 local function StartRandomDoorEntity(name, minTime, maxTime)
     task.spawn(function()
         while true do
@@ -580,6 +601,7 @@ local function StartRandomDoorEntity(name, minTime, maxTime)
     end)
 end
 
+-- Shocker spawns by timer without waiting for a door.
 local function StartShocker()
     task.spawn(function()
         while true do
@@ -627,12 +649,15 @@ LatestRoom.Changed:Connect(function()
 
     ShowCaption(messages[math.random(1, #messages)], 5)
 
+    -- Door-independent entities
+    StartRandomTimedEntity("Cease", 180, 230)
+    StartRandomTimedEntity("A60", 350, 400)
+    StartRandomTimedEntity("Silence", 230, 300)
+    StartRandomTimedEntity("DeerGod", 150, 200)
+
+    -- These retain the door-transition requirement
     StartRandomDoorEntity("Ripper", 90, 130)
     StartRandomDoorEntity("Rebound", 160, 180)
-    StartRandomDoorEntity("Cease", 180, 230)
-    StartRandomDoorEntity("A60", 350, 400)
-    StartRandomDoorEntity("Silence", 230, 300)
-    StartRandomDoorEntity("DeerGod", 150, 200)
 
     StartShocker()
 end)
