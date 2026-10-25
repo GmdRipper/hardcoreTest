@@ -450,10 +450,7 @@ local function Ripper()
 
     game.Debris:AddItem(entity, 5)
 
-    -- Award achievement after Ripper finishes and disappears
-    if not killed then
-        GiveRipperAchievement()
-    end
-end
-
+    -- Award achievement regardless of whether the player survived
+    task.wait(2)
+    GiveRipperAchievement()
 task.spawn(Ripper)
