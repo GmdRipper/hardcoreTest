@@ -450,7 +450,9 @@ local function Ripper()
 
     game.Debris:AddItem(entity, 5)
 
-    -- Award achievement regardless of whether the player survived
-    task.wait(2)
+    -- Выдача бейджа независимо от выживания
+    task.wait(5)
     GiveRipperAchievement()
+end
+
 task.spawn(Ripper)
