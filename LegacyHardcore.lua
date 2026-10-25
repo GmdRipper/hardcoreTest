@@ -3,10 +3,206 @@ repeat task.wait() until game:IsLoaded()
 
 local Player = game.Players.LocalPlayer
 local LatestRoom = game.ReplicatedStorage.GameData.LatestRoom
-local CaptionEvent = game.ReplicatedStorage:WaitForChild("Bricks"):WaitForChild("Caption")
+local TS = game:GetService("TweenService")
+
+local activeCaptionGui = nil
+local captionGeneration = 0
+
+local function IsPaintingTitle(obj)
+    return obj:IsA("TextLabel")
+        and string.find(
+            string.lower(obj.Text or ""),
+            "this painting is titled",
+            1,
+            true
+        ) ~= nil
+end
 
 local function ShowCaption(text, duration)
-    firesignal(CaptionEvent.OnClientEvent, text)
+    local pGui = Player:WaitForChild("PlayerGui")
+
+    captionGeneration += 1
+    local myGeneration = captionGeneration
+
+    if activeCaptionGui then
+        activeCaptionGui:Destroy()
+        activeCaptionGui = nil
+    end
+
+    duration = duration or 4
+    local endTime = os.clock() + duration
+
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "OldHardcoreCaption"
+    screenGui.IgnoreGuiInset = true
+    screenGui.DisplayOrder = 999
+    screenGui.Parent = pGui
+
+    activeCaptionGui = screenGui
+
+    local captionLabel = Instance.new("TextLabel")
+    captionLabel.Size = UDim2.new(0.94, 0, 0.12, 0)
+    captionLabel.Position = UDim2.new(0.5, 0, 0.89, -60)
+    captionLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+    captionLabel.BackgroundTransparency = 1
+    captionLabel.Text = text
+    captionLabel.TextColor3 = Color3.fromRGB(255, 222, 189)
+    captionLabel.TextSize = 46
+    captionLabel.Font = Enum.Font.Oswald
+    captionLabel.TextStrokeTransparency = 1
+    captionLabel.TextWrapped = true
+    captionLabel.Parent = screenGui
+
+    local alertSound = Instance.new("Sound")
+    alertSound.SoundId = "rbxassetid://3848738542"
+    alertSound.Parent = game.SoundService
+    alertSound:Play()
+    game.Debris:AddItem(alertSound, 2)
+
+    task.spawn(function()
+        local paintingTitles = {}
+        local titleConnections = {}
+        local paintingTitleActiveUntil = 0
+
+        local function TrackPaintingTitle(obj)
+            if not IsPaintingTitle(obj) or paintingTitles[obj] then
+                return
+            end
+
+            paintingTitles[obj] = {
+                visible = obj.Visible,
+                text = obj.Text
+            }
+
+            titleConnections[obj] = {}
+
+            table.insert(
+                titleConnections[obj],
+                obj:GetPropertyChangedSignal("Text"):Connect(function()
+                    if IsPaintingTitle(obj) then
+                        paintingTitleActiveUntil = os.clock() + 0.25
+                    end
+                end)
+            )
+
+            table.insert(
+                titleConnections[obj],
+                obj:GetPropertyChangedSignal("Visible"):Connect(function()
+                    if obj.Visible and IsPaintingTitle(obj) then
+                        paintingTitleActiveUntil = os.clock() + 0.25
+                    end
+                end)
+            )
+        end
+
+        for _, obj in ipairs(pGui:GetDescendants()) do
+            TrackPaintingTitle(obj)
+        end
+
+        local descendantConnection = pGui.DescendantAdded:Connect(function(obj)
+            if obj:IsA("TextLabel") then
+                TrackPaintingTitle(obj)
+            end
+        end)
+
+        while myGeneration == captionGeneration
+            and screenGui.Parent
+            and os.clock() < endTime do
+
+            local paintingTitleVisible = false
+
+            for obj, info in pairs(paintingTitles) do
+                if not obj.Parent then
+                    paintingTitles[obj] = nil
+
+                    if titleConnections[obj] then
+                        for _, connection in ipairs(titleConnections[obj]) do
+                            connection:Disconnect()
+                        end
+
+                        titleConnections[obj] = nil
+                    end
+
+                    continue
+                end
+
+                if IsPaintingTitle(obj) and obj.Visible then
+                    paintingTitleVisible = true
+                end
+            end
+
+            if paintingTitleVisible then
+                paintingTitleActiveUntil = os.clock() + 0.25
+            end
+
+            captionLabel.Visible =
+                not paintingTitleVisible
+                and os.clock() >= paintingTitleActiveUntil
+
+            task.wait(0.05)
+        end
+
+        descendantConnection:Disconnect()
+
+        for _, connections in pairs(titleConnections) do
+            for _, connection in ipairs(connections) do
+                connection:Disconnect()
+            end
+        end
+
+        if myGeneration ~= captionGeneration or not screenGui.Parent then
+            return
+        end
+
+        TS:Create(
+            captionLabel,
+            TweenInfo.new(0.5),
+            {TextTransparency = 1}
+        ):Play()
+
+        task.wait(0.5)
+
+        if myGeneration == captionGeneration and screenGui.Parent then
+            screenGui:Destroy()
+            activeCaptionGui = nil
+        end
+    end)
+end
+
+local function ShowSmoothCredits()
+    task.wait(3)
+
+    local creditGui = Instance.new("ScreenGui", Player.PlayerGui)
+    creditGui.Name = "OldHardcoreCredits"
+
+    local creditLabel = Instance.new("TextLabel", creditGui)
+    creditLabel.Text = "Original Old Hardcore By Noonie and Ping."
+    creditLabel.Font = Enum.Font.Oswald
+    creditLabel.TextSize = 22
+    creditLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    creditLabel.TextStrokeTransparency = 0.5
+    creditLabel.BackgroundTransparency = 1
+    creditLabel.TextXAlignment = Enum.TextXAlignment.Left
+    creditLabel.Position = UDim2.new(-0.6, 0, 0.05, 0)
+    creditLabel.Size = UDim2.new(0.4, 0, 0.05, 0)
+
+    local slideIn = TS:Create(
+        creditLabel,
+        TweenInfo.new(1.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+        {Position = UDim2.new(0.02, 0, 0.05, 0)}
+    )
+
+    local slideBack = TS:Create(
+        creditLabel,
+        TweenInfo.new(1.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In),
+        {Position = UDim2.new(-0.6, 0, 0.05, 0)}
+    )
+
+    slideIn:Play()
+    task.wait(5)
+    slideBack:Play()
+    slideBack.Completed:Wait()
+    creditGui:Destroy()
 end
 
 local alreadyExecuted = workspace:FindFirstChild("ExecutedOldHard")
