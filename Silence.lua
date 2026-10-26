@@ -123,23 +123,29 @@ local function Silence()
 
     local function canSeeTarget(target, size)
         if killed == true then
-            return
+            return false
+        end
+
+        if target:GetAttribute("Hiding") then
+            return false
+        end
+
+        local targetRoot = target:FindFirstChild("HumanoidRootPart")
+        if not targetRoot then
+            return false
         end
 
         local origin = entityPart.Position
-        local direction = (target.HumanoidRootPart.Position - origin).Unit * size
+        local direction = (targetRoot.Position - origin).Unit * size
         local ray = Ray.new(origin, direction)
 
-        local hit, pos = workspace:FindPartOnRay(ray, entity)
+        local hit = workspace:FindPartOnRay(ray, entity)
 
-        if hit then
-            if hit:IsDescendantOf(target) then
-                killed = true
-                return true
-            end
-        else
-            return false
+        if hit and hit:IsDescendantOf(target) then
+            return true
         end
+
+        return false
     end
 
     local function GetTime(dist, speed)
