@@ -360,8 +360,8 @@ local function Rebound()
                             game.ReplicatedStorage.GameStats["Player_" .. Plr.Character.Name]["1"].DeathCause.Value = "Rebound"
 
                             firesignal(game.ReplicatedStorage.Bricks.DeathHint.OnClientEvent, {
-                                "You died to Rebound...",
-                                "It may trick you by coming through walls or next rooms...",
+                                "You died to who you call Rebound...",
+                                "He makes his presence known and keeps coming back...",
                                 "Hide when this happens!"
                             })
                         end)
@@ -447,10 +447,8 @@ local function SpawnReb()
     camShake:Start()
     camShake:ShakeOnce(10, 3, 0.1, 6, 2, 0.5)
 
-    -- Initial appearance
     pcall(Rebound)
 
-    -- Three additional rebounds
     while maxRebounds > 0 do
         game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait()
         wait(2)
@@ -458,7 +456,6 @@ local function SpawnReb()
         maxRebounds = maxRebounds - 1
     end
 
-    -- Award only after the entire rebound sequence finishes
     GiveReboundAchievement()
 end
 
