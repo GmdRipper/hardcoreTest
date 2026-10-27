@@ -95,7 +95,7 @@ task.spawn(function()
     local nextTime = 0
 
     while true do
-        nextTime = nextTime + math.random(40, 41)
+        nextTime = nextTime + math.random(450, 1000)
         SyncWait(nextTime)
         LoadEntity("Silence")
 
