@@ -290,7 +290,7 @@ local function playDeerGodJumpscare()
     end)
 
     -- Keep the jumpscare visible before applying damage
-    task.wait(1.3)
+    task.wait(1.0)
 
     active = false
 
