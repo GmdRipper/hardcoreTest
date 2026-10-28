@@ -70,6 +70,27 @@ local function AchievementsGet(Achievement)
     Achievements.Get(Achievement)
 end
 
+-- Give Silence achievement only once per game session
+local function GiveSilenceAchievement()
+    if workspace:FindFirstChild("SilenceAchievement") then
+        return
+    end
+
+    local success, err = pcall(function()
+        AchievementsGet(SilenceAchievement)
+    end)
+
+    if not success then
+        warn("Silence achievement error: " .. tostring(err))
+        return
+    end
+
+    local obtainedBadge = Instance.new("BoolValue")
+    obtainedBadge.Name = "SilenceAchievement"
+    obtainedBadge.Value = true
+    obtainedBadge.Parent = workspace
+end
+
 -- SILENCE JUMPSCARE
 local function playSilenceJumpscare()
     local player = game:GetService("Players").LocalPlayer
@@ -448,16 +469,9 @@ local function Silence()
     despawnTween:Play()
     game.Debris:AddItem(entity, 1.5)
 
-    -- Show the custom achievement after Silence finishes
-    task.wait(1.5)
-
-    local success, err = pcall(function()
-        AchievementsGet(SilenceAchievement)
-    end)
-
-    if not success then
-        warn("Silence achievement error: " .. tostring(err))
-    end
+    -- Show the custom achievement only once per game session
+    task.wait(0.1)
+    GiveSilenceAchievement()
 end
 
 local ok, err = pcall(Silence)
