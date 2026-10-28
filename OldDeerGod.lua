@@ -250,9 +250,9 @@ local function playDeerGodJumpscare()
                 0.5, offsetY
             )
 
-            -- Purple flashes
+            -- Fully opaque purple flashes
             flash.BackgroundTransparency =
-                (math.floor(elapsed * 10) % 2 == 0) and 0.45 or 1
+                (math.floor(elapsed * 10) % 2 == 0) and 0 or 1
 
             task.wait(0.04)
         end
