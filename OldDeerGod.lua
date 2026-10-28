@@ -240,27 +240,24 @@ local function playDeerGodJumpscare()
         end
     end
     
-    -- Start the first sound
-    pcall(function()
-        sound1:Play()
-    end)
-
+    -- Start the jumpscare sound immediately
     local active = true
     local startTime = os.clock()
+
+    pcall(function()
+        sound1:Play()
+        sound2:Play()
+    end)
 
     -- Image shake and flashing
     task.spawn(function()
         while active and screenGui.Parent do
             local elapsed = os.clock() - startTime
 
-            -- Switch to Image2 and play Sound2
+            -- Switch image after 0.35 seconds
             if elapsed >= 0.35 and image1.ImageTransparency == 0 then
                 image1.ImageTransparency = 1
                 image2.ImageTransparency = 0
-
-                pcall(function()
-                    sound2:Play()
-                end)
             end
 
             -- Shake the currently visible image
@@ -293,7 +290,7 @@ local function playDeerGodJumpscare()
     end)
 
     -- Keep the jumpscare visible before applying damage
-    task.wait(1.5)
+    task.wait(1.3)
 
     active = false
 
@@ -559,9 +556,10 @@ local function DeerGod()
                         if deathHint and deathHint.OnClientEvent then
                             pcall(function()
                                 firesignal(deathHint.OnClientEvent, {
-                                    "You died to who you call Dear god..",
-                                    "Avoid eye contact, and try running",
-                                    "Closets wont work."
+                                    "You died to whom you call The Deer God",
+                                    "Closets Wont work! So try running",
+                                    "Its form is incomprehensible to a human upclose...",
+                                    "..-so avoid Eye Contact"
                                 })
                             end)
                         end
