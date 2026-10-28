@@ -100,11 +100,11 @@ local function Cease()
     local TweenService = game:GetService("TweenService")
     for _, v in pairs(currentRooms:GetDescendants()) do
         if v:IsA("Light") then
-            v.Color = Color3.fromRGB(30, 144, 255)
+            v.Color = Color3.fromRGB(30, 40, 160)
             TweenService:Create(
                 v,
                 TweenInfo.new(3),
-                {Color = Color3.fromRGB(135, 206, 250)}
+                {Color = Color3.fromRGB(65, 55, 80)}
             ):Play()
         end
     end
