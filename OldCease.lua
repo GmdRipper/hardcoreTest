@@ -98,8 +98,8 @@ local function Cease()
     local entityPart = entity:FindFirstChildWhichIsA("BasePart")
     local tweenLights = TweenInfo.new(1)
     local TweenService = game:GetService("TweenService")
-    local startColor = Color3.fromRGB(30, 40, 160)
-    local endColor = Color3.fromRGB(100, 150, 220)
+    local startColor = Color3.fromRGB(70, 110, 220)
+    local endColor = Color3.fromRGB(100, 110, 160)
     local tweenInfo = TweenInfo.new(3, Enum.EasingStyle.Linear)
     for _, v in pairs(currentRooms:GetDescendants()) do
         if v:IsA("Light") then
