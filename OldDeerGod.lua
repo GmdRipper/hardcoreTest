@@ -165,7 +165,6 @@ local function playDeerGodJumpscare()
     flash.Size = UDim2.fromScale(1, 1)
     flash.Position = UDim2.fromScale(0, 0)
     flash.BackgroundColor3 = Color3.fromRGB(48, 25, 52)
-     1
     flash.BorderSizePixel = 0
     flash.ZIndex = 1
     flash.Parent = screenGui
