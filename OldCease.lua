@@ -98,14 +98,32 @@ local function Cease()
     local entityPart = entity:FindFirstChildWhichIsA("BasePart")
     local tweenLights = TweenInfo.new(1)
     local TweenService = game:GetService("TweenService")
+    local startColor = Color3.fromRGB(30, 40, 160)
+    local endColor = Color3.fromRGB(100, 150, 220)
+    local tweenInfo = TweenInfo.new(3, Enum.EasingStyle.Linear)
     for _, v in pairs(currentRooms:GetDescendants()) do
         if v:IsA("Light") then
-            v.Color = Color3.fromRGB(70, 110, 220)
-            TweenService:Create(
-                v,
-                TweenInfo.new(3),
-                {Color = Color3.fromRGB(100, 110, 160)}
-            ):Play()
+            v.Color = startColor
+            TweenService:Create(v, tweenInfo, {
+                Color = endColor
+            }):Play()
+            local fixture = v.Parent
+            if fixture and fixture.Name == "LightFixture" then
+                if fixture:IsA("BasePart") then
+                    fixture.Color = startColor
+                    TweenService:Create(fixture, tweenInfo, {
+                        Color = endColor
+                    }):Play()
+                end
+                for _, part in pairs(fixture:GetDescendants()) do
+                    if part:IsA("BasePart") and part.Name ~= "Support" then
+                        part.Color = startColor
+                        TweenService:Create(part, tweenInfo, {
+                            Color = endColor
+                        }):Play()
+                    end
+                end
+            end
         end
     end
     wait(2)
