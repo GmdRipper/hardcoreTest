@@ -199,16 +199,47 @@ local function playDeerGodJumpscare()
     local sound1 = Instance.new("Sound")
     sound1.Name = "DeerGodSound1"
     sound1.SoundId = "rbxassetid://10483790459"
-    sound1.Volume = 0.5
+    sound1.Volume = 1
     sound1.Parent = screenGui
 
     -- Sound 2
     local sound2 = Instance.new("Sound")
     sound2.Name = "DeerGodSound2"
     sound2.SoundId = "rbxassetid://10483837590"
-    sound2.Volume = 0.5
+    sound2.Volume = 1
     sound2.Parent = screenGui
-
+    
+    -- Mute other game sounds during the jumpscare
+    local originalVolumes = {}
+    local function muteOtherSound(obj)
+        if obj:IsA("Sound")
+            and obj ~= sound1
+            and obj ~= sound2
+            and originalVolumes[obj] == nil then
+            originalVolumes[obj] = obj.Volume
+            obj.Volume = 0
+        end
+    end
+    for _, obj in ipairs(game:GetDescendants()) do
+        muteOtherSound(obj)
+    end
+    local muteConnection = game.DescendantAdded:Connect(function(obj)
+        muteOtherSound(obj)
+    end)
+    local function restoreOtherSounds()
+        if muteConnection then
+            muteConnection:Disconnect()
+            muteConnection = nil
+        end
+        for sound, oldVolume in pairs(originalVolumes) do
+            pcall(function()
+                if sound.Parent then
+                    sound.Volume = oldVolume
+                end
+            end)
+        end
+    end
+    
     -- Start the first sound
     pcall(function()
         sound1:Play()
@@ -296,6 +327,8 @@ local function playDeerGodJumpscare()
     end)
 
     task.wait(0.35)
+
+    restoreOtherSounds()
 
     if screenGui then
         screenGui:Destroy()
