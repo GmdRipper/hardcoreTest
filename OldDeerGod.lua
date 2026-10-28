@@ -1,6 +1,5 @@
 -- XENO GITHUB MODEL LOADER (.rbxm / .rbxmx)
 local G = getgenv()
-
 G.LoadGithubModel = function(url, forceRefresh, retryCount)
     retryCount = retryCount or 0
 
