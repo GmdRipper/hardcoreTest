@@ -28,7 +28,7 @@ G.LoadGithubModel = function(url, retryCount)
     -- If retrying, delete potentially corrupted file
     if retryCount > 0 and isfile(fileName) then
         pcall(function() delfile(fileName) end)
-        wait(1) -- Small delay before retry
+        wait(1)
     end
     
     -- Check if file already exists
@@ -73,7 +73,7 @@ local function Cease()
     local ambruhheight = Vector3.new(0, 3.4, 0)
     local repStorage = game.ReplicatedStorage
     local gameData = repStorage.GameData
-    local latestRoom = gameData.LatestRoom -- Variável correta
+    local latestRoom = gameData.LatestRoom
     local currentRooms = workspace.CurrentRooms
     local entity = nil
     local killed = false
@@ -97,47 +97,27 @@ local function Cease()
 
     local entityPart = entity:FindFirstChildWhichIsA("BasePart")
     local tweenLights = TweenInfo.new(1)
-    local TweenService = game:GetService("TweenService")
-    local startColor = Color3.fromRGB(70, 110, 220)
-    local endColor = Color3.fromRGB(100, 110, 160)
-    local tweenInfo = TweenInfo.new(3, Enum.EasingStyle.Linear)
-    for _, v in pairs(currentRooms:GetDescendants()) do
+    local color = {Color = Color3.fromRGB(0, 0, 255)}
+    for i, v in pairs(currentRooms:GetDescendants()) do
         if v:IsA("Light") then
-            v.Color = startColor
-            TweenService:Create(v, tweenInfo, {
-                Color = endColor
-            }):Play()
-            local fixture = v.Parent
-            if fixture and fixture.Name == "LightFixture" then
-                if fixture:IsA("BasePart") then
-                    fixture.Color = startColor
-                    TweenService:Create(fixture, tweenInfo, {
-                        Color = endColor
-                    }):Play()
-                end
-                for _, part in pairs(fixture:GetDescendants()) do
-                    if part:IsA("BasePart") and part.Name ~= "Support" then
-                        part.Color = startColor
-                        TweenService:Create(part, tweenInfo, {
-                            Color = endColor
-                        }):Play()
-                    end
-                end
+            game.TweenService:Create(v, tweenLights, color):Play()
+            if v.Parent.Name == "LightFixture" then
+                game.TweenService:Create(v.Parent, tweenLights, color):Play()
             end
         end
     end
     wait(2)
 
     local function canSeeTarget(target, size)
-        if killed == true then return end
         local origin = entityPart.Position
-        local direction = (target.HumanoidRootPart.Position - origin).unit * size
+        local direction = (target.HumanoidRootPart.Position - origin).Unit * size
         local ray = Ray.new(origin, direction)
         local hit, pos = workspace:FindPartOnRay(ray, entityPart)
+
         if hit and hit:IsDescendantOf(target) then
-            killed = true
             return true
         end
+
         return false
     end
 
@@ -150,40 +130,48 @@ local function Cease()
             wait(0.01)
             local v = game.Players.LocalPlayer
             if v.Character ~= nil and v.Character:FindFirstChild("HumanoidRootPart") then
-                -- Lógica de movimento preservada: se mexeu enquanto ele vê, morre
-                if canSeeTarget(v.Character, 60) and v.Character.Humanoid.MoveDirection.Magnitude > 0 then
-                    v.Character.Humanoid:TakeDamage(100)
-                    game.ReplicatedStorage.GameStats["Player_".. v.Character.Name].Total.DeathCause.Value = "Cease"
-                    firesignal(game.ReplicatedStorage.Bricks.DeathHint.OnClientEvent, {"You died to who you call Cease..","Do not move while its in your sight"})
+                local humanoid = v.Character:FindFirstChildOfClass("Humanoid")
+                if humanoid and not killed then
+                    if canSeeTarget(v.Character, 60) and humanoid.MoveDirection.Magnitude > 0 then
+                        killed = true
+                        humanoid:TakeDamage(100)
+                        game.ReplicatedStorage.GameStats["Player_" .. v.Character.Name].Total.DeathCause.Value = "Cease"
+                        firesignal(game.ReplicatedStorage.Bricks.DeathHint.OnClientEvent, {
+                            "Hmm..",
+                            "I dont know who you died to..",
+                            "Dont Move..?"
+                        })
+                    end
                 end
             end
 
-            if v.Character ~= nil and (entityPart.Position - v.Character.HumanoidRootPart.Position).magnitude <= 60 then
-                camShake:ShakeOnce(7, 15, 0.5, 1,1,6)
+            if v.Character ~= nil and v.Character:FindFirstChild("HumanoidRootPart")
+                and (entityPart.Position - v.Character.HumanoidRootPart.Position).Magnitude <= 60 then
+                camShake:ShakeOnce(7, 15, 0.5, 1, 1, 6)
             end
         end
     end)
 
     ambruhspeed = DEF_SPEED
     
-    -- CORREÇÃO DO LOOP: de 1 até o valor da última sala
+    -- Move through the room nodes
     for i = 1, latestRoom.Value do 
-        -- Procuramos o nome da sala como String (tostring(i))
         local room = currentRooms:FindFirstChild(tostring(i))
         if room then
             local nodes = room:FindFirstChild("Nodes")
             if nodes then
-                -- Movendo pelos nós da sala
                 for v = 1, #nodes:GetChildren() do
                     local node = nodes:FindFirstChild(tostring(v))
                     if node then
-                        local dist = (entityPart.Position - node.Position).magnitude
-                        -- Lógica de tempo original preservada
-                        local jerk = game.TweenService:Create(entityPart, TweenInfo.new(GetTime(dist, ambruhspeed), Enum.EasingStyle.Linear), {CFrame = node.CFrame + ambruhheight})
+                        local dist = (entityPart.Position - node.Position).Magnitude
+                        local jerk = game.TweenService:Create(
+                            entityPart,
+                            TweenInfo.new(GetTime(dist, ambruhspeed), Enum.EasingStyle.Linear),
+                            {CFrame = node.CFrame + ambruhheight}
+                        )
                         jerk:Play()
                         jerk.Completed:Wait()
                         
-                        -- Reseta para a velocidade normal após o primeiro movimento
                         ambruhspeed = storer 
                     end
                 end
