@@ -165,7 +165,7 @@ local function playDeerGodJumpscare()
     flash.Size = UDim2.fromScale(1, 1)
     flash.Position = UDim2.fromScale(0, 0)
     flash.BackgroundColor3 = Color3.fromRGB(48, 25, 52)
-    flash.BackgroundTransparency = 1
+     1
     flash.BorderSizePixel = 0
     flash.ZIndex = 1
     flash.Parent = screenGui
@@ -250,9 +250,13 @@ local function playDeerGodJumpscare()
                 0.5, offsetY
             )
 
-            -- Fully opaque purple flashes
-            flash.BackgroundTransparency =
-                (math.floor(elapsed * 10) % 2 == 0) and 0 or 1
+            -- Purple and black flashes
+            if math.floor(elapsed * 10) % 2 == 0 then
+                flash.BackgroundColor3 = Color3.fromRGB(48, 25, 52)
+            else
+                flash.BackgroundColor3 = Color3.new(0, 0, 0)
+            end
+            flash.BackgroundTransparency = 0
 
             task.wait(0.04)
         end
