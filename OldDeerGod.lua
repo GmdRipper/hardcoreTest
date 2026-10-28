@@ -17,7 +17,10 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
     forceRefresh = forceRefresh or false
 
     local function getFileNameFromUrl(url)
-        local modelName = url:match("([^/]+)%.rbxm$") or url:match("([^/]+)%.rbxmx$") or "model"
+        local modelName = url:match("([^/]+)%.rbxm$")
+            or url:match("([^/]+)%.rbxmx$")
+            or "model"
+
         modelName = modelName:gsub("[^%w_%-]", "_")
         return "deer_god_" .. modelName .. ".rbxm"
     end
@@ -27,6 +30,7 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
     if retryCount > 0 then
         print("Retry " .. retryCount .. ": Cleaning up...")
         task.wait(1)
+
         if isfile(fileName) then
             pcall(function()
                 delfile(fileName)
@@ -76,9 +80,11 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
 
     if not assetSuccess then
         warn("Failed to get custom asset: " .. tostring(assetResult))
+
         pcall(function()
             delfile(fileName)
         end)
+
         return G.LoadGithubModel(url, forceRefresh, retryCount + 1)
     end
 
@@ -87,22 +93,27 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
     local model
     local loadSuccess, loadResult = pcall(function()
         local objects = game:GetObjects(assetId)
+
         if objects and #objects > 0 then
             return objects[1]:Clone()
         end
+
         return nil
     end)
 
     if not loadSuccess or not loadResult then
         warn("Failed to load model: " .. tostring(loadResult))
+
         pcall(function()
             delfile(fileName)
         end)
+
         return G.LoadGithubModel(url, forceRefresh, retryCount + 1)
     end
 
     model = loadResult
     print("Model loaded successfully: " .. fileName)
+
     return model
 end
 
@@ -125,6 +136,169 @@ local DearGodAchievement = {
 local deerGodThread = nil
 local currentEntity = nil
 
+-- DeerGod jumpscare
+-- Adapted from the image, sound, shake and flashing settings
+-- supplied for CometV4's DeerGod.
+local function playDeerGodJumpscare()
+    local player = game:GetService("Players").LocalPlayer
+
+    if not player then
+        return
+    end
+
+    local playerGui = player:FindFirstChildOfClass("PlayerGui")
+
+    if not playerGui then
+        return
+    end
+
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "DeerGodJumpscare"
+    screenGui.IgnoreGuiInset = true
+    screenGui.ResetOnSpawn = false
+    screenGui.DisplayOrder = 999999
+    screenGui.Parent = playerGui
+
+    -- Purple flashing overlay
+    local flash = Instance.new("Frame")
+    flash.Name = "Flashing"
+    flash.Size = UDim2.fromScale(1, 1)
+    flash.Position = UDim2.fromScale(0, 0)
+    flash.BackgroundColor3 = Color3.fromRGB(48, 25, 52)
+    flash.BackgroundTransparency = 1
+    flash.BorderSizePixel = 0
+    flash.ZIndex = 1
+    flash.Parent = screenGui
+
+    -- First jumpscare image
+    local image1 = Instance.new("ImageLabel")
+    image1.Name = "Image1"
+    image1.AnchorPoint = Vector2.new(0.5, 0.5)
+    image1.Position = UDim2.fromScale(0.5, 0.5)
+    image1.Size = UDim2.fromScale(0.9, 0.9)
+    image1.BackgroundTransparency = 1
+    image1.Image = "rbxassetid://11395251069"
+    image1.ScaleType = Enum.ScaleType.Fit
+    image1.ImageTransparency = 0
+    image1.ZIndex = 2
+    image1.Parent = screenGui
+
+    -- Second image uses the same asset as the original settings
+    local image2 = Instance.new("ImageLabel")
+    image2.Name = "Image2"
+    image2.AnchorPoint = Vector2.new(0.5, 0.5)
+    image2.Position = UDim2.fromScale(0.5, 0.5)
+    image2.Size = UDim2.fromScale(0.9, 0.9)
+    image2.BackgroundTransparency = 1
+    image2.Image = "rbxassetid://11395251069"
+    image2.ScaleType = Enum.ScaleType.Fit
+    image2.ImageTransparency = 1
+    image2.ZIndex = 3
+    image2.Parent = screenGui
+
+    -- Sound 1
+    local sound1 = Instance.new("Sound")
+    sound1.Name = "DeerGodSound1"
+    sound1.SoundId = "rbxassetid://10483790459"
+    sound1.Volume = 0.5
+    sound1.Parent = screenGui
+
+    -- Sound 2
+    local sound2 = Instance.new("Sound")
+    sound2.Name = "DeerGodSound2"
+    sound2.SoundId = "rbxassetid://10483837590"
+    sound2.Volume = 0.5
+    sound2.Parent = screenGui
+
+    -- Start the first sound
+    pcall(function()
+        sound1:Play()
+    end)
+
+    local active = true
+    local startTime = os.clock()
+
+    -- Image shake and flashing
+    task.spawn(function()
+        while active and screenGui.Parent do
+            local elapsed = os.clock() - startTime
+
+            -- Switch to Image2 and play Sound2
+            if elapsed >= 0.35 and image1.ImageTransparency == 0 then
+                image1.ImageTransparency = 1
+                image2.ImageTransparency = 0
+
+                pcall(function()
+                    sound2:Play()
+                end)
+            end
+
+            -- Shake the currently visible image
+            local offsetX = math.random(-15, 15)
+            local offsetY = math.random(-15, 15)
+
+            local currentImage
+
+            if image2.ImageTransparency == 0 then
+                currentImage = image2
+            else
+                currentImage = image1
+            end
+
+            currentImage.Position = UDim2.new(
+                0.5, offsetX,
+                0.5, offsetY
+            )
+
+            -- Purple flashes
+            flash.BackgroundTransparency =
+                (math.floor(elapsed * 10) % 2 == 0) and 0.45 or 1
+
+            task.wait(0.04)
+        end
+    end)
+
+    -- Keep the jumpscare visible before applying damage
+    task.wait(1.5)
+
+    active = false
+
+    -- Fade out the image and overlay
+    local TweenService = game:GetService("TweenService")
+
+    local fadeInfo = TweenInfo.new(
+        0.3,
+        Enum.EasingStyle.Linear,
+        Enum.EasingDirection.Out
+    )
+
+    pcall(function()
+        TweenService:Create(
+            image1,
+            fadeInfo,
+            {ImageTransparency = 1}
+        ):Play()
+
+        TweenService:Create(
+            image2,
+            fadeInfo,
+            {ImageTransparency = 1}
+        ):Play()
+
+        TweenService:Create(
+            flash,
+            fadeInfo,
+            {BackgroundTransparency = 1}
+        ):Play()
+    end)
+
+    task.wait(0.35)
+
+    if screenGui then
+        screenGui:Destroy()
+    end
+end
+
 local function DeerGod()
     if deerGodThread then
         pcall(function()
@@ -133,6 +307,7 @@ local function DeerGod()
                 currentEntity = nil
             end
         end)
+
         deerGodThread = nil
     end
 
@@ -200,11 +375,14 @@ local function DeerGod()
         return
     end
 
-    local camShake = cameraShaker.new(Enum.RenderPriority.Camera.Value, function(cf)
-        if camera then
-            camera.CFrame = camera.CFrame * cf
+    local camShake = cameraShaker.new(
+        Enum.RenderPriority.Camera.Value,
+        function(cf)
+            if camera then
+                camera.CFrame = camera.CFrame * cf
+            end
         end
-    end)
+    )
 
     camShake:Start()
 
@@ -215,7 +393,8 @@ local function DeerGod()
     local storer = ambruhspeed
     local ambruhheight = Vector3.new(0, 3.4, 0)
 
-    local rawUrl = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/main/oldDeerGod.rbxm"
+    local rawUrl =
+        "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/main/oldDeerGod.rbxm"
 
     if G.LoadGithubModel then
         local success, result = pcall(function()
@@ -260,6 +439,7 @@ local function DeerGod()
         end
 
         local offset = humanoidRootPart.Position - entityPart.Position
+
         if offset.Magnitude == 0 or offset.Magnitude > size then
             return false
         end
@@ -274,6 +454,7 @@ local function DeerGod()
         if speed <= 0 then
             speed = 1
         end
+
         return dist / speed
     end
 
@@ -281,10 +462,14 @@ local function DeerGod()
 
     -- Death detection
     local deathThread = task.spawn(function()
-        while entity ~= nil and entityPart ~= nil and entityPart.Parent ~= nil do
+        while entity ~= nil
+            and entityPart ~= nil
+            and entityPart.Parent ~= nil do
+
             task.wait(0.1)
 
             local player = game.Players.LocalPlayer
+
             if not player then
                 continue
             end
@@ -303,18 +488,26 @@ local function DeerGod()
                     and not isHiding
                     and canSeeTarget(character, 50) then
 
-                    -- Mark as caught only after visibility and hiding checks pass.
+                    -- Mark as caught before starting the jumpscare
                     killed = true
 
-                    humanoid:TakeDamage(100)
+                    -- NEW: Play the jumpscare before dealing lethal damage
+                    playDeerGodJumpscare()
+
+                    -- Apply damage after the jumpscare
+                    if humanoid.Parent and humanoid.Health > 0 then
+                        humanoid:TakeDamage(100)
+                    end
 
                     local gameStats = repStorage:FindFirstChild("GameStats")
 
                     if gameStats then
-                        local playerStats = gameStats:FindFirstChild("Player_" .. character.Name)
+                        local playerStats =
+                            gameStats:FindFirstChild("Player_" .. character.Name)
 
                         if playerStats and playerStats:FindFirstChild("Total") then
-                            local deathCause = playerStats.Total:FindFirstChild("DeathCause")
+                            local deathCause =
+                                playerStats.Total:FindFirstChild("DeathCause")
 
                             if deathCause then
                                 deathCause.Value = "Deer God"
@@ -346,7 +539,10 @@ local function DeerGod()
 
     -- Camera shake
     local shakeThread = task.spawn(function()
-        while entity ~= nil and entityPart ~= nil and entityPart.Parent ~= nil do
+        while entity ~= nil
+            and entityPart ~= nil
+            and entityPart.Parent ~= nil do
+
             task.wait(1.8)
 
             if camShake then
@@ -385,6 +581,7 @@ local function DeerGod()
             table.sort(nodeList, function(a, b)
                 local numA = tonumber(a.Name) or 0
                 local numB = tonumber(b.Name) or 0
+
                 return numA < numB
             end)
 
@@ -411,6 +608,7 @@ local function DeerGod()
 
                 jerk:Play()
                 jerk.Completed:Wait()
+
                 ambruhspeed = storer
             end
         end
