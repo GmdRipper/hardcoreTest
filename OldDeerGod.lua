@@ -129,15 +129,34 @@ local DearGodAchievement = {
     Title = "Last Chance To Look Away",
     Desc = "Why are you running?",
     Reason = "Survive the rare Entity called Dear God",
-    Image = "rbxassetid://2129311966",
+    Image = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/main/DeerGodAchivement.jpg",
 }
+
+-- Выдаёт ачивку Deer God только один раз за игровую сессию
+local function GiveDearGodAchievement()
+    if workspace:FindFirstChild("DearGodAchievement") then
+        return
+    end
+
+    local success, err = pcall(function()
+        AchievementsGet(DearGodAchievement)
+    end)
+
+    if not success then
+        warn("Deer God achievement error: " .. tostring(err))
+        return
+    end
+
+    local obtainedBadge = Instance.new("BoolValue")
+    obtainedBadge.Name = "DearGodAchievement"
+    obtainedBadge.Value = true
+    obtainedBadge.Parent = workspace
+end
 
 local deerGodThread = nil
 local currentEntity = nil
 
 -- DeerGod jumpscare
--- Adapted from the image, sound, shake and flashing settings
--- supplied for CometV4's DeerGod.
 local function playDeerGodJumpscare()
     local player = game:GetService("Players").LocalPlayer
 
@@ -629,15 +648,13 @@ local function DeerGod()
         fallTween.Completed:Wait()
     end
 
-    -- Award achievement if the player survived and was not caught.
+    -- Award achievement only once per game session if the player survived.
     local player = game.Players.LocalPlayer
     local character = player and player.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-
+    
     if not killed and humanoid and humanoid.Health > 0 then
-        pcall(function()
-            AchievementsGet(DearGodAchievement)
-        end)
+        GiveDearGodAchievement()
     end
 
     game:GetService("Debris"):AddItem(entity, 1.5)
