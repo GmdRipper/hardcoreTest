@@ -289,43 +289,11 @@ local function playDeerGodJumpscare()
     end)
 
     -- Keep the jumpscare visible before applying damage
-    task.wait(1.5)
+    task.wait(1.2)
 
     active = false
 
-    -- Fade out the image and overlay
-    local TweenService = game:GetService("TweenService")
-
-    local fadeInfo = TweenInfo.new(
-        0.3,
-        Enum.EasingStyle.Linear,
-        Enum.EasingDirection.Out
-    )
-
-    pcall(function()
-        TweenService:Create(
-            image1,
-            fadeInfo,
-            {ImageTransparency = 1}
-        ):Play()
-
-        TweenService:Create(
-            image2,
-            fadeInfo,
-            {ImageTransparency = 1}
-        ):Play()
-
-        TweenService:Create(
-            flash,
-            fadeInfo,
-            {BackgroundTransparency = 1}
-        ):Play()
-    end)
-
-    task.wait(0.35)
-
     restoreOtherSounds()
-
     if screenGui then
         screenGui:Destroy()
     end
