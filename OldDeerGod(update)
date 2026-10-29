@@ -2,81 +2,10 @@ spawn(function()
     getgenv().death = false
     local function a()
         while true do
-            task.wait(385)
             if (workspace.Ambience_Seek.Playing or workspace.Ambience_Figure.Playing or workspace.Ambience_FigureIntense.Playing or workspace.Ambience_FigureEnd.Playing or workspace.CurrentRooms:FindFirstChild("50")) then
-                a()
-                return
+                task.wait(5)
+                continue
             end
-            
-            local Creator = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/DOORS-Entity-Spawner/main/init.luau"))()
-            
-            local entity = Creator.createEntity({
-                Model = "12262883448",
-                Speed = 25,
-                DelayTime = 0,
-                HeightOffset = 0,
-                CanKill = true,
-                BreakLights = true,
-                FlickerLights = {
-                    true,
-                    80,
-                },
-                Cycles = {
-                    Min = 1,
-                    Max = 1,
-                    WaitTime = 0.1,
-                },
-                CamShake = {
-                    true,
-                    {5, 15, 0.1, 1},
-                    10,
-                },
-                Jumpscare = {
-                    true,
-                    {
-                        Image1 = "rbxassetid://11394027278",
-                        Image2 = "rbxassetid://11395249153",
-                        Shake = true,
-                        Sound1 = {
-                            10483790459,
-                            { Volume = 0.5 },
-                        },
-                        Sound2 = {
-                            10483837590,
-                            { Volume = 0.5 },
-                        },
-                        Flashing = {
-                            true,
-                            Color3.fromRGB(48, 25, 52),
-                        },
-                        Tease = {
-                            false,
-                            Min = 1,
-                            Max = 1,
-                        },
-                    },
-                },
-                CustomDialog = {
-                    "You died to whom you call The Deer God",
-                    "Closets Wont work! So try running",
-                    "Its form is incomprehensible to a human upclose...",
-                    "..-so avoid Eye Contact"
-                }
-            })
-            
-            local function GetGitSound(GithubSnd, SoundName)
-                local url = GithubSnd
-                if not isfile(SoundName .. ".mp3") then
-                    writefile(SoundName .. ".mp3", game:HttpGet(url))
-                end
-                local sound = Instance.new("Sound")
-                sound.SoundId = (getcustomasset or getsynasset)(SoundName .. ".mp3")
-                return sound
-            end
-            
-            local Chase = GetGitSound("https://github.com/Noonie1/goob/blob/main/Followed..mp3?raw=true", "followed")
-            Chase.Parent = workspace
-            Chase.Volume = 0
             
             local cameraShaker = require(game.ReplicatedStorage.CameraShaker)
             local camera = workspace.CurrentCamera
@@ -86,17 +15,61 @@ spawn(function()
             end)
             camShake:Start()
 
-            entity.Debug.OnEntitySpawned = function(entity)
-                Chase:Play()
-                game.TweenService:Create(Chase, TweenInfo.new(5), {Volume = 0.7}):Play()
-                camShake:ShakeSustain(cameraShaker.Presets.Earthquake)
+            local Chase = Instance.new("Sound")
+            Chase.SoundId = "rbxassetid://9114220463"
+            Chase.Parent = workspace
+            Chase.Volume = 0.7
+            Chase.Looped = true
+            Chase:Play()
+
+            camShake:ShakeSustain(cameraShaker.Presets.Earthquake)
+
+            local success, result = pcall(function()
+                return game:GetObjects("rbxassetid://12262883448")
+            end)
+
+            if not success or not result or not result[1] then
+                Chase:Destroy()
+                camShake:StopSustained(5)
+                return
             end
 
-            entity.Debug.OnEntityDespawned = function(entity)
+            local entity = result[1]
+            entity.Parent = workspace
+            local entityPart = entity:FindFirstChildWhichIsA("BasePart")
+
+            if not entityPart then
+                entity:Destroy()
+                Chase:Destroy()
                 camShake:StopSustained(5)
-                game.TweenService:Create(Chase, TweenInfo.new(10), {Volume = 0, Pitch = 0}):Play()
-                
-                if getgenv().death == false then
+                return
+            end
+
+            local latestroom = game.ReplicatedStorage.GameData.LatestRoom.Value
+            local gruh = workspace.CurrentRooms
+
+            for i = latestroom, latestroom + 2 do
+                if gruh:FindFirstChild(tostring(i)) then
+                    local room = gruh[tostring(i)]
+                    if room:FindFirstChild("Nodes") then
+                        local nodes = room:FindFirstChild("Nodes")
+                        for v = 1, #nodes:GetChildren() do
+                            local waypoint = nodes:FindFirstChild(tostring(v))
+                            if waypoint then
+                                entityPart.CFrame = waypoint.CFrame + Vector3.new(0, 3.4, 0)
+                                task.wait(0.05)
+                            end
+                        end
+                    end
+                end
+            end
+
+            camShake:StopSustained(5)
+            game.TweenService:Create(Chase, TweenInfo.new(3), {Volume = 0}):Play()
+            task.delay(3, function() Chase:Destroy() end)
+            
+            if getgenv().death == false then
+                pcall(function()
                     getgenv().Title = "Last Chance To Look Away"
                     getgenv().Description = "Why are you running?"
                     getgenv().Reason = "Survive the rare Entity called Dear God"
@@ -104,7 +77,7 @@ spawn(function()
                     getgenv().Category = 10
 
                     local Unlock = require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Lobby.RemoteListener.Modules.AchievementUnlock)
-                    for i, v in pairs(require(game:GetService("ReplicatedStorage").Achievements)) do
+                    for _, v in pairs(require(game:GetService("ReplicatedStorage").Achievements)) do
                         v.Title = getgenv().Title
                         v.Desc = getgenv().Description
                         v.Reason = getgenv().Reason
@@ -112,14 +85,11 @@ spawn(function()
                         v.Category = getgenv().Category
                     end
                     Unlock(nil, "Join")
-                end
+                end)
             end
 
-            entity.Debug.OnDeath = function()
-                getgenv().death = true
-            end
-
-            Creator.runEntity(entity)
+            entity:Destroy()
+            break
         end
     end
     a()
