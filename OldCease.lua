@@ -96,17 +96,36 @@ local function Cease()
     if not entity then return end
 
     local entityPart = entity:FindFirstChildWhichIsA("BasePart")
-    local tweenLights = TweenInfo.new(1)
-    local color = {Color = Color3.fromRGB(0, 0, 255)}
-    for i, v in pairs(currentRooms:GetDescendants()) do
-        if v:IsA("Light") then
-            game.TweenService:Create(v, tweenLights, color):Play()
-            if v.Parent.Name == "LightFixture" then
-                game.TweenService:Create(v.Parent, tweenLights, color):Play()
+
+        local function MakeNormal(Light)
+            spawn(function()
+                local originalColor = Light.Color
+                task.wait(5)
+                game.TweenService:Create(Light, TweenInfo.new(0.5), {Color = originalColor}):Play()
+            end)
+        end
+    
+        local tweenLights = TweenInfo.new(0.5)
+        local blueColor = {Color = Color3.fromRGB(116, 135, 255)}
+    
+        for i, v in pairs(currentRooms:GetDescendants()) do
+            if v:IsA("Light") then
+                pcall(MakeNormal, v)
+                game.TweenService:Create(v, tweenLights, blueColor):Play()
+                
+                if v.Parent.Name == "LightFixture" then
+                    local neonPart = v.Parent:FindFirstChild("Neon")
+                    if neonPart then
+                        pcall(MakeNormal, neonPart)
+                        game.TweenService:Create(neonPart, tweenLights, blueColor):Play()
+                    else
+                        game.TweenService:Create(v.Parent, tweenLights, blueColor):Play()
+                    end
+                end
             end
         end
-    end
-    wait(2)
+        
+        wait(2)
 
     local function canSeeTarget(target, size)
         local origin = entityPart.Position
