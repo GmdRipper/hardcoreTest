@@ -541,6 +541,7 @@ local function DeerGod()
         local room = currentRooms:FindFirstChild(tostring(i))
 
         if room then
+            -- Вызываем мигание света для каждой комнаты по пути сущности
             if required.flickerLights then
                 pcall(function()
                     required.flickerLights(room, 2)
