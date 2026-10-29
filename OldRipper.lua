@@ -2,7 +2,6 @@
 local G = getgenv()
 G.LoadGithubModel = function(url, retryCount)
     retryCount = retryCount or 0
-
     if retryCount > 3 then
         warn("Failed to load model after 3 attempts")
         return nil
