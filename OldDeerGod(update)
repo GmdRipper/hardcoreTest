@@ -540,53 +540,59 @@ local function DeerGod()
 
         local room = currentRooms:FindFirstChild(tostring(i))
 
-        if room and room:FindFirstChild("Nodes") then
-            local nodes = room.Nodes
-
-            if required.breakLights then
+        if room then
+            if required.flickerLights then
+                pcall(function()
+                    required.flickerLights(room, 2)
+                end)
+            elseif required.breakLights then
                 pcall(function()
                     required.breakLights(room)
                 end)
             end
 
-            local nodeList = {}
+            if room:FindFirstChild("Nodes") then
+                local nodes = room.Nodes
 
-            for _, node in ipairs(nodes:GetChildren()) do
-                table.insert(nodeList, node)
-            end
+                local nodeList = {}
 
-            table.sort(nodeList, function(a, b)
-                local numA = tonumber(a.Name) or 0
-                local numB = tonumber(b.Name) or 0
-
-                return numA < numB
-            end)
-
-            for _, node in ipairs(nodeList) do
-                if not entityPart or not entityPart.Parent then
-                    break
+                for _, node in ipairs(nodes:GetChildren()) do
+                    table.insert(nodeList, node)
                 end
 
-                local dist = (entityPart.Position - node.Position).Magnitude
-                local tweenService = game:GetService("TweenService")
+                table.sort(nodeList, function(a, b)
+                    local numA = tonumber(a.Name) or 0
+                    local numB = tonumber(b.Name) or 0
 
-                local jerk = tweenService:Create(
-                    entityPart,
-                    TweenInfo.new(
-                        GetTime(dist, ambruhspeed),
-                        Enum.EasingStyle.Linear,
-                        Enum.EasingDirection.Out,
-                        0,
-                        false,
-                        0
-                    ),
-                    {CFrame = node.CFrame + ambruhheight}
-                )
+                    return numA < numB
+                end)
 
-                jerk:Play()
-                jerk.Completed:Wait()
+                for _, node in ipairs(nodeList) do
+                    if not entityPart or not entityPart.Parent then
+                        break
+                    end
 
-                ambruhspeed = storer
+                    local dist = (entityPart.Position - node.Position).Magnitude
+                    local tweenService = game:GetService("TweenService")
+
+                    local jerk = tweenService:Create(
+                        entityPart,
+                        TweenInfo.new(
+                            GetTime(dist, ambruhspeed),
+                            Enum.EasingStyle.Linear,
+                            Enum.EasingDirection.Out,
+                            0,
+                            false,
+                            0
+                        ),
+                        {CFrame = node.CFrame + ambruhheight}
+                    )
+
+                    jerk:Play()
+                    jerk.Completed:Wait()
+
+                    ambruhspeed = storer
+                end
             end
         end
     end
