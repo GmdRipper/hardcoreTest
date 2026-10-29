@@ -62,7 +62,7 @@ G.LoadGithubModel = function(url, retryCount)
     return G.LoadGithubModel(url, retryCount + 1)
 end
 
--- RIPPER ACHIEVEMENT
+-- НОВАЯ СИСТЕМА АЧИВОК (РЕКОМЕНДОВАННАЯ VYNIXU)
 local RipperAchievement = {
     Title = "Torn Apart",
     Desc = "Dont leave too early..",
@@ -74,17 +74,13 @@ local Achievements = loadstring(game:HttpGet(
     "https://raw.githubusercontent.com/MuhXd/Models/main/RegularVynixu's%20Achievement%20Modifyer"
 ))()
 
-local function AchievementsGet(Achievement)
-    Achievements.Get(Achievement)
-end
-
 local function GiveRipperAchievement()
-    if workspace:FindFirstChild("RipperAchievement") then
+    if workspace:FindFirstChild("RipperAchievementUnlocked") then
         return
     end
 
     local success, err = pcall(function()
-        AchievementsGet(RipperAchievement)
+        Achievements.Get(RipperAchievement)
     end)
 
     if not success then
@@ -93,7 +89,7 @@ local function GiveRipperAchievement()
     end
 
     local obtainedBadge = Instance.new("BoolValue")
-    obtainedBadge.Name = "RipperAchievement"
+    obtainedBadge.Name = "RipperAchievementUnlocked"
     obtainedBadge.Value = true
     obtainedBadge.Parent = workspace
 end
@@ -368,7 +364,6 @@ local function Ripper()
         end
     end)
 
-    -- ORIGINAL NODE MOVEMENT
     if entityPart:FindFirstChild("Ambush") then
         entityPart.Ambush:Stop()
         entityPart.Ambush.Volume = 10
