@@ -335,19 +335,6 @@ local function DeerGod()
     end
 
     local latestRoomValue = latestRoomInt.Value
-    local latestRoomModel = currentRooms:FindFirstChild(tostring(latestRoomValue))
-
-    if required.init then
-        pcall(function()
-            required.init()
-        end)
-    end
-
-    if latestRoomModel and required.flickerLights then
-        pcall(function()
-            required.flickerLights(latestRoomModel, 52)
-        end)
-    end
 
     local cameraShakerModule = repStorage:FindFirstChild("CameraShaker")
 
@@ -372,6 +359,7 @@ local function DeerGod()
     )
 
     camShake:Start()
+    camShake:Shake(cameraShaker.Presets.Earthquake)
 
     local entity = nil
     local killed = false
@@ -541,16 +529,12 @@ local function DeerGod()
         local room = currentRooms:FindFirstChild(tostring(i))
 
         if room then
-            -- Вызываем мигание света для каждой комнаты по пути сущности
-            if required.flickerLights then
-                pcall(function()
-                    required.flickerLights(room, 2)
-                end)
-            elseif required.breakLights then
-                pcall(function()
+            -- Вызов оригинальной функции лопания и выбивания лампочек в каждой комнате
+            pcall(function()
+                if required.breakLights then
                     required.breakLights(room)
-                end)
-            end
+                end
+            end)
 
             if room:FindFirstChild("Nodes") then
                 local nodes = room.Nodes
