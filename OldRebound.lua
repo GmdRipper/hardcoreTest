@@ -213,7 +213,7 @@ local function Rebound()
     end)
     camShake:Start()
 
-    local rawUrl = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/main/oldRebound.rbxm"
+    local rawUrl = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/main/oldRebound.rbxm"
 
     if G.LoadGithubModel then
         entity = G.LoadGithubModel(rawUrl)
