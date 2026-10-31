@@ -214,9 +214,9 @@ local function SpawnShocker()
 
                 -- Player looked briefly, then looked away:
                 -- Shocker ignores the player and disappears.
-                if lookingTime > 0.1
+                if lookingTime > 0.01
                     and lookingTime < 1.9
-                    and timeSinceLastLook > 0.1 then
+                    and timeSinceLastLook > 0.01 then
 
                     mainPart.Anchored = false
                     mainPart.CanCollide = false
