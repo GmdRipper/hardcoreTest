@@ -18,10 +18,8 @@ local function loadModel(id)
 
         if success and result and result[1] then
             obj = result[1]
-            --print("✅ Depth Model Loaded successfully on attempt: " .. attempts)
         else
-            --warn("⚠️ Attempt " .. attempts .. " failed to load model " .. id .. ". Retrying...")
-            task.wait(0.5) -- Small breather for the engine
+            task.wait(0.5)
         end
     end
 
@@ -67,7 +65,7 @@ task.spawn(function()
     local randomizedtimes = math.random(4, 9)
     local killed = false
 
-    local entity = loadModel(15972282065) -- The 20-attempt loop starts here
+    local entity = loadModel(15972282065)
     if not entity then return end
     
     entity.Parent = workspace
@@ -96,7 +94,7 @@ task.spawn(function()
 
     -- Kill/Shake Loop
     task.spawn(function()
-        while entity and entity.Parent do 
+        while entity and entity.Parent and not killed do 
             task.wait(0.1)
             local v = game.Players.LocalPlayer
             if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
@@ -107,7 +105,11 @@ task.spawn(function()
                     pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/refs/heads/main/wow!.lua"))() end)
                     
                     task.delay(1.3, function()
-                        --v.Character.Humanoid.Health = 0
+                        local humanoid = v.Character and v.Character:FindFirstChildOfClass("Humanoid")
+                        if humanoid then
+                            humanoid:TakeDamage(100) -- Наносим смертельный урон
+                        end
+
                         local stats = rep:FindFirstChild("GameStats")
                         if stats and stats:FindFirstChild("Player_".. v.Name) then
                             stats["Player_".. v.Name].Total.DeathCause.Value = "A-60"
@@ -122,6 +124,7 @@ task.spawn(function()
                             end
                         end
                     end)
+                    break
                 end
 
                 if (pr.Position - root.Position).magnitude <= 70 then
@@ -137,11 +140,13 @@ task.spawn(function()
     local function Forward()
         local limit = latestRoom.Value
         for i = 1, limit do
+            if killed then break end
             local room = gruh:FindFirstChild(tostring(i))
             if room and room:FindFirstChild("Nodes") then
                 local nodes = room.Nodes:GetChildren()
                 table.sort(nodes, function(a,b) return tonumber(a.Name) < tonumber(b.Name) end)
                 for _, node in ipairs(nodes) do
+                    if killed then break end
                     local distance = (pr.Position - node.Position).magnitude
                     local jerk = game.TweenService:Create(pr, TweenInfo.new(GetTime(distance, ambruhspeed), Enum.EasingStyle.Linear), {CFrame = node.CFrame + ambruhheight})
                     jerk:Play()
@@ -155,11 +160,13 @@ task.spawn(function()
     local function Backward()
         local limit = latestRoom.Value
         for i = limit, 1, -1 do
+            if killed then break end
             local room = gruh:FindFirstChild(tostring(i))
             if room and room:FindFirstChild("Nodes") then
                 local nodes = room.Nodes:GetChildren()
                 table.sort(nodes, function(a,b) return tonumber(a.Name) < tonumber(b.Name) end)
                 for n = #nodes, 1, -1 do
+                    if killed then break end
                     local node = nodes[n]
                     local distance = (pr.Position - node.Position).magnitude
                     local jerk = game.TweenService:Create(pr, TweenInfo.new(GetTime(distance, ambruhspeed), Enum.EasingStyle.Linear), {CFrame = node.CFrame + ambruhheight})
@@ -173,13 +180,17 @@ task.spawn(function()
 
     -- --- 🏃 THE REBOUNDS ---
     for i = 1, randomizedtimes do
+        if killed then break end
         pcall(Forward)
         task.wait(1)
+        if killed then break end
         pcall(Backward)
         task.wait(1)
     end
 
-    entity:Destroy()
+    if entity and entity.Parent then
+        entity:Destroy()
+    end
     
     local light = Instance.new("ColorCorrectionEffect", game.Lighting)
     light.Brightness, light.Saturation, light.Contrast = -0.4, 0.4, -0.5
