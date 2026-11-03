@@ -1,238 +1,194 @@
-local function A60spawn()
-	task.spawn(function()
-		local Creator = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors%20Entity%20Spawner/Source.lua"))()
-		
-		local entity = Creator.createEntity({
-			Model = "12263106166",
-			Speed = 350,
-			DelayTime = 3,
-			HeightOffset = 0.5,
-			CanKill = false,
-			FlickerLights = {
-				false,
-				4,
-			},
-			Cycles = {
-				Min = 4,
-				Max = 4,
-				WaitTime = 0.05,
-			},
-			CamShake = {
-				true,
-				{30, 30, 0.1, 1},
-				50,
-			},
-			Jumpscare = {
-				false,
-				{
-					Image1 = "rbxassetid://11394048190",
-					Image2 = "rbxassetid://11395251069",
-					Shake = true,
-					Sound1 = {
-						10483790459,
-						{ Volume = 0.5 },
-					},
-					Sound2 = {
-						10483837590,
-						{ Volume = 0.5 },
-					},
-					Flashing = {
-						true,
-						Color3.fromRGB(255, 0, 0),
-					},
-					Tease = {
-						true,
-						Min = 1,
-						Max = 3,
-					},
-				},
-			},
-			CustomDialog = {
-				"You died to an entity designated as A-60",
-				"It can appear at any moment, a loud scream will announce its presence",
-				"When you hear it spawn you must stay out of its reach as soon as possible",
-				"It knows exactly where you are so hiding in different places will not work.."
-			}
-		})
-		local spawned = true
+local hints = {
+    "Odd... I can't discover to who you died to..."
+}
 
-		entity.Debug.OnEntitySpawned = function()
-			local function Kill()
-				local ScreenGui = Instance.new("ScreenGui")
-				local JumpscareEnd = Instance.new("ImageLabel")
-				local Full = Instance.new("ImageLabel")
+local rep = game.ReplicatedStorage
 
-				ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-				ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+-- [[ FORCE LOAD: Retries 20 times to bypass Roblox asset loading lag ]]
+local function loadModel(id)
+    local obj = nil
+    local attempts = 0
+    local maxAttempts = 20
 
-				JumpscareEnd.Name = "JumpscareEnd"
-				JumpscareEnd.Parent = ScreenGui
-				JumpscareEnd.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-				JumpscareEnd.BackgroundTransparency = 1.000
-				JumpscareEnd.Position = UDim2.new(0.468161434, 0, 0.455128193, 0)
-				JumpscareEnd.Size = UDim2.new(0.0636771321, 0, 0.0884615406, 0)
-				JumpscareEnd.Image = "rbxassetid://0"
-				JumpscareEnd.ImageColor3 = Color3.fromRGB(255, 0, 4)
+    while obj == nil and attempts < maxAttempts do
+        attempts = attempts + 1
+        local success, result = pcall(function()
+            return game:GetObjects("rbxassetid://" .. id)
+        end)
 
-				Full.Name = "Full"
-				Full.Parent = ScreenGui
-				Full.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-				Full.BackgroundTransparency = 1.000
-				Full.Position = UDim2.new(-0.0609865487, 0, -0.224358946, 0)
-				Full.Size = UDim2.new(1.12197304, 0, 1.44743586, 0)
-				Full.Image = "http://www.roblox.com/asset/?id=11151804223"
-				Full.ImageTransparency = 1.000
+        if success and result and result[1] then
+            obj = result[1]
+            --print("✅ Depth Model Loaded successfully on attempt: " .. attempts)
+        else
+            --warn("⚠️ Attempt " .. attempts .. " failed to load model " .. id .. ". Retrying...")
+            task.wait(0.5) -- Small breather for the engine
+        end
+    end
 
-				local function DKITLS_fake_script()
-					local Gui = ScreenGui
-					local Plr = game.Players.LocalPlayer
-					local Char = Plr.Character
-					local A60 = workspace:FindFirstChild("A-60")
-					local Camera = workspace.CurrentCamera
-					local cameraShaker = require(game.ReplicatedStorage.CameraShaker)
-					local camShake = cameraShaker.new(Enum.RenderPriority.Camera.Value, function(cf)
-						Camera.CFrame = Camera.CFrame * cf
-					end)
-
-					camShake:Start()
-					local Jumpscaring = true
-					local monster1 = A60:FindFirstChild("RushNew"):Clone()
-					
-					local function ImageChange(Part)
-						spawn(function()
-							while game["Run Service"].Heartbeat:Wait() do
-								local get = Part.IMAGEIDS:GetChildren()
-								local randome = get[math.random(1,#get)]
-								Part.Main.Face.Texture = randome.Image
-								wait(Random.new():NextNumber(0,0.02))
-							end
-						end)
-					end
-
-					monster1.Parent = Camera 
-					ImageChange(monster1) 
-					monster1.Name = "A-60_SCARE"
-					
-					for i,v in pairs(monster1:GetDescendants()) do
-						if v:IsA("Sound") then v:Destroy() end 
-					end
-					
-					local EntityOffset = Vector3.new(0,-1.2,-5)
-					local LerpAlpha = 0.8
-					
-					local JumpscareSound = Instance.new("Sound", workspace)
-					JumpscareSound.SoundId = "rbxassetid://10483790459"
-					JumpscareSound.Volume = 6
-					JumpscareSound:Play()
-					
-					camShake:ShakeOnce(25,25,0,4,90,60)
-					local JumpscareContrast = Instance.new("ColorCorrectionEffect", game.Lighting)
-					game.TweenService:Create(JumpscareContrast, TweenInfo.new(0.5), {Brightness = 0.2, Contrast = 0.2, Saturation = -0.2, TintColor = Color3.fromRGB(255, 0, 4)}):Play()
-					
-					spawn(function()
-						while Jumpscaring do 
-							game["Run Service"].RenderStepped:Wait()
-							monster1.CFrame = monster1.CFrame:Lerp(Camera.CFrame * CFrame.new(EntityOffset), LerpAlpha)
-						end
-						game.TweenService:Create(monster1, TweenInfo.new(1), {CFrame = Camera.CFrame * CFrame.new(Vector3.new(0,-1.2,45))}):Play()
-					end)
-					
-					wait(0.5) 
-					Jumpscaring = false
-					Gui.JumpscareEnd.Image = monster1:FindFirstChild("Main"):FindFirstChild("Face").Texture
-					game.TweenService:Create(Gui.JumpscareEnd, TweenInfo.new(0.5), {Size = Gui.Full.Size, Position = Gui.Full.Position, Rotation = math.random(-20,20)}):Play()
-					game.TweenService:Create(JumpscareContrast, TweenInfo.new(10), {Brightness = 0, Contrast = 0, Saturation = 0, TintColor = Color3.fromRGB(255, 255, 255)}):Play()
-					
-					Char:FindFirstChildWhichIsA("Humanoid"):TakeDamage(100)
-					
-					DEATHMESSAGE({
-						"You died to an entity designated as A-60",
-						"It can appear at any moment, a loud scream will announce its presence",
-						"When you hear it spawn you must stay out of its reach as soon as possible",
-						"It knows exactly where you are so hiding in different places will not work.."
-					}, "A-60")
-					
-					wait(0.5)
-					game.TweenService:Create(Gui.JumpscareEnd, TweenInfo.new(0.5), {ImageTransparency = 1}):Play()
-					game.Debris:AddItem(monster1, 1)
-				end
-				coroutine.wrap(DKITLS_fake_script)()
-			end
-
-			local A60 = workspace:FindFirstChild("A-60"):FindFirstChild("RushNew")
-			local deb = false
-			local function canSeeTarget(target, size)
-				if deb == true then return end
-				local origin = A60.Position
-				local direction = (target.HumanoidRootPart.Position - A60.Position).unit * size
-				local ray = Ray.new(origin, direction)
-				local hit, pos = workspace:FindPartOnRay(ray, A60)
-
-				if hit and hit:IsDescendantOf(target) then
-					deb = true
-					if workspace.Ambience_Seek.Playing == true then return end
-					for i,v in pairs(A60:GetDescendants()) do
-						if v:IsA("Sound") then v:Destroy() end 
-					end
-					spawn(function() Kill() end)
-					return true
-				else
-					return false
-				end
-			end
-
-			spawn(function()
-				while entity ~= nil do wait(0.5)
-					val = game.Players.LocalPlayer
-					if val.Character ~= nil and not val.Character:GetAttribute("Hiding") then
-						canSeeTarget(val.Character, 50)
-					end
-				end
-			end)
-
-			spawn(function()
-				local Monster = workspace:FindFirstChild("A-60")
-				local Part = Monster:FindFirstChild("RushNew")
-				Part.Static:Play()
-				Part.Static.Pitch = 1.6
-				while game["Run Service"].Heartbeat:Wait() and spawned do
-					local get = Part.IMAGEIDS:GetChildren()
-					local random = get[math.random(1,#get)]
-					Part.Main.Face.Texture = random.Image
-					wait(Random.new():NextNumber(0,0.07))
-				end
-			end)
-		end
-
-		entity.Debug.OnEntityDespawned = function(entity)
-			spawned = false
-			local Snd = Instance.new("Sound")
-			Snd.Volume = 10
-			Snd.Pitch = 0.1
-			Snd.SoundId = "rbxassetid://7757472223"
-			Snd.Parent = workspace
-			Snd:Play()
-			game.Debris:AddItem(Snd, 25)
-
-			local Reboundcolor = Instance.new("ColorCorrectionEffect", game.Lighting) 
-			game.Debris:AddItem(Reboundcolor, 24)
-			Reboundcolor.Name = "Despawn"
-			Reboundcolor.TintColor = Color3.fromRGB(255, 0, 4) 
-			Reboundcolor.Saturation = -0.7 
-			Reboundcolor.Contrast = 0.2
-			
-			game.TweenService:Create(Reboundcolor, TweenInfo.new(15), {TintColor = Color3.fromRGB(255, 255, 255), Saturation = 0, Contrast = 0}):Play()
-			game.TweenService:Create(Snd, TweenInfo.new(23), {Volume = 0}):Play()
-			
-			local cameraShaker = require(game.ReplicatedStorage.CameraShaker)
-			local camera = workspace.CurrentCamera
-			local camShake = cameraShaker.new(Enum.RenderPriority.Camera.Value, function(cf)
-				camera.CFrame = camera.CFrame * cf
-			end)
-			camShake:Start()
-			camShake:ShakeOnce(5, 45, 0.1, 20, 2, 20)
-		end
-
-		Creator.runEntity(entity)
-	end)
+    if not obj then
+        warn("❌ CRITICAL: Failed to load model after 20 attempts.")
+    end
+    
+    return obj
 end
+
+local function isBossActive()
+    local gameData = game.ReplicatedStorage:FindFirstChild("GameData")
+    if not gameData then return false end
+    local latestRoom = gameData:FindFirstChild("LatestRoom")
+    
+    local room = latestRoom.Value
+    if room == 48 or room == 99 then return true end
+    
+    for _, sound in pairs(game.ReplicatedStorage:GetDescendants()) do
+        if sound:IsA("Sound") and sound.IsPlaying and (sound.Name:find("Music") or sound.Name == "Shade") then
+            return true
+        end
+    end
+    return false
+end
+
+task.spawn(function()
+    local camera = workspace.CurrentCamera
+    local shakerModule = game.ReplicatedStorage:FindFirstChild("CameraShaker")
+    if not shakerModule then return end
+    
+    local cameraShaker = require(shakerModule)
+    local camShake = cameraShaker.new(Enum.RenderPriority.Camera.Value, function(cf)
+        camera.CFrame = camera.CFrame * cf
+    end)
+    camShake:Start()
+
+    local gameData = game.ReplicatedStorage:WaitForChild("GameData")
+    local latestRoom = gameData:WaitForChild("LatestRoom")
+    local ambruhheight = Vector3.new(0, 3, 0)
+    local ambruhspeed = 160
+    local DEF_SPEED = 9999
+    local randomizedtimes = math.random(4, 9)
+    local killed = false
+
+    local entity = loadModel(15972282065) -- The 20-attempt loop starts here
+    if not entity then return end
+    
+    entity.Parent = workspace
+    local pr = entity:FindFirstChildWhichIsA("BasePart") or entity:FindFirstChildWhichIsA("MeshPart")
+    if not pr then return end
+
+    local function GetTime(dist, speed)
+        return dist / speed
+    end
+
+    local function canSeeTarget(target, size)
+        if killed then return end
+        local origin = pr.Position
+        local targetPos = target.HumanoidRootPart.Position
+        local direction = (targetPos - pr.Position).unit * size
+        local ray = Ray.new(origin, direction)
+        local hit = workspace:FindPartOnRay(ray, pr)
+        
+        if hit and hit:IsDescendantOf(target) then
+            return true
+        end
+        return false
+    end
+
+    task.wait(1)
+
+    -- Kill/Shake Loop
+    task.spawn(function()
+        while entity and entity.Parent do 
+            task.wait(0.1)
+            local v = game.Players.LocalPlayer
+            if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                local root = v.Character.HumanoidRootPart
+                
+                if canSeeTarget(v.Character, 70) and not v.Character:GetAttribute("Hiding") then
+                    killed = true
+                    pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/refs/heads/main/wow!.lua"))() end)
+                    
+                    task.delay(1.3, function()
+                        --v.Character.Humanoid.Health = 0
+                        local stats = rep:FindFirstChild("GameStats")
+                        if stats and stats:FindFirstChild("Player_".. v.Name) then
+                            stats["Player_".. v.Name].Total.DeathCause.Value = "A-60"
+                        end
+                        
+                        local remotes = rep:FindFirstChild("RemotesFolder") or rep:FindFirstChild("Bricks")
+                        if remotes and remotes:FindFirstChild("DeathHint") then
+                            if remotes.Name == "RemotesFolder" then
+                                firesignal(remotes.DeathHint.OnClientEvent, hints, "Blue")
+                            else
+                                firesignal(remotes.DeathHint.OnClientEvent, hints)
+                            end
+                        end
+                    end)
+                end
+
+                if (pr.Position - root.Position).magnitude <= 70 then
+                    camShake:ShakeOnce(43, 20, 0.1, 2.3, 1, 6)
+                end
+            end
+        end
+    end)
+
+    local gruh = workspace.CurrentRooms
+    ambruhspeed = DEF_SPEED
+
+    local function Forward()
+        local limit = latestRoom.Value
+        for i = 1, limit do
+            local room = gruh:FindFirstChild(tostring(i))
+            if room and room:FindFirstChild("Nodes") then
+                local nodes = room.Nodes:GetChildren()
+                table.sort(nodes, function(a,b) return tonumber(a.Name) < tonumber(b.Name) end)
+                for _, node in ipairs(nodes) do
+                    local distance = (pr.Position - node.Position).magnitude
+                    local jerk = game.TweenService:Create(pr, TweenInfo.new(GetTime(distance, ambruhspeed), Enum.EasingStyle.Linear), {CFrame = node.CFrame + ambruhheight})
+                    jerk:Play()
+                    jerk.Completed:Wait()
+                    if ambruhspeed ~= 160 then ambruhspeed = 160 end
+                end
+            end
+        end
+    end
+
+    local function Backward()
+        local limit = latestRoom.Value
+        for i = limit, 1, -1 do
+            local room = gruh:FindFirstChild(tostring(i))
+            if room and room:FindFirstChild("Nodes") then
+                local nodes = room.Nodes:GetChildren()
+                table.sort(nodes, function(a,b) return tonumber(a.Name) < tonumber(b.Name) end)
+                for n = #nodes, 1, -1 do
+                    local node = nodes[n]
+                    local distance = (pr.Position - node.Position).magnitude
+                    local jerk = game.TweenService:Create(pr, TweenInfo.new(GetTime(distance, ambruhspeed), Enum.EasingStyle.Linear), {CFrame = node.CFrame + ambruhheight})
+                    jerk:Play()
+                    jerk.Completed:Wait()
+                    if ambruhspeed ~= 160 then ambruhspeed = 160 end
+                end
+            end
+        end
+    end
+
+    -- --- 🏃 THE REBOUNDS ---
+    for i = 1, randomizedtimes do
+        pcall(Forward)
+        task.wait(1)
+        pcall(Backward)
+        task.wait(1)
+    end
+
+    entity:Destroy()
+    
+    local light = Instance.new("ColorCorrectionEffect", game.Lighting)
+    light.Brightness, light.Saturation, light.Contrast = -0.4, 0.4, -0.5
+    light.TintColor = Color3.fromRGB(255, 0, 0)
+    
+    game.TweenService:Create(light, TweenInfo.new(20), {
+        Brightness = 0, Contrast = 0, Saturation = 0, TintColor = Color3.fromRGB(255, 255, 255)
+    }):Play()
+    
+    game.Debris:AddItem(light, 20)
+    camShake:ShakeOnce(23, 45, 0, 16, 1, 6)
+end)
