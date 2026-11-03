@@ -135,7 +135,7 @@ task.spawn(function()
             end)
         end
 
-        monster1.Parent = Camera 
+        monster1.Parent = camera 
         ImageChange(monster1) 
         monster1.Name = "A-60_SCARE"
         
@@ -158,9 +158,9 @@ task.spawn(function()
         task.spawn(function()
             while Jumpscaring do 
                 game["Run Service"].RenderStepped:Wait()
-                monster1.CFrame = monster1.CFrame:Lerp(Camera.CFrame * CFrame.new(EntityOffset), LerpAlpha)
+                monster1.CFrame = monster1.CFrame:Lerp(camera.CFrame * CFrame.new(EntityOffset), LerpAlpha)
             end
-            game.TweenService:Create(monster1, TweenInfo.new(1), {CFrame = Camera.CFrame * CFrame.new(Vector3.new(0, -1.2, 45))}):Play()
+            game.TweenService:Create(monster1, TweenInfo.new(1), {CFrame = camera.CFrame * CFrame.new(Vector3.new(0, -1.2, 45))}):Play()
         end)
         
         task.wait(0.5) 
@@ -224,7 +224,6 @@ task.spawn(function()
                 
                 if canSeeTarget(v.Character, 70) and not v.Character:GetAttribute("Hiding") then
                     killed = true
-                    pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Francisco1692qzd/Doors-Hotel-Hardcore/refs/heads/main/wow!.lua"))() end)
                     task.spawn(TriggerJumpscare)
                     break
                 end
