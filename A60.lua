@@ -7,7 +7,6 @@ local hints = {
 
 local rep = game.ReplicatedStorage
 
--- Force load model with retry attempts
 local function loadModel(id)
     local obj = nil
     local attempts = 0
@@ -214,7 +213,6 @@ task.spawn(function()
 
     task.wait(1)
 
-    -- Check player visibility and distance for kill/shake
     task.spawn(function()
         while entity and entity.Parent do 
             task.wait(0.1)
@@ -280,7 +278,6 @@ task.spawn(function()
         end
     end
 
-    -- Perform exactly 4 rebounds
     for i = 1, randomizedtimes do
         if killed then break end
         pcall(Forward)
