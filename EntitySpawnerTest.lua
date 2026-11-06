@@ -45,7 +45,7 @@ local BuiltInDefaultConfig = {
 
 local SelfModules = {
     DefaultConfig = BuiltInDefaultConfig,
-    Functions = loadstring(game:HttpGet("https://githubusercontent.com"))(),
+    Functions = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Functions.lua"))(),
 }
 
 local ModuleScripts = {
