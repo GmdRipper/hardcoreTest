@@ -172,100 +172,13 @@ Spawner.runEntity = function(entityTable)
                     table.sort(children, function(a, b)
                         local numA = tonumber(a.Name:match("%d+")) or 0
                         local numB = tonumber(b.Name:match("%d+")) or 0
-                        return numA < numB
+                        return numA  0 then
+                            pcall(function()
+                                ReSt.RemotesFolder.DeathHint:FireServer(entityTable.Config.CustomDialog)
+                            end)
+                        end
                     end)
-                    for _, node in next, children do
-                        if node:IsA("BasePart") then
-                            nodes[#nodes + 1] = node
-                        end
-                    end
-                else
-                    local basePart = room:FindFirstChild("Base") or room:FindFirstChildWhichIsA("BasePart")
-                    if basePart then
-                        nodes[#nodes + 1] = basePart
-                    end
                 end
-            end
-        end
-    end
-
-    if #nodes == 0 then print("[Spawner]: Error, movement nodes not found!") return end
-
-    local entityModel = entityTable.Model:Clone()
-    local startNodeIndex = entityTable.Config.BackwardsMovement and #nodes or 1
-    local startNodeOffset = entityTable.Config.BackwardsMovement and -50 or 50
-
-    EntityConnections[entityModel] = {}
-    local entityConnections = EntityConnections[entityModel]
-    
-    entityModel:PivotTo(nodes[startNodeIndex].CFrame * CFrame.new(0, 0, startNodeOffset) + Vector3.new(0, 3.5 + entityTable.Config.HeightOffset, 0))
-    entityModel.Parent = workspace
-    task.spawn(entityTable.Debug.OnEntitySpawned)
-
-    if entityTable.Config.FlickerLights then
-        ModuleScripts.ModuleEvents.flicker()
-    end
-
-    task.wait(entityTable.Config.DelayTime)
-    local enteredRooms = {}
-
-    entityConnections.movementTick = RS.Stepped:Connect(function()
-        if entityModel.Parent and not entityModel:GetAttribute("NoAI") then
-            local entityPos = entityModel.PrimaryPart.Position
-            local rootPos = getPlayerRoot().Position
-            local floorRay = FindPartOnRayWithIgnoreList(workspace, Ray.new(entityPos, Vector3.new(0, -10, 0)), {entityModel, Char})
-            local playerInSight = FindPartOnRayWithIgnoreList(workspace, Ray.new(entityPos, rootPos - entityPos), {entityModel, Char}) == nil
-            
-            if floorRay ~= nil and floorRay.Name == "Floor" and RoomsFolder then
-                for _, room in next, RoomsFolder:GetChildren() do
-                    if floorRay:IsDescendantOf(room) and not table.find(enteredRooms, room) then
-                        enteredRooms[#enteredRooms + 1] = room
-                        task.spawn(entityTable.Debug.OnEntityEnteredRoom, room)
-                        if entityTable.Config.BreakLights then
-                            ModuleScripts.ModuleEvents.shatter(room)
-                        end
-                        break
-                    end
-                end
-            end
-
-            local shakeConfig = entityTable.Config.CamShake
-            local shakeMag = (getPlayerRoot().Position - entityModel.PrimaryPart.Position).Magnitude
-            if shakeConfig and shakeMag <= 100 then
-                pcall(function()
-                    ReSt.RemotesFolder.CamShakeClient:FireServer()
-                end)
-            end
-
-            if playerInSight then
-                local _, onScreen = WorldToViewportPoint(Camera, entityModel.PrimaryPart.Position)
-                if onScreen then
-                    task.spawn(entityTable.Debug.OnLookAtEntity)
-                end
-
-                if entityTable.Config.CanKill and not Char:GetAttribute("IsDead") and not Char:GetAttribute("Invincible") and not Char:GetAttribute("Hiding") and (getPlayerRoot().Position - entityModel.PrimaryPart.Position).Magnitude <= entityTable.Config.KillRange then
-                    task.spawn(function()
-                        Char:SetAttribute("IsDead", true)
-                        for _, v in next, entityModel:GetDescendants() do
-                            if v.ClassName == "Sound" and v.Playing then
-                                v:Stop()
-                            end
-                        end
-                        if entityTable.Config.Jumpscare then
-                            Spawner.runJumpscare(entityTable.Config.Jumpscare)
-                        end
-                        task.spawn(entityTable.Debug.OnDeath)
-                        Hum.Health = 0
-                        
-                        pcall(function()
-                        ReSt.RemotesFolder.PlayerDied:FireServer()
-                    end)
-                    if #entityTable.Config.CustomDialog > 0 then
-                        pcall(function()
-                            ReSt.RemotesFolder.DeathHint:FireServer(entityTable.Config.CustomDialog)
-                        end)
-                    end
-                end)
             end
         end
     end)
