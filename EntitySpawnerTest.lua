@@ -172,16 +172,17 @@ Spawner.runEntity = function(entityTable)
                     table.sort(children, function(a, b)
                         local numA = tonumber(a.Name:match("%d+")) or 0
                         local numB = tonumber(b.Name:match("%d+")) or 0
-                        return numA  0 then
-                            pcall(function()
-                                ReSt.RemotesFolder.DeathHint:FireServer(entityTable.Config.CustomDialog)
-                            end)
-                        end
+                        return numA < numB
                     end)
+                    for _, node in next, children do
+                        if node:IsA("BasePart") then
+                            nodes[#nodes + 1] = node
+                        end
+                    end
                 end
             end
         end
-    end)
+    end
 
     task.spawn(entityTable.Debug.OnEntityStartMoving)
     local cyclesConfig = entityTable.Config.Cycles
