@@ -120,9 +120,19 @@ Spawner.createEntity = function(config)
 
     config.Speed = StaticRushSpeed / 100 * config.Speed
 
-    local entityModel = LoadCustomInstance(config.Model)
+    local entityModel = nil
+    pcall(function()
+        entityModel = game:GetObjects(config.Model)[1]
+    end)
+    
+    if not entityModel then
+        pcall(function()
+            entityModel = game:GetObjects("rbxassetid://"..tstring(config.Model):match("%d+"))[1]
+        end)
+	end
 
-    if typeof(entityModel) == "Instance" and entityModel.ClassName == "Model" then
+    if entityModel then
+
         entityModel.PrimaryPart = entityModel.PrimaryPart or entityModel:FindFirstChildWhichIsA("BasePart")
         
         if entityModel.PrimaryPart then
