@@ -90,7 +90,7 @@ end)
 -- Silence
 task.spawn(function()
     while true do
-        SyncWait(560)
+        SyncWait(30)
         LatestRoom:GetPropertyChangedSignal("Value"):Wait()
 
         if not IsEventActive() then
