@@ -23,8 +23,10 @@ if LatestRoom.Value == 0 then
     until LatestRoom.Value == 1
 end
 
+local startTime = workspace:GetServerTimeNow()
+
 local function SyncWait(seconds)
-    local targetTime = workspace:GetServerTimeNow() + seconds
+    local targetTime = startTime + seconds
 
     while workspace:GetServerTimeNow() < targetTime do
         task.wait(0.5)
@@ -32,17 +34,6 @@ local function SyncWait(seconds)
 end
 
 local function LoadEntity(name)
-
-    if name == "DeerGod" and (workspace:FindFirstChild("deer_god_oldDeerGod.rbxm") or workspace:FindFirstChild("OldDeerGod") or workspace:FindFirstChild("DeerGod")) then
-        return
-    end
-    if name == "A60" and (workspace:FindFirstChild("A-60") or workspace:FindFirstChild("oldA60")) then
-        return
-    end
-    if name == "Silence" and workspace:FindFirstChild("Silence") then
-        return
-    end
-
     if workspace:FindFirstChild("SeekMoving")
         and name ~= "DeerGod" then
         return
@@ -72,35 +63,40 @@ local function LoadEntity(name)
     end)
 end
 
-local function IsEventActive()
-    return (workspace:FindFirstChild("SeekMoving") 
-        or workspace:FindFirstChild("Ambience_Seek") and workspace.Ambience_Seek.Playing 
-        or workspace:FindFirstChild("Ambience_Figure") and workspace.Ambience_Figure.Playing 
-        or workspace:FindFirstChild("Ambience_FigureIntense") and workspace.Ambience_FigureIntense.Playing 
-        or workspace:FindFirstChild("Ambience_FigureEnd") and workspace.Ambience_FigureEnd.Playing 
-        or LatestRoom.Value == 50 
-        or LatestRoom.Value == 100)
-end
-
--- A-60
+-- A60
 task.spawn(function()
+    local c = 0
+    local canSpawnA60 = false
+    local waitA60 = 32
+
     while true do
-        SyncWait(680)
-        
-        if not IsEventActive() then
+        if not canSpawnA60 then
+            canSpawnA60 = true
+
+            SyncWait(c + 680)
             LoadEntity("A60")
+
+            c = c + 680
+
+            task.delay(waitA60, function()
+                canSpawnA60 = false
+            end)
         end
+
+        task.wait(1)
     end
 end)
 
 -- Silence
 task.spawn(function()
-    while true do
-        SyncWait(30)
+    local nextTime = 0
 
-        if not IsEventActive() then
-            LoadEntity("Silence")
-        end
+    while true do
+        nextTime = nextTime + 30
+        SyncWait(nextTime)
+        LoadEntity("Silence")
+
+        task.wait(1)
     end
 end)
 
@@ -109,8 +105,10 @@ task.spawn(function()
     while true do
         SyncWait(385)
 
-        if not IsEventActive() then
+        if LatestRoom.Value ~= 50 then
             LoadEntity("DeerGod")
         end
+
+        task.wait(385)
     end
 end)
