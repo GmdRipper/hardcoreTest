@@ -17,6 +17,7 @@ local entityURLs = {
     DeerGod = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/OldDeerGod.lua"
 }
 
+-- Ждем первую дверь, как в ликеде
 if LatestRoom.Value == 0 then
     repeat
         LatestRoom.Changed:Wait()
@@ -63,55 +64,52 @@ local function LoadEntity(name)
     end)
 end
 
--- A60
+-- Проверка на активные события (Сик, Фигура, библиотека)
+local function IsEventActive()
+    return (workspace:FindFirstChild("SeekMoving") 
+        or workspace:FindFirstChild("Ambience_Seek") and workspace.Ambience_Seek.Playing 
+        or workspace:FindFirstChild("Ambience_Figure") and workspace.Ambience_Figure.Playing 
+        or workspace:FindFirstChild("Ambience_FigureIntense") and workspace.Ambience_FigureIntense.Playing 
+        or workspace:FindFirstChild("Ambience_FigureEnd") and workspace.Ambience_FigureEnd.Playing 
+        or LatestRoom.Value == 50 
+        or LatestRoom.Value == 100)
+end
+
+-- A-60 (Таймер из ликеда: 680 секунд с привязкой к смене комнаты)
 task.spawn(function()
-    local c = 0
-    local canSpawnA60 = false
-    local waitA60 = 32
-
     while true do
-        if not canSpawnA60 then
-            canSpawnA60 = true
-
-            SyncWait(c + 730)
+        SyncWait(680)
+        LatestRoom:GetPropertyChangedSignal("Value"):Wait()
+        
+        if not IsEventActive() then
             LoadEntity("A60")
-
-            SyncWait(c + 1200)
-            LoadEntity("A60")
-
-            c = c + 910
-
-            task.delay(waitA60, function()
-                canSpawnA60 = false
-            end)
         end
 
         task.wait(1)
     end
 end)
 
--- Silence
+-- Silence (Таймер из ликеда: 560 секунд)
 task.spawn(function()
-    local nextTime = 0
-
     while true do
-        nextTime = nextTime + math.random(450, 1000)
-        SyncWait(nextTime)
-        LoadEntity("Silence")
+        SyncWait(560)
+        LatestRoom:GetPropertyChangedSignal("Value"):Wait()
+
+        if not IsEventActive() then
+            LoadEntity("Silence")
+        end
 
         task.wait(1)
     end
 end)
 
--- DeerGod
+-- Deer God (Таймер из ликеда: 385 секунд)
 task.spawn(function()
-    local nextTime = 0
-
     while true do
-        nextTime = nextTime + math.random(350, 650)
-        SyncWait(nextTime)
+        SyncWait(385)
+        LatestRoom:GetPropertyChangedSignal("Value"):Wait()
 
-        if LatestRoom.Value ~= 50 then
+        if not IsEventActive() then
             LoadEntity("DeerGod")
         end
 
