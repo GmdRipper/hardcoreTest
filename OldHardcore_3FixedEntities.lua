@@ -17,7 +17,6 @@ local entityURLs = {
     DeerGod = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/refs/heads/main/OldDeerGod.lua"
 }
 
--- Ждем первую дверь, как в ликеде
 if LatestRoom.Value == 0 then
     repeat
         LatestRoom.Changed:Wait()
@@ -35,6 +34,17 @@ local function SyncWait(seconds)
 end
 
 local function LoadEntity(name)
+
+    if name == "DeerGod" and workspace:FindFirstChild("deer_god_oldDeerGod.rbxm") then
+        return
+    end
+    if name == "A60" and workspace:FindFirstChild("A-60") then
+        return
+    end
+    if name == "Silence" and workspace:FindFirstChild("Silence") then
+        return
+    end
+
     if workspace:FindFirstChild("SeekMoving")
         and name ~= "DeerGod" then
         return
@@ -64,7 +74,6 @@ local function LoadEntity(name)
     end)
 end
 
--- Проверка на активные события (Сик, Фигура, библиотека)
 local function IsEventActive()
     return (workspace:FindFirstChild("SeekMoving") 
         or workspace:FindFirstChild("Ambience_Seek") and workspace.Ambience_Seek.Playing 
@@ -75,11 +84,10 @@ local function IsEventActive()
         or LatestRoom.Value == 100)
 end
 
--- A-60 (Таймер из ликеда: 680 секунд с привязкой к смене комнаты)
+-- A-60
 task.spawn(function()
     while true do
         SyncWait(680)
-        LatestRoom:GetPropertyChangedSignal("Value"):Wait()
         
         if not IsEventActive() then
             LoadEntity("A60")
@@ -89,11 +97,10 @@ task.spawn(function()
     end
 end)
 
--- Silence (Таймер из ликеда: 560 секунд)
+-- Silence
 task.spawn(function()
     while true do
         SyncWait(560)
-        LatestRoom:GetPropertyChangedSignal("Value"):Wait()
 
         if not IsEventActive() then
             LoadEntity("Silence")
@@ -103,11 +110,10 @@ task.spawn(function()
     end
 end)
 
--- Deer God (Таймер из ликеда: 385 секунд)
+-- Deer God
 task.spawn(function()
     while true do
         SyncWait(385)
-        LatestRoom:GetPropertyChangedSignal("Value"):Wait()
 
         if not IsEventActive() then
             LoadEntity("DeerGod")
