@@ -63,25 +63,14 @@ local function LoadEntity(name)
     end)
 end
 
--- A60
+-- A-60
 task.spawn(function()
-    local c = 0
-    local canSpawnA60 = false
-    local waitA60 = 32
+    local nextTime = 0
 
     while true do
-        if not canSpawnA60 then
-            canSpawnA60 = true
-
-            SyncWait(c + 680)
-            LoadEntity("A60")
-
-            c = c + 680
-
-            task.delay(waitA60, function()
-                canSpawnA60 = false
-            end)
-        end
+        nextTime = nextTime + 680
+        SyncWait(nextTime)
+        LoadEntity("A60")
 
         task.wait(1)
     end
@@ -92,7 +81,7 @@ task.spawn(function()
     local nextTime = 0
 
     while true do
-        nextTime = nextTime + 30
+        nextTime = nextTime + 560
         SyncWait(nextTime)
         LoadEntity("Silence")
 
@@ -102,13 +91,16 @@ end)
 
 -- Deer God
 task.spawn(function()
+    local nextTime = 0
+
     while true do
-        SyncWait(385)
+        nextTime = nextTime + 30
+        SyncWait(nextTime)
 
         if LatestRoom.Value ~= 50 then
             LoadEntity("DeerGod")
         end
 
-        task.wait(385)
+        task.wait(1)
     end
 end)
