@@ -113,7 +113,7 @@ end)
 -- Deer God
 task.spawn(function()
     while true do
-        SyncWait(385)
+        SyncWait(30)
 
         if not IsEventActive() then
             LoadEntity("DeerGod")
