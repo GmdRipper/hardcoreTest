@@ -35,10 +35,10 @@ end
 
 local function LoadEntity(name)
 
-    if name == "DeerGod" and workspace:FindFirstChild("deer_god_oldDeerGod.rbxm") then
+    if name == "DeerGod" and (workspace:FindFirstChild("deer_god_oldDeerGod.rbxm") or workspace:FindFirstChild("OldDeerGod") or workspace:FindFirstChild("DeerGod")) then
         return
     end
-    if name == "A60" and workspace:FindFirstChild("A-60") then
+    if name == "A60" and (workspace:FindFirstChild("A-60") or workspace:FindFirstChild("oldA60")) then
         return
     end
     if name == "Silence" and workspace:FindFirstChild("Silence") then
@@ -93,7 +93,7 @@ task.spawn(function()
             LoadEntity("A60")
         end
 
-        task.wait(1)
+        task.wait(5)
     end
 end)
 
@@ -106,7 +106,7 @@ task.spawn(function()
             LoadEntity("Silence")
         end
 
-        task.wait(1)
+        task.wait(5)
     end
 end)
 
@@ -119,6 +119,6 @@ task.spawn(function()
             LoadEntity("DeerGod")
         end
 
-        task.wait(1)
+        task.wait(5)
     end
 end)
