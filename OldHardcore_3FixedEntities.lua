@@ -77,7 +77,6 @@ end
 task.spawn(function()
     while true do
         SyncWait(680)
-        LatestRoom:GetPropertyChangedSignal("Value"):Wait()
         
         if not IsEventActive() then
             LoadEntity("A60")
@@ -91,7 +90,6 @@ end)
 task.spawn(function()
     while true do
         SyncWait(30)
-        LatestRoom:GetPropertyChangedSignal("Value"):Wait()
 
         if not IsEventActive() then
             LoadEntity("Silence")
@@ -105,7 +103,6 @@ end)
 task.spawn(function()
     while true do
         SyncWait(385)
-        LatestRoom:GetPropertyChangedSignal("Value"):Wait()
 
         if not IsEventActive() then
             LoadEntity("DeerGod")
