@@ -23,10 +23,8 @@ if LatestRoom.Value == 0 then
     until LatestRoom.Value == 1
 end
 
-local startTime = workspace:GetServerTimeNow()
-
 local function SyncWait(seconds)
-    local targetTime = startTime + seconds
+    local targetTime = workspace:GetServerTimeNow() + seconds
 
     while workspace:GetServerTimeNow() < targetTime do
         task.wait(0.5)
@@ -34,6 +32,17 @@ local function SyncWait(seconds)
 end
 
 local function LoadEntity(name)
+
+    if name == "DeerGod" and (workspace:FindFirstChild("deer_god_oldDeerGod.rbxm") or workspace:FindFirstChild("OldDeerGod") or workspace:FindFirstChild("DeerGod")) then
+        return
+    end
+    if name == "A60" and (workspace:FindFirstChild("A-60") or workspace:FindFirstChild("oldA60")) then
+        return
+    end
+    if name == "Silence" and workspace:FindFirstChild("Silence") then
+        return
+    end
+
     if workspace:FindFirstChild("SeekMoving")
         and name ~= "DeerGod" then
         return
@@ -81,8 +90,6 @@ task.spawn(function()
         if not IsEventActive() then
             LoadEntity("A60")
         end
-
-        task.wait(1)
     end
 end)
 
@@ -94,8 +101,6 @@ task.spawn(function()
         if not IsEventActive() then
             LoadEntity("Silence")
         end
-
-        task.wait(1)
     end
 end)
 
@@ -107,7 +112,5 @@ task.spawn(function()
         if not IsEventActive() then
             LoadEntity("DeerGod")
         end
-
-        task.wait(1)
     end
 end)
