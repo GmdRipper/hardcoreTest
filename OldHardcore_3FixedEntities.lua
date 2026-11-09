@@ -34,17 +34,6 @@ local function SyncWait(seconds)
 end
 
 local function LoadEntity(name)
-
-    if name == "DeerGod" and (workspace:FindFirstChild("deer_god_oldDeerGod.rbxm") or workspace:FindFirstChild("OldDeerGod") or workspace:FindFirstChild("DeerGod")) then
-        return
-    end
-    if name == "A60" and (workspace:FindFirstChild("A-60") or workspace:FindFirstChild("oldA60")) then
-        return
-    end
-    if name == "Silence" and workspace:FindFirstChild("Silence") then
-        return
-    end
-
     if workspace:FindFirstChild("SeekMoving")
         and name ~= "DeerGod" then
         return
@@ -88,12 +77,13 @@ end
 task.spawn(function()
     while true do
         SyncWait(680)
+        LatestRoom:GetPropertyChangedSignal("Value"):Wait()
         
         if not IsEventActive() then
             LoadEntity("A60")
         end
 
-        task.wait(5)
+        task.wait(1)
     end
 end)
 
@@ -101,24 +91,26 @@ end)
 task.spawn(function()
     while true do
         SyncWait(560)
+        LatestRoom:GetPropertyChangedSignal("Value"):Wait()
 
         if not IsEventActive() then
             LoadEntity("Silence")
         end
 
-        task.wait(5)
+        task.wait(1)
     end
 end)
 
 -- Deer God
 task.spawn(function()
     while true do
-        SyncWait(30)
+        SyncWait(385)
+        LatestRoom:GetPropertyChangedSignal("Value"):Wait()
 
         if not IsEventActive() then
             LoadEntity("DeerGod")
         end
 
-        task.wait(5)
+        task.wait(1)
     end
 end)
