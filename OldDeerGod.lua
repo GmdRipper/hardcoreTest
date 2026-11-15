@@ -194,7 +194,7 @@ local function playDeerGodJumpscare()
     image1.Position = UDim2.fromScale(0.5, 0.5)
     image1.Size = UDim2.fromScale(0.9, 0.9)
     image1.BackgroundTransparency = 1
-    image1.Image = "rbxassetid://11395251069"
+    image1.Image = "rbxassetid://11394027278"
     image1.ScaleType = Enum.ScaleType.Fit
     image1.ImageTransparency = 0
     image1.ZIndex = 2
@@ -207,7 +207,7 @@ local function playDeerGodJumpscare()
     image2.Position = UDim2.fromScale(0.5, 0.5)
     image2.Size = UDim2.fromScale(0.9, 0.9)
     image2.BackgroundTransparency = 1
-    image2.Image = "rbxassetid://11395251069"
+    image2.Image = "rbxassetid://11395249153"
     image2.ScaleType = Enum.ScaleType.Fit
     image2.ImageTransparency = 1
     image2.ZIndex = 3
@@ -583,53 +583,55 @@ local function DeerGod()
 
         local room = currentRooms:FindFirstChild(tostring(i))
 
-        if room and room:FindFirstChild("Nodes") then
-            local nodes = room.Nodes
-
-            if required.breakLights then
-                pcall(function()
+        if room then
+            pcall(function()
+                if required.breakLights then
                     required.breakLights(room)
-                end)
-            end
-
-            local nodeList = {}
-
-            for _, node in ipairs(nodes:GetChildren()) do
-                table.insert(nodeList, node)
-            end
-
-            table.sort(nodeList, function(a, b)
-                local numA = tonumber(a.Name) or 0
-                local numB = tonumber(b.Name) or 0
-
-                return numA < numB
+                end
             end)
 
-            for _, node in ipairs(nodeList) do
-                if not entityPart or not entityPart.Parent then
-                    break
+            if room:FindFirstChild("Nodes") then
+                local nodes = room.Nodes
+
+                local nodeList = {}
+
+                for _, node in ipairs(nodes:GetChildren()) do
+                    table.insert(nodeList, node)
                 end
 
-                local dist = (entityPart.Position - node.Position).Magnitude
-                local tweenService = game:GetService("TweenService")
+                table.sort(nodeList, function(a, b)
+                    local numA = tonumber(a.Name) or 0
+                    local numB = tonumber(b.Name) or 0
 
-                local jerk = tweenService:Create(
-                    entityPart,
-                    TweenInfo.new(
-                        GetTime(dist, ambruhspeed),
-                        Enum.EasingStyle.Linear,
-                        Enum.EasingDirection.Out,
-                        0,
-                        false,
-                        0
-                    ),
-                    {CFrame = node.CFrame + ambruhheight}
-                )
+                    return numA < numB
+                end)
 
-                jerk:Play()
-                jerk.Completed:Wait()
+                for _, node in ipairs(nodeList) do
+                    if not entityPart or not entityPart.Parent then
+                        break
+                    end
 
-                ambruhspeed = storer
+                    local dist = (entityPart.Position - node.Position).Magnitude
+                    local tweenService = game:GetService("TweenService")
+
+                    local jerk = tweenService:Create(
+                        entityPart,
+                        TweenInfo.new(
+                            GetTime(dist, ambruhspeed),
+                            Enum.EasingStyle.Linear,
+                            Enum.EasingDirection.Out,
+                            0,
+                            false,
+                            0
+                        ),
+                        {CFrame = node.CFrame + ambruhheight}
+                    )
+
+                    jerk:Play()
+                    jerk.Completed:Wait()
+
+                    ambruhspeed = storer
+                end
             end
         end
     end
