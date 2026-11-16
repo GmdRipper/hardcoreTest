@@ -1,5 +1,29 @@
--- XENO GITHUB MODEL LOADER (.rbxm / .rbxmx)
 local G = getgenv()
+
+local function GetGitSound(GithubSnd, SoundName)
+    if not (writefile and (getcustomasset or getsynasset) and isfile) then
+        warn("Executor does not support custom audio")
+        return nil
+    end
+
+    if not isfile(SoundName .. ".mp3") then
+        local success, res = pcall(function()
+            return game:HttpGet(GithubSnd)
+        end)
+        if success and res then
+            writefile(SoundName .. ".mp3", res)
+        else
+            warn("Failed to download sound: " .. tostring(res))
+            return nil
+        end
+    end
+
+    local sound = Instance.new("Sound")
+    sound.SoundId = (getcustomasset or getsynasset)(SoundName .. ".mp3")
+    sound.Looped = true
+    return sound
+end
+
 G.LoadGithubModel = function(url, forceRefresh, retryCount)
     retryCount = retryCount or 0
 
@@ -27,6 +51,7 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
     local fileName = getFileNameFromUrl(url)
 
     if retryCount > 0 then
+        print("Retry " .. retryCount .. ": Cleaning up...")
         task.wait(1)
 
         if isfile(fileName) then
@@ -44,13 +69,18 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
 
     local fileExists = isfile(fileName)
 
-    if not fileExists then
+    if fileExists then
+        print("Using cached file: " .. fileName)
+    else
+        print("Downloading model from: " .. url)
+
         local response = request({
             Url = url,
             Method = "GET"
         })
 
         if response.StatusCode ~= 200 then
+            warn("Failed to download model. Status code: " .. response.StatusCode)
             return G.LoadGithubModel(url, forceRefresh, retryCount + 1)
         end
 
@@ -59,8 +89,11 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
         end)
 
         if not writeSuccess then
+            warn("Failed to write file: " .. tostring(writeError))
             return G.LoadGithubModel(url, forceRefresh, retryCount + 1)
         end
+
+        print("File saved: " .. fileName)
     end
 
     local assetId
@@ -69,6 +102,8 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
     end)
 
     if not assetSuccess then
+        warn("Failed to get custom asset: " .. tostring(assetResult))
+
         pcall(function()
             delfile(fileName)
         end)
@@ -90,6 +125,8 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
     end)
 
     if not loadSuccess or not loadResult then
+        warn("Failed to load model: " .. tostring(loadResult))
+
         pcall(function()
             delfile(fileName)
         end)
@@ -98,6 +135,7 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
     end
 
     model = loadResult
+    print("Model loaded successfully: " .. fileName)
 
     return model
 end
@@ -118,6 +156,7 @@ local DearGodAchievement = {
     Image = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/main/DearGodAchivement.jpg",
 }
 
+-- Выдаёт ачивку Deer God только один раз за игровую сессию
 local function GiveDearGodAchievement()
     if workspace:FindFirstChild("DearGodAchievement") then
         return
@@ -128,6 +167,7 @@ local function GiveDearGodAchievement()
     end)
 
     if not success then
+        warn("Deer God achievement error: " .. tostring(err))
         return
     end
 
@@ -140,7 +180,7 @@ end
 local deerGodThread = nil
 local currentEntity = nil
 
--- DeerGod jumpscare with original assets
+-- DeerGod jumpscare
 local function playDeerGodJumpscare()
     local player = game:GetService("Players").LocalPlayer
 
@@ -161,6 +201,7 @@ local function playDeerGodJumpscare()
     screenGui.DisplayOrder = 999999
     screenGui.Parent = playerGui
 
+    -- Purple flashing overlay
     local flash = Instance.new("Frame")
     flash.Name = "Flashing"
     flash.Size = UDim2.fromScale(1, 1)
@@ -170,6 +211,7 @@ local function playDeerGodJumpscare()
     flash.ZIndex = 1
     flash.Parent = screenGui
 
+    -- First jumpscare image
     local image1 = Instance.new("ImageLabel")
     image1.Name = "Image1"
     image1.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -182,6 +224,7 @@ local function playDeerGodJumpscare()
     image1.ZIndex = 2
     image1.Parent = screenGui
 
+    -- Second image uses the same asset as the original settings
     local image2 = Instance.new("ImageLabel")
     image2.Name = "Image2"
     image2.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -194,18 +237,21 @@ local function playDeerGodJumpscare()
     image2.ZIndex = 3
     image2.Parent = screenGui
 
+    -- Sound 1
     local sound1 = Instance.new("Sound")
     sound1.Name = "DeerGodSound1"
     sound1.SoundId = "rbxassetid://10483790459"
     sound1.Volume = 1
     sound1.Parent = screenGui
 
+    -- Sound 2
     local sound2 = Instance.new("Sound")
     sound2.Name = "DeerGodSound2"
     sound2.SoundId = "rbxassetid://10483837590"
     sound2.Volume = 1
     sound2.Parent = screenGui
     
+    -- Mute other game sounds during the jumpscare
     local originalVolumes = {}
     local function muteOtherSound(obj)
         if obj:IsA("Sound")
@@ -216,15 +262,12 @@ local function playDeerGodJumpscare()
             obj.Volume = 0
         end
     end
-
     for _, obj in ipairs(game:GetDescendants()) do
         muteOtherSound(obj)
     end
-
     local muteConnection = game.DescendantAdded:Connect(function(obj)
         muteOtherSound(obj)
     end)
-
     local function restoreOtherSounds()
         if muteConnection then
             muteConnection:Disconnect()
@@ -239,6 +282,7 @@ local function playDeerGodJumpscare()
         end
     end
     
+    -- Start the jumpscare sound immediately
     local active = true
     local startTime = os.clock()
 
@@ -247,15 +291,18 @@ local function playDeerGodJumpscare()
         sound2:Play()
     end)
 
+    -- Image shake and flashing
     task.spawn(function()
         while active and screenGui.Parent do
             local elapsed = os.clock() - startTime
 
+            -- Switch image after 0.35 seconds
             if elapsed >= 0.35 and image1.ImageTransparency == 0 then
                 image1.ImageTransparency = 1
                 image2.ImageTransparency = 0
             end
 
+            -- Shake the currently visible image
             local offsetX = math.random(-15, 15)
             local offsetY = math.random(-15, 15)
 
@@ -272,6 +319,7 @@ local function playDeerGodJumpscare()
                 0.5, offsetY
             )
 
+            -- Purple and black flashes
             if math.floor(elapsed * 10) % 2 == 0 then
                 flash.BackgroundColor3 = Color3.fromRGB(48, 25, 52)
             else
@@ -283,6 +331,7 @@ local function playDeerGodJumpscare()
         end
     end)
 
+    -- Keep the jumpscare visible before applying damage
     task.wait(0.8)
 
     active = false
@@ -309,14 +358,17 @@ local function DeerGod()
     local workspace = game:GetService("Workspace")
 
     if not repStorage:FindFirstChild("ClientModules") then
+        warn("ClientModules not found")
         return
     end
 
     if not repStorage.ClientModules:FindFirstChild("Module_Events") then
+        warn("Module_Events not found")
         return
     end
 
     if not workspace:FindFirstChild("CurrentRooms") then
+        warn("CurrentRooms not found")
         return
     end
 
@@ -325,20 +377,36 @@ local function DeerGod()
     local gameData = repStorage:FindFirstChild("GameData")
 
     if not gameData then
+        warn("GameData not found")
         return
     end
 
     local latestRoomInt = gameData:FindFirstChild("LatestRoom")
 
     if not latestRoomInt then
+        warn("LatestRoom not found in GameData")
         return
     end
 
     local latestRoomValue = latestRoomInt.Value
+    local latestRoomModel = currentRooms:FindFirstChild(tostring(latestRoomValue))
+
+    if required.init then
+        pcall(function()
+            required.init()
+        end)
+    end
+
+    if latestRoomModel and required.flickerLights then
+        pcall(function()
+            required.flickerLights(latestRoomModel, 52)
+        end)
+    end
 
     local cameraShakerModule = repStorage:FindFirstChild("CameraShaker")
 
     if not cameraShakerModule then
+        warn("CameraShaker module not found")
         return
     end
 
@@ -346,6 +414,7 @@ local function DeerGod()
     local camera = workspace.CurrentCamera
 
     if not camera then
+        warn("CurrentCamera not found")
         return
     end
 
@@ -359,7 +428,6 @@ local function DeerGod()
     )
 
     camShake:Start()
-    camShake:Shake(cameraShaker.Presets.Earthquake)
 
     local entity = nil
     local killed = false
@@ -381,22 +449,43 @@ local function DeerGod()
             entity.Parent = workspace
             currentEntity = entity
         else
+            warn("Failed to load model: " .. tostring(result))
             return
         end
     end
-
+    
+    local Chase = GetGitSound(
+        "https://github.com/DripCapybara/Doors-Modes/blob/main/HardcoreMode/Followed.....mp3?raw=true",
+        "followed_new"
+    )
+    if Chase then
+        Chase.Name = "DeerGodChaseSound"
+        Chase.Parent = workspace
+        Chase.Volume = 0
+        Chase:Play()
+        game:GetService("TweenService"):Create(
+            Chase,
+            TweenInfo.new(5),
+            {Volume = 0.7}
+        ):Play()
+    end
+    
     if not entity then
+        warn("Entity is nil, exiting DeerGod")
         return
     end
 
     local entityPart = entity:FindFirstChildWhichIsA("BasePart")
 
     if not entityPart then
+        warn("Entity has no BasePart")
         entity:Destroy()
         currentEntity = nil
         return
     end
 
+    -- Visibility check: a wall or another obstacle blocks the ray.
+    -- Hiding is checked separately before an attack is triggered.
     local function canSeeTarget(target, size)
         if killed then
             return false
@@ -430,6 +519,7 @@ local function DeerGod()
 
     task.wait(1)
 
+    -- Death detection
     local deathThread = task.spawn(function()
         while entity ~= nil
             and entityPart ~= nil
@@ -457,10 +547,13 @@ local function DeerGod()
                     and not isHiding
                     and canSeeTarget(character, 50) then
 
+                    -- Mark as caught before starting the jumpscare
                     killed = true
 
+                    -- NEW: Play the jumpscare before dealing lethal damage
                     playDeerGodJumpscare()
 
+                    -- Apply damage after the jumpscare
                     if humanoid.Parent and humanoid.Health > 0 then
                         humanoid:TakeDamage(100)
                     end
@@ -504,6 +597,7 @@ local function DeerGod()
         end
     end)
 
+    -- Camera shake
     local shakeThread = task.spawn(function()
         while entity ~= nil
             and entityPart ~= nil
@@ -519,6 +613,7 @@ local function DeerGod()
         end
     end)
 
+    -- Movement
     ambruhspeed = DEF_SPEED
 
     for i = 1, latestRoomValue + 1 do
@@ -529,7 +624,6 @@ local function DeerGod()
         local room = currentRooms:FindFirstChild(tostring(i))
 
         if room then
-            -- Вызов оригинальной функции лопания и выбивания лампочек в каждой комнате
             pcall(function()
                 if required.breakLights then
                     required.breakLights(room)
@@ -582,6 +676,16 @@ local function DeerGod()
         end
     end
 
+    -- Cleanup
+    if Chase then
+        game:GetService("TweenService"):Create(
+            Chase,
+            TweenInfo.new(10),
+            {Volume = 0, Pitch = 0}
+        ):Play()
+        game:GetService("Debris"):AddItem(Chase, 10.5)
+    end
+    
     if entityPart and entityPart.Parent then
         local tweenService = game:GetService("TweenService")
 
@@ -595,6 +699,7 @@ local function DeerGod()
         fallTween.Completed:Wait()
     end
 
+    -- Award achievement only once per game session if the player survived.
     local player = game.Players.LocalPlayer
     local character = player and player.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -607,6 +712,7 @@ local function DeerGod()
     currentEntity = nil
 end
 
+-- Start the script
 if deerGodThread then
     pcall(function()
         if currentEntity then
