@@ -1,17 +1,43 @@
 --[[
-
-	NOTICEMENT!!!! (READ)
-		YOU ARE ALLOWED TO PUBLISH IT AT YOUR SERVER.
-		YOU ARE ALLOWED TO MODIFY IT BUT YOU ARE NOT ALLOWED TO PUBLISH MODIFIED VERSION.
-		Authorized People (can do anything): BasicallyAlex#8579, MuhammadGames#0017, Seek#4541, yessir12112131#0628
-		I recommend you publishing this script with loadstring.
-		MADE BY iCherryKardess#0001
+        ONLY WORKS ON HOTEL-
+        MADE BY iCherryKardess#0001
 		FIXED BY GmdRipper
-
 ]]
 
 -- Noticement
 firesignal(game.ReplicatedStorage.Bricks.Caption.OnClientEvent, "Script made by iCherryKardes. Fixed by GmdRipper. You might need to reexecute if you are at door 51.")
+
+-- Achievement
+local CaveAchievement = {
+    Title = "The Cave",
+    Desc = "Deep in the Hotel!",
+    Reason = 'Play "The Cave" Theme.',
+    Image = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/main/TheCaveAchivement.jpg",
+}
+local Achievements = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/MuhXd/Models/main/RegularVynixu's%20Achievement%20Modifyer"
+))()
+local function AchievementsGet(Achievement)
+    Achievements.Get(Achievement)
+end
+local function GiveCaveAchievement()
+    if workspace:FindFirstChild("CaveAchievement") then
+        return
+    end
+    local success, err = pcall(function()
+        AchievementsGet(CaveAchievement)
+    end)
+    if not success then
+        warn("The Cave achievement error: " .. tostring(err))
+        return
+    end
+    local obtainedBadge = Instance.new("BoolValue")
+    obtainedBadge.Name = "CaveAchievement"
+    obtainedBadge.Value = true
+    obtainedBadge.Parent = workspace
+end
+task.spawn(GiveCaveAchievement)
+
 -- Shop Items (2)
 local Functions = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Functions.lua"))()
 		local CustomShop = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Custom%20Shop%20Items/Source.lua"))()
@@ -63,16 +89,26 @@ local Functions = loadstring(game:HttpGet("https://raw.githubusercontent.com/Reg
 		end)
 		Candle.TextureId = "rbxassetid://11622366799"
     -- Create custom shop item
-		if plr.PlayerGui.MainUI.ItemShop.Visible then
-			CustomShop.CreateItem(Candle, {
+        if plr.PlayerGui.MainUI.ItemShop.Visible then
+			local item = CustomShop.CreateItem(Candle, {
 				Title = "Guiding Candle",
-				Desc = "קг๏ςєє๔ คՇ ץ๏ยг ๏ฬภ гเรк.",
+				Desc = "\226\128\142קг๏ςєє๔ คՇ ץ๏ยг ๏ฬภ гเรк.",
 				Image = "https://cdn.discordapp.com/attachments/1043448883407228961/1052275820275707954/Png_1.png",
 				Price = 75,
 				Stack = 1,
 			})
+			Candle.Parent = nil 
+			if item and item.Button then
+				item.Button.MouseButton1Click:Connect(function()
+					local triumphs = plr:FindFirstChild("Triumphs") or plr:FindFirstChild("leaderstats")
+					task.wait(0.1)
+					if not plr.Backpack:FindFirstChild("Guiding Candle") and not (plr.Character and plr.Character:FindFirstChild("Guiding Candle")) then
+						Candle.Parent = plr.Backpack
+					end
+				end)
+			end
 		else
-			Candle.Parent = game.Players.LocalPlayer.Backpack
+			Candle:Destroy()
 		end
 
 
@@ -108,13 +144,14 @@ local Functions = loadstring(game:HttpGet("https://raw.githubusercontent.com/Reg
 
 
 
--- Sounds
+--[[ Sounds
 game.Workspace.Ambience_Figure.SoundId = game.Workspace.Ambience_FigureIntense.SoundId
 game.Workspace.Ambience_Figure.Volume = "0.7"
 game.Workspace.Ambience_Seek.SoundId = "rbxassetid://1846862303"
 if game.ReplicatedStorage.GameData.LatestRoom.Value == "50" then
 	game.Workspace.Ambience_Seek.SoundId = "rbxassetid://1848156876"
 end
+]]
 -- Settings
 game.Players.LocalPlayer.PlayerGui.MainUI.Statistics.Frame["Floors Escaped"].Text = "Floors Escaped (2)"
 
@@ -134,13 +171,14 @@ if game.ReplicatedStorage.GameData.LatestRoom.Value == 50 then
 	workspace.Ambience_Dark:Play()
 end
 
--- Figure Room Setup (100)
+--[[ Figure Room Setup (100)
 if game.ReplicatedStorage.GameData.LatestRoom.Value == 100 then
 	warn("Player reached room 100")
 	game.Players.LocalPlayer.PlayerGui.MainUI.ToBeContinued.Visible = true
 	wait(7)
 	game.Players.LocalPlayer:Kick("Reached Room 100, room 100 is unavailable so we kicked you. Room 100 is soon. Thanks for using floor 2 mod by iCherryKardess!")
 end
+]]
 
 -- Room Setup (Loop)
 local Players = game:GetService("Players")
