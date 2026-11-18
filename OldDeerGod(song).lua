@@ -677,6 +677,15 @@ local function DeerGod()
     end
 
     -- Cleanup
+    if Chase then
+        game:GetService("TweenService"):Create(
+            Chase,
+            TweenInfo.new(10),
+            {Volume = 0, Pitch = 0}
+        ):Play()
+        game:GetService("Debris"):AddItem(Chase, 10.5)
+    end
+    
     if entityPart and entityPart.Parent then
         local tweenService = game:GetService("TweenService")
 
@@ -701,10 +710,6 @@ local function DeerGod()
 
     game:GetService("Debris"):AddItem(entity, 1.5)
     currentEntity = nil
-    if Chase then
-        Chase:Stop()
-        Chase:Destroy()
-    end
 end
 
 -- Start the script
