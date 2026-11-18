@@ -677,18 +677,11 @@ local function DeerGod()
     end
 
     -- Cleanup
-    if entityPart and entityPart.Parent then
-        local tweenService = game:GetService("TweenService")
-
-        local fallTween = tweenService:Create(
-            entityPart,
-            TweenInfo.new(1.5),
-            {CFrame = entityPart.CFrame * CFrame.new(0, -80, 0)}
-        )
-
-        fallTween:Play()
-        fallTween.Completed:Wait()
+    if entity then
+        game:GetService("Debris"):AddItem(entity, 0.01)
     end
+    currentEntity = nil
+    task.wait(0.02)
 
     -- Award achievement only once per game session if the player survived.
     local player = game.Players.LocalPlayer
@@ -699,8 +692,6 @@ local function DeerGod()
         GiveDearGodAchievement()
     end
 
-    game:GetService("Debris"):AddItem(entity, 1.5)
-    currentEntity = nil
     if Chase then
         game:GetService("TweenService"):Create(
             Chase,
