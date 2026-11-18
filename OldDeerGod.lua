@@ -153,10 +153,9 @@ local DearGodAchievement = {
     Title = "Last Chance To Look Away",
     Desc = "Why are you running?",
     Reason = "Survive the rare Entity called Dear God",
-    Image = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/main/DearGodAchivement.jpg",
+    Image = "rbxassetid://11395249132",
 }
 
--- Выдаёт ачивку Deer God только один раз за игровую сессию
 local function GiveDearGodAchievement()
     if workspace:FindFirstChild("DearGodAchievement") then
         return
