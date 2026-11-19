@@ -5,7 +5,7 @@
 ]]
 
 -- Noticement
-firesignal(game.ReplicatedStorage.Bricks.Caption.OnClientEvent, "Script made by iCherryKardes. Fixed by GmdRipper. You might need to reexecute if you are at door 51.")
+-- firesignal(game.ReplicatedStorage.Bricks.Caption.OnClientEvent, "Script made by iCherryKardes. Fixed by GmdRipper. You might need to reexecute if you are at door 51.")
 
 -- Achievement
 local CaveAchievement = {
@@ -38,7 +38,51 @@ local function GiveCaveAchievement()
 end
 task.spawn(GiveCaveAchievement)
 
--- Shop Items (2)
+pcall(function()
+	spawn(function()
+		while wait() do
+			local currentroomnumber = game:GetService("ReplicatedStorage").GameData.LatestRoom.Value
+			if workspace["CurrentRooms"][currentroomnumber]:FindFirstChild("Door") ~= nil then
+				if workspace["CurrentRooms"][currentroomnumber]:FindFirstChild("Door"):FindFirstChild("Door") ~= nil then
+					workspace["CurrentRooms"][currentroomnumber]:FindFirstChild("Door"):FindFirstChild("Door").Material = Enum.Material.Slate
+					workspace["CurrentRooms"][currentroomnumber]:FindFirstChild("Door"):FindFirstChild("Door").Color = Color3.new(0.341176, 0.341176, 0.341176)
+				end
+			end
+		end
+	end)
+	spawn(function()
+		while wait() do
+			local currentroomnumber = game:GetService("ReplicatedStorage").GameData.LatestRoom.Value
+			if workspace["CurrentRooms"][currentroomnumber]:FindFirstChild("Door") ~= nil then
+				if workspace["CurrentRooms"][currentroomnumber]:FindFirstChild("Door"):FindFirstChild("Door") ~= nil then
+					if workspace["CurrentRooms"][currentroomnumber]:FindFirstChild("Door"):FindFirstChild("Door"):FindFirstChild("Sign") ~= nil then
+						workspace["CurrentRooms"][currentroomnumber]:FindFirstChild("Door").Sign:Destroy()
+						workspace["CurrentRooms"][currentroomnumber]:FindFirstChild("Door"):FindFirstChild("Door"):FindFirstChild("Sign"):Destroy()
+					end
+				end
+			end
+		end
+	end)
+end)
+
+workspace["The Damned"]:Play()
+workspace["The Damned"].SoundId = "rbxassetid://9113731836"
+workspace["The Damned"].Pitch = 1
+workspace["The Damned"].Looped = true
+workspace["The Damned"].Volume = 1
+
+function ambiance()
+	while true do
+		local ambiencefirst = Instance.new("Sound", workspace)
+		ambiencefirst.SoundId = "rbxassetid://12229501"
+		ambiencefirst.Pitch = 0.11
+		ambiencefirst:Play()
+		wait(120)
+	end
+end
+task.spawn(ambiance)
+
+-- Shop Items
 local Functions = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Functions.lua"))()
 		local CustomShop = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Custom%20Shop%20Items/Source.lua"))()
 		local Candle = game:GetObjects("rbxassetid://11630702537")[1]
