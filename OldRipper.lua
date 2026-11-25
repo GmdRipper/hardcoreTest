@@ -1,6 +1,4 @@
--- XENO GITHUB MODEL LOADER (.rbxm / .rbxmx)
 local G = getgenv()
-
 G.LoadGithubModel = function(url, retryCount)
     retryCount = retryCount or 0
 
@@ -67,7 +65,7 @@ local RipperAchievement = {
     Title = "Torn Apart",
     Desc = "Dont leave too early..",
     Reason = "Encounter Ripper",
-    Image = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/main/RipperAchivement.jpg",
+    Image = "rbxassetid://112562469367494",
 }
 
 local Achievements = loadstring(game:HttpGet(
