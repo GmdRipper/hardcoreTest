@@ -1,4 +1,3 @@
--- XENO GITHUB MODEL LOADER (.rbxm / .rbxmx)
 local G = getgenv()
 
 G.LoadGithubModel = function(url)
@@ -59,7 +58,7 @@ local SilenceAchievement = {
     Title = "Eyes Closed Ears open",
     Desc = "Stay silent or I wont be heard",
     Reason = "Encounter Silence",
-    Image = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/main/SilenceAchievement.png",
+    Image = "rbxassetid://75011294666686",
 }
 
 local Achievements = loadstring(game:HttpGet(
