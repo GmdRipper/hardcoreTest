@@ -68,7 +68,7 @@ local ShockerAchievement = {
     Title = "Shocking Experience",
     Desc = "Look at me.",
     Reason = "Encounter Shocker",
-    Image = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/main/ShockerAchivement.jpg",
+    Image = "rbxassetid://94570710506307",
 }
 
 local Achievements = loadstring(game:HttpGet(
