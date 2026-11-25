@@ -153,7 +153,7 @@ local DearGodAchievement = {
     Title = "Last Chance To Look Away",
     Desc = "Why are you running?",
     Reason = "Survive the rare Entity called Dear God",
-    Image = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/main/DearGodAchivement.jpg",
+    Image = "rbxassetid://134985910235612",
 }
 
 local function GiveDearGodAchievement()
