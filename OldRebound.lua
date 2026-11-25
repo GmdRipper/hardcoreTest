@@ -6,7 +6,7 @@ local ReboundAchievement = {
     Title = "Out Of Many Rebounds",
     Desc = "Back for more!",
     Reason = "Encounter Rebound.",
-    Image = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/main/ReboundAchivement.jpg",
+    Image = "rbxassetid://118331374348396",
 }
 
 local Achievements = loadstring(game:HttpGet(
