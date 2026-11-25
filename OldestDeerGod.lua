@@ -128,7 +128,7 @@ local DearGodAchievement = {
     Title = "Out Of Many Looks",
     Desc = "Do Not Look At It...",
     Reason = "Encounter And Survive The Rare Entity Called Dear God",
-    Image = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/main/DearGodAchivement.jpg",
+    Image = "rbxassetid://134985910235612",
 }
 
 local function GiveDearGodAchievement()
@@ -158,7 +158,7 @@ local DearGodDeathAchievement = {
     Title = "Out Of Many Looks",
     Desc = "I told u",
     Reason = "Encounter And Do Not Survive The Rare Entity Called Dear God",
-    Image = "https://raw.githubusercontent.com/GmdRipper/hardcoreTest/main/DearGodAchivement.jpg",
+    Image = "rbxassetid://134985910235612",
 }
 
 local function GiveDearGodDeathAchievement()
