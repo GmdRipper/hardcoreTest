@@ -3,20 +3,18 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
     retryCount = retryCount or 0
 
     if retryCount >= 3 then
-        warn("Failed to load model after 3 attempts")
         return nil
     end
 
     if not (writefile and getcustomasset and request and isfile and delfile) then
-        warn("Missing required functions: writefile, getcustomasset, request, isfile, or delfile")
         return nil
     end
 
     forceRefresh = forceRefresh or false
 
-    local function getFileNameFromUrl(url)
-        local modelName = url:match("([^/]+)%.rbxm$")
-            or url:match("([^/]+)%.rbxmx$")
+    local function getFileNameFromUrl(u)
+        local modelName = u:match("([^/]+)%.rbxm$")
+            or u:match("([^/]+)%.rbxmx$")
             or "model"
 
         modelName = modelName:gsub("[^%w_%-]", "_")
@@ -26,7 +24,6 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
     local fileName = getFileNameFromUrl(url)
 
     if retryCount > 0 then
-        print("Retry " .. retryCount .. ": Cleaning up...")
         task.wait(1)
 
         if isfile(fileName) then
@@ -44,31 +41,23 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
 
     local fileExists = isfile(fileName)
 
-    if fileExists then
-        print("Using cached file: " .. fileName)
-    else
-        print("Downloading model from: " .. url)
-
+    if not fileExists then
         local response = request({
             Url = url,
             Method = "GET"
         })
 
         if response.StatusCode ~= 200 then
-            warn("Failed to download model. Status code: " .. response.StatusCode)
             return G.LoadGithubModel(url, forceRefresh, retryCount + 1)
         end
 
-        local writeSuccess, writeError = pcall(function()
+        local writeSuccess = pcall(function()
             writefile(fileName, response.Body)
         end)
 
         if not writeSuccess then
-            warn("Failed to write file: " .. tostring(writeError))
             return G.LoadGithubModel(url, forceRefresh, retryCount + 1)
         end
-
-        print("File saved: " .. fileName)
     end
 
     local assetId
@@ -77,8 +66,6 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
     end)
 
     if not assetSuccess then
-        warn("Failed to get custom asset: " .. tostring(assetResult))
-
         pcall(function()
             delfile(fileName)
         end)
@@ -100,8 +87,6 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
     end)
 
     if not loadSuccess or not loadResult then
-        warn("Failed to load model: " .. tostring(loadResult))
-
         pcall(function()
             delfile(fileName)
         end)
@@ -110,49 +95,16 @@ G.LoadGithubModel = function(url, forceRefresh, retryCount)
     end
 
     model = loadResult
-    print("Model loaded successfully: " .. fileName)
-
     return model
 end
 
--- Achievement loader
-local Achievements = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/MuhXd/Models/main/RegularVynixu's%20Achievement%20Modifyer"
-))()
-
-local function AchievementsGet(Achievement)
-    Achievements.Get(Achievement)
-end
-
+-- ACHIEVEMENTS (В СТИЛЕ REBOUND)
 local DearGodAchievement = {
     Title = "Out Of Many Looks",
     Desc = "Do Not Look At It...",
     Reason = "Encounter And Survive The Rare Entity Called Dear God",
     Image = "rbxassetid://134985910235612",
 }
-
-local function GiveDearGodAchievement()
-    if workspace:FindFirstChild("DearGodAchievement") then
-        return
-    end
-
-    local success, err = pcall(function()
-        AchievementsGet(DearGodAchievement)
-    end)
-
-    if not success then
-        warn("Deer God achievement error: " .. tostring(err))
-        return
-    end
-
-    local obtainedBadge = Instance.new("BoolValue")
-    obtainedBadge.Name = "DearGodAchievement"
-    obtainedBadge.Value = true
-    obtainedBadge.Parent = workspace
-end
-
-local deerGodThread = nil
-local currentEntity = nil
 
 local DearGodDeathAchievement = {
     Title = "Out Of Many Looks",
@@ -161,25 +113,69 @@ local DearGodDeathAchievement = {
     Image = "rbxassetid://134985910235612",
 }
 
-local function GiveDearGodDeathAchievement()
-    if workspace:FindFirstChild("DearGodDeathAchievement") then
+local function showReboundStyleAchievement(achievementData, flagName)
+    if workspace:FindFirstChild(flagName) then
         return
     end
 
-    local success, err = pcall(function()
-        AchievementsGet(DearGodDeathAchievement)
-    end)
+    local player = game:GetService("Players").LocalPlayer
+    local tweenService = game:GetService("TweenService")
+    local playerGui = player and player:FindFirstChild("PlayerGui")
+    local mainUI = playerGui and playerGui:FindFirstChild("MainUI")
+    local holder = mainUI and mainUI:FindFirstChild("AchievementsHolder")
+    local template = holder and holder:FindFirstChild("Achievement")
 
-    if not success then
-        warn("Deer God Death achievement error: " .. tostring(err))
+    if not template then
         return
     end
 
     local obtainedBadge = Instance.new("BoolValue")
-    obtainedBadge.Name = "DearGodDeathAchievement"
+    obtainedBadge.Name = flagName
     obtainedBadge.Value = true
     obtainedBadge.Parent = workspace
+
+    task.spawn(function()
+        local frame = template:Clone()
+        frame.Name = "LiveAchievement"
+        frame.Frame.Details.Title.Text = achievementData.Title
+        frame.Frame.Details.Desc.Text = achievementData.Desc
+        frame.Frame.Details.Reason.Text = achievementData.Reason
+        frame.Frame.ImageLabel.Image = achievementData.Image
+        frame.Size = UDim2.new(0, 0, 0, 0)
+        frame.Frame.Position = UDim2.new(1.1, 0, 0, 0)
+        frame.Visible = true
+        frame.Parent = holder
+
+        if frame:FindFirstChild("Sound") then
+            frame.Sound:Play()
+        end
+
+        frame:TweenSize(UDim2.new(1, 0, 0.2, 0), "In", "Quad", 0.8, true)
+        task.wait(0.8)
+        frame.Frame:TweenPosition(UDim2.new(0, 0, 0, 0), "Out", "Quad", 0.5, true)
+        tweenService:Create(frame.Frame.Glow, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            ImageTransparency = 1
+        }):Play()
+        task.wait(8)
+        frame.Frame:TweenPosition(UDim2.new(1.1, 0, 0, 0), "In", "Quad", 0.5, true)
+        task.wait(0.5)
+        frame:TweenSize(UDim2.new(1, 0, -0.1, 0), "InOut", "Quad", 0.5, true)
+        task.wait(0.5)
+
+        frame:Destroy()
+    end)
 end
+
+local function GiveDearGodAchievement()
+    showReboundStyleAchievement(DearGodAchievement, "DearGodAchievement")
+end
+
+local function GiveDearGodDeathAchievement()
+    showReboundStyleAchievement(DearGodDeathAchievement, "DearGodDeathAchievement")
+end
+
+local deerGodThread = nil
+local currentEntity = nil
 
 -- DeerGod jumpscare
 local function playDeerGodJumpscare()
@@ -242,16 +238,16 @@ local function playDeerGodJumpscare()
     local sound1 = Instance.new("Sound")
     sound1.Name = "DeerGodSound1"
     sound1.SoundId = "rbxassetid://10483790459"
-    sound1.Volume = 1
+    sound1.Volume = 0.5
     sound1.Parent = screenGui
 
     -- Sound 2
     local sound2 = Instance.new("Sound")
     sound2.Name = "DeerGodSound2"
     sound2.SoundId = "rbxassetid://10483837590"
-    sound2.Volume = 1
+    sound2.Volume = 0.5
     sound2.Parent = screenGui
-    
+
     -- Mute other game sounds during the jumpscare
     local originalVolumes = {}
     local function muteOtherSound(obj)
@@ -282,7 +278,7 @@ local function playDeerGodJumpscare()
             end)
         end
     end
-    
+
     -- Start the jumpscare sound immediately
     local active = true
     local startTime = os.clock()
@@ -333,7 +329,7 @@ local function playDeerGodJumpscare()
     end)
 
     -- Keep the jumpscare visible before applying damage
-    task.wait(0.8)
+    task.wait(0.75)
 
     active = false
 
@@ -359,17 +355,14 @@ local function DeerGod()
     local workspace = game:GetService("Workspace")
 
     if not repStorage:FindFirstChild("ClientModules") then
-        warn("ClientModules not found")
         return
     end
 
     if not repStorage.ClientModules:FindFirstChild("Module_Events") then
-        warn("Module_Events not found")
         return
     end
 
     if not workspace:FindFirstChild("CurrentRooms") then
-        warn("CurrentRooms not found")
         return
     end
 
@@ -378,14 +371,12 @@ local function DeerGod()
     local gameData = repStorage:FindFirstChild("GameData")
 
     if not gameData then
-        warn("GameData not found")
         return
     end
 
     local latestRoomInt = gameData:FindFirstChild("LatestRoom")
 
     if not latestRoomInt then
-        warn("LatestRoom not found in GameData")
         return
     end
 
@@ -407,7 +398,6 @@ local function DeerGod()
     local cameraShakerModule = repStorage:FindFirstChild("CameraShaker")
 
     if not cameraShakerModule then
-        warn("CameraShaker module not found")
         return
     end
 
@@ -415,7 +405,6 @@ local function DeerGod()
     local camera = workspace.CurrentCamera
 
     if not camera then
-        warn("CurrentCamera not found")
         return
     end
 
@@ -450,27 +439,22 @@ local function DeerGod()
             entity.Parent = workspace
             currentEntity = entity
         else
-            warn("Failed to load model: " .. tostring(result))
             return
         end
     end
 
     if not entity then
-        warn("Entity is nil, exiting DeerGod")
         return
     end
 
     local entityPart = entity:FindFirstChildWhichIsA("BasePart")
 
     if not entityPart then
-        warn("Entity has no BasePart")
         entity:Destroy()
         currentEntity = nil
         return
     end
 
-    -- Visibility check: a wall or another obstacle blocks the ray.
-    -- Hiding is checked separately before an attack is triggered.
     local function canSeeTarget(target, size)
         if killed then
             return false
@@ -500,6 +484,38 @@ local function DeerGod()
         end
 
         return dist / speed
+    end
+
+    local function ForceDeerGodDeathHint(char)
+        local deathLines = {
+            "You died to whom you call The Deer God",
+            "Closets Wont work! So try running",
+            "Its form is incomprehensible to a human upclose...",
+            "..-so avoid Eye Contact"
+        }
+
+        pcall(function()
+            local gameStats = repStorage:FindFirstChild("GameStats")
+            if gameStats then
+                local playerStats = gameStats:FindFirstChild("Player_" .. char.Name)
+                if playerStats and playerStats:FindFirstChild("Total") then
+                    local deathCause = playerStats.Total:FindFirstChild("DeathCause")
+                    if deathCause then
+                        deathCause.Value = "Deer God"
+                    end
+                end
+            end
+        end)
+
+        pcall(function()
+            local bricks = repStorage:FindFirstChild("Bricks")
+            if bricks then
+                local deathHint = bricks:FindFirstChild("DeathHint")
+                if deathHint and deathHint.OnClientEvent then
+                    firesignal(deathHint.OnClientEvent, deathLines)
+                end
+            end
+        end)
     end
 
     task.wait(1)
@@ -532,50 +548,39 @@ local function DeerGod()
                     and not isHiding
                     and canSeeTarget(character, 50) then
 
-                    -- Mark as caught before starting the jumpscare
                     killed = true
 
-                    -- Play the jumpscare before dealing lethal damage
-                    playDeerGodJumpscare()
+                    pcall(function()
+                        local gameStats = repStorage:FindFirstChild("GameStats")
+                        if gameStats then
+                            local playerStats = gameStats:FindFirstChild("Player_" .. character.Name)
+                            if playerStats and playerStats:FindFirstChild("Total") then
+                                local deathCause = playerStats.Total:FindFirstChild("DeathCause")
+                                if deathCause then
+                                    deathCause.Value = "Deer God"
+                                end
+                            end
+                        end
+                    end)
 
-                    -- Apply damage after the jumpscare
+                    pcall(playDeerGodJumpscare)
+
+                    ForceDeerGodDeathHint(character)
+
                     if humanoid.Parent and humanoid.Health > 0 then
                         humanoid:TakeDamage(100)
+                        if humanoid.Health > 0 then
+                            humanoid.Health = 0
+                        end
                         GiveDearGodDeathAchievement()
                     end
 
-                    local gameStats = repStorage:FindFirstChild("GameStats")
-
-                    if gameStats then
-                        local playerStats =
-                            gameStats:FindFirstChild("Player_" .. character.Name)
-
-                        if playerStats and playerStats:FindFirstChild("Total") then
-                            local deathCause =
-                                playerStats.Total:FindFirstChild("DeathCause")
-
-                            if deathCause then
-                                deathCause.Value = "Deer God"
-                            end
-                        end
-                    end
-
-                    local bricks = repStorage:FindFirstChild("Bricks")
-
-                    if bricks then
-                        local deathHint = bricks:FindFirstChild("DeathHint")
-
-                        if deathHint and deathHint.OnClientEvent then
-                            pcall(function()
-                                firesignal(deathHint.OnClientEvent, {
-                                    "You died to whom you call The Deer God",
-                                    "Closets Wont work! So try running",
-                                    "Its form is incomprehensible to a human upclose...",
-                                    "..-so avoid Eye Contact"
-                                })
-                            end)
-                        end
-                    end
+                    task.delay(0.05, function()
+                        ForceDeerGodDeathHint(character)
+                    end)
+                    task.delay(0.25, function()
+                        ForceDeerGodDeathHint(character)
+                    end)
 
                     break
                 end
@@ -663,30 +668,20 @@ local function DeerGod()
     end
 
     -- Cleanup
-    if entityPart and entityPart.Parent then
-        local tweenService = game:GetService("TweenService")
-
-        local fallTween = tweenService:Create(
-            entityPart,
-            TweenInfo.new(1.5),
-            {CFrame = entityPart.CFrame * CFrame.new(0, -80, 0)}
-        )
-
-        fallTween:Play()
-        fallTween.Completed:Wait()
+    if entity then
+        game:GetService("Debris"):AddItem(entity, 0.01)
     end
+    currentEntity = nil
+    task.wait(0.02)
 
     -- Award achievement only once per game session if the player survived.
     local player = game.Players.LocalPlayer
     local character = player and player.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-    
+
     if not killed and humanoid and humanoid.Health > 0 then
         GiveDearGodAchievement()
     end
-
-    game:GetService("Debris"):AddItem(entity, 1.5)
-    currentEntity = nil
 end
 
 -- Start the script
