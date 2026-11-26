@@ -5,10 +5,10 @@ G.LoadGithubModel = function(url)
         return nil
     end
 
-    local function generateFileName(url)
+    local function generateFileName(u)
         local hash = 0
-        for i = 1, #url do
-            hash = (hash * 31 + string.byte(url, i)) % 2^32
+        for i = 1, #u do
+            hash = (hash * 31 + string.byte(u, i)) % 2^32
         end
         return "silence_" .. tostring(hash) .. ".rbxm"
     end
@@ -53,7 +53,7 @@ G.LoadGithubModel = function(url)
     return nil
 end
 
--- SILENCE ACHIEVEMENT
+-- SILENCE ACHIEVEMENT (В СТИЛЕ REBOUND)
 local SilenceAchievement = {
     Title = "Eyes Closed Ears open",
     Desc = "Stay silent or I wont be heard",
@@ -61,33 +61,59 @@ local SilenceAchievement = {
     Image = "rbxassetid://75011294666686",
 }
 
-local Achievements = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/MuhXd/Models/main/RegularVynixu's%20Achievement%20Modifyer"
-))()
+local SILENCE_ACHIEVEMENT_FLAG = "SilenceAchievement"
 
-local function AchievementsGet(Achievement)
-    Achievements.Get(Achievement)
-end
-
--- Give Silence achievement only once per game session
 local function GiveSilenceAchievement()
-    if workspace:FindFirstChild("SilenceAchievement") then
+    if workspace:FindFirstChild(SILENCE_ACHIEVEMENT_FLAG) then
         return
     end
 
-    local success, err = pcall(function()
-        AchievementsGet(SilenceAchievement)
-    end)
+    local player = game:GetService("Players").LocalPlayer
+    local tweenService = game:GetService("TweenService")
+    local playerGui = player and player:FindFirstChild("PlayerGui")
+    local mainUI = playerGui and playerGui:FindFirstChild("MainUI")
+    local holder = mainUI and mainUI:FindFirstChild("AchievementsHolder")
+    local template = holder and holder:FindFirstChild("Achievement")
 
-    if not success then
-        warn("Silence achievement error: " .. tostring(err))
+    if not template then
         return
     end
 
     local obtainedBadge = Instance.new("BoolValue")
-    obtainedBadge.Name = "SilenceAchievement"
+    obtainedBadge.Name = SILENCE_ACHIEVEMENT_FLAG
     obtainedBadge.Value = true
     obtainedBadge.Parent = workspace
+
+    task.spawn(function()
+        local frame = template:Clone()
+        frame.Name = "LiveAchievement"
+        frame.Frame.Details.Title.Text = SilenceAchievement.Title
+        frame.Frame.Details.Desc.Text = SilenceAchievement.Desc
+        frame.Frame.Details.Reason.Text = SilenceAchievement.Reason
+        frame.Frame.ImageLabel.Image = SilenceAchievement.Image
+        frame.Size = UDim2.new(0, 0, 0, 0)
+        frame.Frame.Position = UDim2.new(1.1, 0, 0, 0)
+        frame.Visible = true
+        frame.Parent = holder
+
+        if frame:FindFirstChild("Sound") then
+            frame.Sound:Play()
+        end
+
+        frame:TweenSize(UDim2.new(1, 0, 0.2, 0), "In", "Quad", 0.8, true)
+        task.wait(0.8)
+        frame.Frame:TweenPosition(UDim2.new(0, 0, 0, 0), "Out", "Quad", 0.5, true)
+        tweenService:Create(frame.Frame.Glow, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            ImageTransparency = 1
+        }):Play()
+        task.wait(8)
+        frame.Frame:TweenPosition(UDim2.new(1.1, 0, 0, 0), "In", "Quad", 0.5, true)
+        task.wait(0.5)
+        frame:TweenSize(UDim2.new(1, 0, -0.1, 0), "InOut", "Quad", 0.5, true)
+        task.wait(0.5)
+
+        frame:Destroy()
+    end)
 end
 
 -- SILENCE JUMPSCARE
@@ -151,14 +177,14 @@ local function playSilenceJumpscare()
     local sound1 = Instance.new("Sound")
     sound1.Name = "SilenceSound1"
     sound1.SoundId = "rbxassetid://10483790459"
-    sound1.Volume = 1
+    sound1.Volume = 0.5
     sound1.Parent = screenGui
 
     -- Sound 2
     local sound2 = Instance.new("Sound")
     sound2.Name = "SilenceSound2"
     sound2.SoundId = "rbxassetid://10483837590"
-    sound2.Volume = 1
+    sound2.Volume = 0.5
     sound2.Parent = screenGui
 
     -- Mute other game sounds during the jumpscare
@@ -248,8 +274,7 @@ local function playSilenceJumpscare()
         end
     end)
 
-    -- Keep the jumpscare visible for 0.8 seconds
-    task.wait(0.8)
+    task.wait(0.75)
 
     active = false
 
@@ -285,9 +310,6 @@ local function Silence()
 
     local required = require(game.ReplicatedStorage.ClientModules.Module_Events)
     currentRooms = workspace:FindFirstChild("CurrentRooms")
-
-    local latestRoomInt = game.ReplicatedStorage.GameData.LatestRoom
-    local latestRoomModel = currentRooms:FindFirstChild(tostring(latestRoomInt.Value))
 
     local rawUrl = "https://raw.githubusercontent.com/Francisco1692qzd/RevivedOldHardcore/main/oldSilence.rbxm"
 
@@ -347,6 +369,38 @@ local function Silence()
         return dist / speed
     end
 
+    local function ForceSilenceDeathHint(char)
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local hints = {
+            "You died to who you call Silence",
+            "Stay as silent as possible when you suspect its coming, so you know when to hide!",
+            "Its slow, but hard to hear",
+            "so hide!"
+        }
+
+        pcall(function()
+            local playerStats = ReplicatedStorage.GameStats:FindFirstChild("Player_" .. char.Name)
+            if playerStats and playerStats:FindFirstChild("Total")
+                and playerStats.Total:FindFirstChild("DeathCause") then
+                playerStats.Total.DeathCause.Value = "Silence"
+            end
+        end)
+
+        pcall(function()
+            if ReplicatedStorage:FindFirstChild("RemotesFolder") then
+                local remotesFolder = ReplicatedStorage:FindFirstChild("RemotesFolder")
+                if remotesFolder:FindFirstChild("DeathHint") then
+                    firesignal(remotesFolder.DeathHint.OnClientEvent, hints, "Blue")
+                end
+            elseif ReplicatedStorage:FindFirstChild("Bricks") then
+                local remotesFolder = ReplicatedStorage:FindFirstChild("Bricks")
+                if remotesFolder:FindFirstChild("DeathHint") then
+                    firesignal(remotesFolder.DeathHint.OnClientEvent, hints)
+                end
+            end
+        end)
+    end
+
     -- Death detection
     task.spawn(function()
         while entity ~= nil and entityPart ~= nil and entity.Parent do
@@ -366,50 +420,34 @@ local function Silence()
                     and canSeeTarget(character, 50)
                     and not character:GetAttribute("Hiding") then
 
-                    -- Mark as caught before starting the jumpscare
                     killed = true
 
-                    -- Play jumpscare before dealing lethal damage
-                    local success, err = pcall(playSilenceJumpscare)
+                    pcall(function()
+                        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                        local playerStats = ReplicatedStorage.GameStats:FindFirstChild("Player_" .. character.Name)
+                        if playerStats and playerStats:FindFirstChild("Total")
+                            and playerStats.Total:FindFirstChild("DeathCause") then
+                            playerStats.Total.DeathCause.Value = "Silence"
+                        end
+                    end)
 
-                    if not success then
-                        warn("Silence jumpscare error: " .. tostring(err))
-                    end
+                    pcall(playSilenceJumpscare)
 
-                    -- Apply damage after the jumpscare
+                    ForceSilenceDeathHint(character)
+
                     if humanoid.Parent and humanoid.Health > 0 then
                         humanoid:TakeDamage(100)
-                    end
-
-                    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-                    local playerStats = ReplicatedStorage.GameStats:FindFirstChild("Player_" .. character.Name)
-
-                    if playerStats and playerStats:FindFirstChild("Total")
-                        and playerStats.Total:FindFirstChild("DeathCause") then
-                        playerStats.Total.DeathCause.Value = "Silence"
-                    end
-
-                    local hints = {
-                        "You died to who you call Silence",
-                        "Stay as silent as possible when you suspect its coming, so you know when to hide!",
-                        "Its slow, but hard to hear",
-                        "so hide!"
-                    }
-
-                    if ReplicatedStorage:FindFirstChild("RemotesFolder") then
-                        local remotesFolder = ReplicatedStorage:FindFirstChild("RemotesFolder")
-
-                        if remotesFolder:FindFirstChild("DeathHint") then
-                            firesignal(remotesFolder.DeathHint.OnClientEvent, hints, "Blue")
-                        end
-
-                    elseif ReplicatedStorage:FindFirstChild("Bricks") then
-                        local remotesFolder = ReplicatedStorage:FindFirstChild("Bricks")
-
-                        if remotesFolder:FindFirstChild("DeathHint") then
-                            firesignal(remotesFolder.DeathHint.OnClientEvent, hints)
+                        if humanoid.Health > 0 then
+                            humanoid.Health = 0
                         end
                     end
+
+                    task.delay(0.05, function()
+                        ForceSilenceDeathHint(character)
+                    end)
+                    task.delay(0.25, function()
+                        ForceSilenceDeathHint(character)
+                    end)
 
                     break
                 end
@@ -457,24 +495,18 @@ local function Silence()
         end
     end
 
-    local despawnTween = game.TweenService:Create(
-        entityPart,
-        TweenInfo.new(1.5),
-        {
-            CFrame = entityPart.CFrame * CFrame.new(0, -80, 0)
-        }
-    )
+    if entity then
+        game:GetService("Debris"):AddItem(entity, 0.01)
+    end
+    task.wait(0.02)
 
-    despawnTween:Play()
-    game.Debris:AddItem(entity, 1.5)
+    local player = game.Players.LocalPlayer
+    local character = player and player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 
-    -- Show the custom achievement only once per game session
-    task.wait(0.1)
-    GiveSilenceAchievement()
+    if not killed and humanoid and humanoid.Health > 0 then
+        GiveSilenceAchievement()
+    end
 end
 
-local ok, err = pcall(Silence)
-
-if not ok then
-    warn("SILENCE SCRIPT ERROR: " .. tostring(err))
-end
+pcall(Silence)
