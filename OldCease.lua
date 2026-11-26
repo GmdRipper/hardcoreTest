@@ -1,18 +1,16 @@
--- XENO GITHUB MODEL LOADER (.rbxm / .rbxmx)
 local G = getgenv()
 
 G.LoadGithubModel = function(url, retryCount)
     retryCount = retryCount or 0
-    
+
     if retryCount >= 3 then
-        warn("Failed to load model after 3 attempts")
         return nil
     end
-    
-    if not (writefile and getcustomasset and request and isfile and delfile) then 
-        return nil 
+
+    if not (writefile and getcustomasset and request and isfile and delfile) then
+        return nil
     end
-    
+
     local function getHash(str)
         local hash = 0
         for i = 1, #str do
@@ -20,22 +18,22 @@ G.LoadGithubModel = function(url, retryCount)
         end
         return tostring(hash)
     end
-    
+
     local fileName = "cease_old_" .. getHash(url) .. ".rbxm"
-    
+
     if retryCount > 0 and isfile(fileName) then
         pcall(function() delfile(fileName) end)
         task.wait(1)
     end
-    
+
     if not isfile(fileName) then
         local response = request({Url = url, Method = "GET"})
-        if response.StatusCode ~= 200 then 
+        if response.StatusCode ~= 200 then
             return G.LoadGithubModel(url, retryCount + 1)
         end
         writefile(fileName, response.Body)
     end
-    
+
     local assetId = getcustomasset(fileName)
     local success, result = pcall(function()
         local objects = game:GetObjects(assetId)
@@ -44,8 +42,8 @@ G.LoadGithubModel = function(url, retryCount)
         end
         return nil
     end)
-    
-    if success and result then 
+
+    if success and result then
         local cloneSuccess, cloned = pcall(function()
             return result:Clone()
         end)
@@ -53,11 +51,11 @@ G.LoadGithubModel = function(url, retryCount)
             return cloned
         end
     end
-    
-    pcall(function() 
-        if delfile then delfile(fileName) end 
+
+    pcall(function()
+        if delfile then delfile(fileName) end
     end)
-    
+
     return G.LoadGithubModel(url, retryCount + 1)
 end
 
@@ -162,6 +160,22 @@ local function Cease()
         end
     end
 
+    local function ForceCeaseDeathHint(playerObj)
+        local hints = {
+            "You died to who you call Cease...",
+            "Its tactic is appearing after rush...",
+            "It sees through movement and can see anyone in wardrobes."
+        }
+
+        pcall(function()
+            ReSt.GameStats["Player_" .. playerObj.Name].Total.DeathCause.Value = "Cease"
+        end)
+
+        pcall(function()
+            firesignal(ReSt.Bricks.DeathHint.OnClientEvent, hints)
+        end)
+    end
+
     spawn(function()
         task.wait(3)
         while entity ~= nil and entity.Parent ~= nil and ambush ~= nil do
@@ -174,17 +188,28 @@ local function Cease()
                         if ambush:FindFirstChild("Rush") then
                             ambush.Rush:Stop()
                         end
-                        
+
                         pcall(function()
                             ReSt.GameStats["Player_" .. Plr.Name].Total.DeathCause.Value = "Cease"
-                            firesignal(ReSt.Bricks.DeathHint.OnClientEvent, {
-                                "You died to who you call Cease...",
-                                "Its tactic is appearing after rush...",
-                                "It sees through movement and can see anyone in wardrobes."
-                            })
                         end)
-                        
-                        hum:TakeDamage(100)
+
+                        ForceCeaseDeathHint(Plr)
+
+                        if hum.Health > 0 then
+                            hum:TakeDamage(100)
+                            if hum.Health > 0 then
+                                hum.Health = 0
+                            end
+                        end
+
+                        task.delay(0.05, function()
+                            ForceCeaseDeathHint(Plr)
+                        end)
+                        task.delay(0.25, function()
+                            ForceCeaseDeathHint(Plr)
+                        end)
+
+                        break
                     end
                 end
             end
