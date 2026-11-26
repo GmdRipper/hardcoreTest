@@ -11,11 +11,11 @@ G.LoadGithubModel = function(url)
         :gsub("github.com", "raw.githubusercontent.com")
         :gsub("/blob/", "/")
 
-    local function generateFileName(url)
+    local function generateFileName(u)
         local hash = 0
 
-        for i = 1, #url do
-            hash = (hash * 31 + string.byte(url, i)) % 2^32
+        for i = 1, #u do
+            hash = (hash * 31 + string.byte(u, i)) % 2^32
         end
 
         return "shocker_final_fix_" .. tostring(hash) .. ".rbxm"
@@ -71,32 +71,100 @@ local ShockerAchievement = {
     Image = "rbxassetid://94570710506307",
 }
 
-local Achievements = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/MuhXd/Models/main/RegularVynixu's%20Achievement%20Modifyer"
-))()
-
-local function AchievementsGet(Achievement)
-    Achievements.Get(Achievement)
-end
+local SHOCKER_ACHIEVEMENT_FLAG = "ShockerAchievement"
 
 local function GiveShockerAchievement()
-    if workspace:FindFirstChild("ShockerAchievement") then
+    if workspace:FindFirstChild(SHOCKER_ACHIEVEMENT_FLAG) then
         return
     end
 
-    local success, err = pcall(function()
-        AchievementsGet(ShockerAchievement)
-    end)
+    local player = game:GetService("Players").LocalPlayer
+    local tweenService = game:GetService("TweenService")
+    local playerGui = player and player:FindFirstChild("PlayerGui")
+    local mainUI = playerGui and playerGui:FindFirstChild("MainUI")
+    local holder = mainUI and mainUI:FindFirstChild("AchievementsHolder")
+    local template = holder and holder:FindFirstChild("Achievement")
 
-    if not success then
-        warn("Shocker achievement error: " .. tostring(err))
+    if not template then
         return
     end
 
     local obtainedBadge = Instance.new("BoolValue")
-    obtainedBadge.Name = "ShockerAchievement"
+    obtainedBadge.Name = SHOCKER_ACHIEVEMENT_FLAG
     obtainedBadge.Value = true
     obtainedBadge.Parent = workspace
+
+    task.spawn(function()
+        local frame = template:Clone()
+        frame.Name = "LiveAchievement"
+        frame.Frame.Details.Title.Text = ShockerAchievement.Title
+        frame.Frame.Details.Desc.Text = ShockerAchievement.Desc
+        frame.Frame.Details.Reason.Text = ShockerAchievement.Reason
+        frame.Frame.ImageLabel.Image = ShockerAchievement.Image
+        frame.Size = UDim2.new(0, 0, 0, 0)
+        frame.Frame.Position = UDim2.new(1.1, 0, 0, 0)
+        frame.Visible = true
+        frame.Parent = holder
+
+        if frame:FindFirstChild("Sound") then
+            frame.Sound:Play()
+        end
+
+        frame:TweenSize(UDim2.new(1, 0, 0.2, 0), "In", "Quad", 0.8, true)
+        task.wait(0.8)
+        frame.Frame:TweenPosition(UDim2.new(0, 0, 0, 0), "Out", "Quad", 0.5, true)
+        tweenService:Create(frame.Frame.Glow, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            ImageTransparency = 1
+        }):Play()
+        task.wait(8)
+        frame.Frame:TweenPosition(UDim2.new(1.1, 0, 0, 0), "In", "Quad", 0.5, true)
+        task.wait(0.5)
+        frame:TweenSize(UDim2.new(1, 0, -0.1, 0), "InOut", "Quad", 0.5, true)
+        task.wait(0.5)
+
+        frame:Destroy()
+    end)
+end
+
+local function ForceShockerDeathHint(char)
+    local hints = {
+        "You died to who you call Shocker...",
+        "Don't look at it or it stuns you!"
+    }
+
+    pcall(function()
+        local statsFolder = ReplicatedStorage:FindFirstChild("GameStats")
+        if statsFolder then
+            local playerStat = statsFolder:FindFirstChild("Player_" .. char.Name)
+            if playerStat and playerStat:FindFirstChild("Total") then
+                local total = playerStat.Total
+                if total:FindFirstChild("DeathCause") then
+                    total.DeathCause.Value = "Shocker"
+                end
+            end
+        end
+    end)
+
+    pcall(function()
+        if ReplicatedStorage:FindFirstChild("RemotesFolder") then
+            local remotesFolder = ReplicatedStorage:FindFirstChild("RemotesFolder")
+            if remotesFolder:FindFirstChild("DeathHint") then
+                firesignal(
+                    remotesFolder.DeathHint.OnClientEvent,
+                    hints,
+                    "Blue"
+                )
+            end
+        elseif ReplicatedStorage:FindFirstChild("Bricks") then
+            local remotesFolder = ReplicatedStorage:FindFirstChild("Bricks")
+            if remotesFolder:FindFirstChild("DeathHint") then
+                firesignal(
+                    remotesFolder.DeathHint.OnClientEvent,
+                    hints
+                )
+            end
+        end
+    end)
 end
 
 -- [3] ENTITY: SHOCKER
@@ -106,6 +174,7 @@ local function SpawnShocker()
     local Hum = Char:WaitForChild("Humanoid")
     local Root = Char:WaitForChild("HumanoidRootPart")
     local cam = workspace.CurrentCamera
+    local tweenService = game:GetService("TweenService")
 
     local cameraShaker = require(ReplicatedStorage.CameraShaker)
 
@@ -132,7 +201,6 @@ local function SpawnShocker()
         return
     end
 
-    -- Configuração vital
     entity.PrimaryPart = mainPart
     mainPart.Anchored = true
     mainPart.CanCollide = true
@@ -150,10 +218,9 @@ local function SpawnShocker()
     local lookingTime = 0
     local hasAttacked = false
 
-    -- Check whether the player is looking at Shocker
     local function isPlayerLooking()
         local entityPos = mainPart.Position
-        local vector, onScreen = cam:WorldToViewportPoint(entityPos)
+        local _, onScreen = cam:WorldToViewportPoint(entityPos)
 
         if not onScreen then
             return false
@@ -165,7 +232,6 @@ local function SpawnShocker()
         return dotProduct > 0.7
     end
 
-    -- Fix sound properties
     for _, v in pairs(entity:GetChildren()) do
         if v:IsA("Sound") and v.Name == "PlaySound" then
             if v.PlayOnRemove == true then
@@ -174,22 +240,40 @@ local function SpawnShocker()
         end
     end
 
-    -- Check initial look state
-    task.wait(0.1)
-
-    if not isPlayerLooking() then
-        mainPart.Anchored = false
+    local function dropDownAndDestroy(dropY)
+        mainPart.Anchored = true
         mainPart.CanCollide = false
 
-        -- Award custom Shocker achievement
-        GiveShockerAchievement()
+        tweenService:Create(
+            mainPart,
+            TweenInfo.new(0.4, Enum.EasingStyle.Circular, Enum.EasingDirection.In),
+            {
+                CFrame = mainPart.CFrame + Vector3.new(0, dropY, 0)
+            }
+        ):Play()
 
-        task.wait(6)
+        if spawnSound and spawnSound:IsA("Sound") then
+            tweenService:Create(
+                spawnSound,
+                TweenInfo.new(1, Enum.EasingStyle.Circular, Enum.EasingDirection.In),
+                {
+                    Volume = 0
+                }
+            ):Play()
+        end
+
+        task.wait(1)
 
         if entity then
             entity:Destroy()
         end
+    end
 
+    task.wait(0.1)
+
+    if not isPlayerLooking() then
+        GiveShockerAchievement()
+        dropDownAndDestroy(-20)
         return
     end
 
@@ -212,24 +296,12 @@ local function SpawnShocker()
             else
                 timeSinceLastLook = timeSinceLastLook + 0.05
 
-                -- Player looked briefly, then looked away:
-                -- Shocker ignores the player and disappears.
-                if lookingTime > 0.01
+                if lookingTime > 0.00001
                     and lookingTime < 1.9
-                    and timeSinceLastLook > 0.01 then
+                    and timeSinceLastLook > 0.00001 then
 
-                    mainPart.Anchored = false
-                    mainPart.CanCollide = false
-
-                    -- Award custom Shocker achievement
                     GiveShockerAchievement()
-
-                    task.wait(6)
-
-                    if entity then
-                        entity:Destroy()
-                    end
-
+                    dropDownAndDestroy(-20)
                     break
                 end
 
@@ -244,6 +316,19 @@ local function SpawnShocker()
             if lookingTime >= 1.9 and not hasAttacked then
                 hasAttacked = true
 
+                pcall(function()
+                    local statsFolder = ReplicatedStorage:FindFirstChild("GameStats")
+                    if statsFolder then
+                        local playerStat = statsFolder:FindFirstChild("Player_" .. Char.Name)
+                        if playerStat and playerStat:FindFirstChild("Total") then
+                            local total = playerStat.Total
+                            if total:FindFirstChild("DeathCause") then
+                                total.DeathCause.Value = "Shocker"
+                            end
+                        end
+                    end
+                end)
+
                 if attackSound then
                     attackSound:Play()
                 end
@@ -251,7 +336,7 @@ local function SpawnShocker()
                 mainPart.Anchored = true
                 mainPart.CanCollide = true
 
-                local attackTween = game:GetService("TweenService"):Create(
+                local attackTween = tweenService:Create(
                     mainPart,
                     TweenInfo.new(
                         0.5,
@@ -265,68 +350,26 @@ local function SpawnShocker()
 
                 attackTween:Play()
 
-                -- Deal damage after visual impact
                 task.delay(0.37, function()
                     if Hum and Hum.Health > 0 then
-                        Hum:TakeDamage(25)
-
+                        local diedFromShocker = (Hum.Health - 30) <= 0
+                        Hum:TakeDamage(30)
                         camShake:Shake(cameraShaker.Presets.Explosion)
 
-                        -- Set death cause
-                        local statsFolder = ReplicatedStorage:FindFirstChild("GameStats")
-
-                        if statsFolder then
-                            local playerStat = statsFolder:FindFirstChild(
-                                "Player_" .. Char.Name
-                            )
-
-                            if playerStat and playerStat:FindFirstChild("Total") then
-                                local total = playerStat.Total
-
-                                if total:FindFirstChild("DeathCause") then
-                                    total.DeathCause.Value = "Shocker"
-                                end
-                            end
-                        end
-
-                        -- Show death hints
-                        local hints = {
-                            "You died to who you call Shocker...",
-                            "Don't look at it or it stuns you!"
-                        }
-
-                        if ReplicatedStorage:FindFirstChild("RemotesFolder") then
-                            local remotesFolder = ReplicatedStorage:FindFirstChild("RemotesFolder")
-
-                            if remotesFolder:FindFirstChild("DeathHint") then
-                                firesignal(
-                                    remotesFolder.DeathHint.OnClientEvent,
-                                    hints,
-                                    "Blue"
-                                )
-                            end
-
-                        elseif ReplicatedStorage:FindFirstChild("Bricks") then
-                            local remotesFolder = ReplicatedStorage:FindFirstChild("Bricks")
-
-                            if remotesFolder:FindFirstChild("DeathHint") then
-                                firesignal(
-                                    remotesFolder.DeathHint.OnClientEvent,
-                                    hints
-                                )
-                            end
+                        if diedFromShocker or Hum.Health <= 0 then
+                            ForceShockerDeathHint(Char)
+                            task.delay(0.05, function()
+                                ForceShockerDeathHint(Char)
+                            end)
+                            task.delay(0.25, function()
+                                ForceShockerDeathHint(Char)
+                            end)
                         end
                     end
                 end)
 
-                -- Cleanup after attack
                 attackTween.Completed:Wait()
-                task.wait(0.75)
-
-                if entity then
-                    entity:Destroy()
-                end
-
+                dropDownAndDestroy(-10)
                 break
             end
         end
