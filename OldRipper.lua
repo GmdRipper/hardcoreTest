@@ -3,12 +3,10 @@ G.LoadGithubModel = function(url, retryCount)
     retryCount = retryCount or 0
 
     if retryCount > 3 then
-        warn("Failed to load model after 3 attempts")
         return nil
     end
 
     if not (writefile and getcustomasset and request and isfile and delfile) then
-        warn("Missing required functions")
         return nil
     end
 
@@ -60,7 +58,40 @@ G.LoadGithubModel = function(url, retryCount)
     return G.LoadGithubModel(url, retryCount + 1)
 end
 
--- НОВАЯ СИСТЕМА АЧИВОК (РЕКОМЕНДОВАННАЯ VYNIXU)
+local function DownloadRipperScareSound()
+    local url = "https://github.com/fernandesdasilvamariainez-coder/Roblox-Doors-Entities-Sounds/blob/main/ripperscare.mp3?raw=true"
+    local fileName = "ripper_scare_sound.mp3"
+
+    if not (writefile and getcustomasset and isfile) then
+        return ""
+    end
+
+    if not isfile(fileName) then
+        local ok, data = pcall(function()
+            return game:HttpGet(url)
+        end)
+        if ok and data and #data > 0 then
+            pcall(function()
+                writefile(fileName, data)
+            end)
+        end
+    end
+
+    if isfile(fileName) then
+        local ok, asset = pcall(function()
+            return getcustomasset(fileName)
+        end)
+        if ok and asset then
+            return asset
+        end
+    end
+
+    return ""
+end
+
+local ripperScareAssetId = DownloadRipperScareSound()
+
+-- АЧИВКА В СТИЛЕ REBOUND
 local RipperAchievement = {
     Title = "Torn Apart",
     Desc = "Dont leave too early..",
@@ -68,28 +99,59 @@ local RipperAchievement = {
     Image = "rbxassetid://112562469367494",
 }
 
-local Achievements = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/MuhXd/Models/main/RegularVynixu's%20Achievement%20Modifyer"
-))()
+local RIPPER_ACHIEVEMENT_FLAG = "RipperAchievementUnlocked"
 
 local function GiveRipperAchievement()
-    if workspace:FindFirstChild("RipperAchievementUnlocked") then
+    if workspace:FindFirstChild(RIPPER_ACHIEVEMENT_FLAG) then
         return
     end
 
-    local success, err = pcall(function()
-        Achievements.Get(RipperAchievement)
-    end)
+    local player = game:GetService("Players").LocalPlayer
+    local tweenService = game:GetService("TweenService")
+    local playerGui = player and player:FindFirstChild("PlayerGui")
+    local mainUI = playerGui and playerGui:FindFirstChild("MainUI")
+    local holder = mainUI and mainUI:FindFirstChild("AchievementsHolder")
+    local template = holder and holder:FindFirstChild("Achievement")
 
-    if not success then
-        warn("Ripper achievement error: " .. tostring(err))
+    if not template then
         return
     end
 
     local obtainedBadge = Instance.new("BoolValue")
-    obtainedBadge.Name = "RipperAchievementUnlocked"
+    obtainedBadge.Name = RIPPER_ACHIEVEMENT_FLAG
     obtainedBadge.Value = true
     obtainedBadge.Parent = workspace
+
+    task.spawn(function()
+        local frame = template:Clone()
+        frame.Name = "LiveAchievement"
+        frame.Frame.Details.Title.Text = RipperAchievement.Title
+        frame.Frame.Details.Desc.Text = RipperAchievement.Desc
+        frame.Frame.Details.Reason.Text = RipperAchievement.Reason
+        frame.Frame.ImageLabel.Image = RipperAchievement.Image
+        frame.Size = UDim2.new(0, 0, 0, 0)
+        frame.Frame.Position = UDim2.new(1.1, 0, 0, 0)
+        frame.Visible = true
+        frame.Parent = holder
+
+        if frame:FindFirstChild("Sound") then
+            frame.Sound:Play()
+        end
+
+        frame:TweenSize(UDim2.new(1, 0, 0.2, 0), "In", "Quad", 0.8, true)
+        task.wait(0.8)
+        frame.Frame:TweenPosition(UDim2.new(0, 0, 0, 0), "Out", "Quad", 0.5, true)
+        tweenService:Create(frame.Frame.Glow, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            ImageTransparency = 1
+        }):Play()
+        task.wait(8)
+        frame.Frame:TweenPosition(UDim2.new(1.1, 0, 0, 0), "In", "Quad", 0.5, true)
+        task.wait(0.5)
+        frame:TweenSize(UDim2.new(1, 0, -0.1, 0), "InOut", "Quad", 0.5, true)
+        task.wait(0.5)
+
+        frame:Destroy()
+    end)
 end
 
 local function Ripper()
@@ -196,6 +258,27 @@ local function Ripper()
         return dist / speed
     end
 
+    local function ForceRipperDeathHint(char)
+        local deathLines = {
+            "You died to who you call Ripper...",
+            "It's presence is known by the red lights...",
+            "Hide when this happens!"
+        }
+
+        pcall(function()
+            repStorage.GameStats[
+                "Player_" .. char.Name
+            ].Total.DeathCause.Value = "Ripper"
+        end)
+
+        pcall(function()
+            firesignal(
+                repStorage.Bricks.DeathHint.OnClientEvent,
+                deathLines
+            )
+        end)
+    end
+
     task.spawn(function()
         while entityPart ~= nil and entity ~= nil and entity.Parent do
             task.wait(0.2)
@@ -208,36 +291,43 @@ local function Ripper()
 
                     breakMove = true
 
-                    local gui = Instance.new("ScreenGui")
-                    gui.Parent = v:WaitForChild("PlayerGui")
-                    gui.Name = "Noise"
-                    gui.IgnoreGuiInset = true
+                    local Noise = Instance.new("ScreenGui")
+                    local ImageLabel = Instance.new("ImageLabel")
+                    Noise.Name = "Noise"
+                    Noise.Parent = v:WaitForChild("PlayerGui")
+                    Noise.IgnoreGuiInset = true
 
-                    local img = Instance.new("ImageLabel")
-                    img.Parent = gui
-                    img.Size = UDim2.new(1, 0, 1, 0)
-                    img.BackgroundTransparency = 1
-                    img.Image = "rbxassetid://236542974"
-                    img.ImageTransparency = 1
+                    ImageLabel.Parent = Noise
+                    ImageLabel.BackgroundTransparency = 1.000
+                    ImageLabel.Size = UDim2.new(1, 0, 1, 0)
+                    ImageLabel.Image = "rbxassetid://236542974"
+                    ImageLabel.ImageTransparency = 1.000
 
                     coroutine.wrap(function()
                         local char = v.Character
                         local ripper = entityPart
-                        local clone = ripper and ripper:Clone()
 
-                        if not clone then
-                            return
+                        pcall(function()
+                            repStorage.GameStats[
+                                "Player_" .. char.Name
+                            ].Total.DeathCause.Value = "Ripper"
+                        end)
+
+                        local ripperscare = ripper:Clone()
+                        ripperscare.Parent = workspace
+                        ripperscare.Position = ripper.Position
+
+                        local ripePart = ripperscare:FindFirstChild("ripe")
+                        if ripePart and ripePart:FindFirstChild("ParticleEmitter") then
+                            ripePart.ParticleEmitter.Texture = "rbxassetid://11816152645"
                         end
 
-                        clone.Parent = workspace
-                        clone.Position = ripper.Position
-
-                        for _, x in ipairs(clone:GetDescendants()) do
+                        for _, x in ipairs(ripperscare:GetDescendants()) do
                             if x:IsA("ParticleEmitter") then
                                 task.spawn(function()
                                     x.Rate = 9999
                                     task.wait(0.25)
-                                    x.TimeScale = 0
+                                    x.TimeScale = 0.0
                                 end)
                             elseif x:IsA("Sound") then
                                 x.Volume = 0
@@ -248,51 +338,58 @@ local function Ripper()
 
                         local static = Instance.new("Sound", workspace)
                         static.SoundId = "rbxassetid://372770465"
-                        static.Volume = 10
-                        static.PlaybackSpeed = 0.7
+                        static.Volume = 0
+                        static.Pitch = 0.7
 
-                        local anchor = Instance.new("Part", workspace)
-                        anchor.Name = "ripperAnchor"
-                        anchor.Anchored = true
-                        anchor.CanCollide = false
-                        anchor.Transparency = 1
-                        anchor.CFrame = workspace.CurrentCamera.CFrame
+                        local crash = Instance.new("Sound", workspace)
+                        crash.SoundId = ripperScareAssetId
+                        crash.Volume = 3
+                        crash.Pitch = 1
+
+                        local make = Instance.new("Part", workspace)
+                        make.Transparency = 1
+                        make.CanCollide = false
+                        make.CanTouch = false
+                        make.Anchored = true
+                        make.Name = "pants pooper"
 
                         local root = char:FindFirstChild("HumanoidRootPart")
                         if root then
                             root.Anchored = true
                         end
 
+                        make.CFrame = workspace.CurrentCamera.CFrame
+
+                        if crash.SoundId ~= "" then
+                            crash:Play()
+                        end
+
                         workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
 
-                        local viewLoop = true
+                        local sceneing = true
+                        local sillybilly = {8482795900, 236542974, 184251462, 236777652}
 
                         task.spawn(function()
-                            while viewLoop do
-                                workspace.CurrentCamera.CFrame = anchor.CFrame
-                                img.Image = "rbxassetid://" .. ({
-                                    8482795900,
-                                    236542974,
-                                    184251462,
-                                    236777652
-                                })[math.random(1, 4)]
-
-                                game:GetService("RunService").RenderStepped:Wait()
+                            while game:GetService("RunService").RenderStepped:Wait() and sceneing do
+                                workspace.CurrentCamera.CFrame = make.CFrame
+                                ImageLabel.Image = "rbxassetid://" .. sillybilly[math.random(1, #sillybilly)]
                             end
                         end)
 
-                        game.TweenService:Create(
-                            anchor,
-                            TweenInfo.new(0.3),
+                        local t = game.TweenService:Create(
+                            make,
+                            TweenInfo.new(0.3, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut),
                             {
-                                CFrame = CFrame.lookAt(anchor.Position, clone.Position)
+                                CFrame = CFrame.lookAt(make.Position, ripperscare.Position)
                             }
-                        ):Play()
+                        )
+                        t:Play()
+                        t.Completed:Wait()
 
                         task.wait(1)
 
                         game.TweenService:Create(
-                            img,
+                            ImageLabel,
                             TweenInfo.new(2),
                             {
                                 ImageTransparency = 0
@@ -300,40 +397,43 @@ local function Ripper()
                         ):Play()
 
                         static:Play()
+                        static.Volume = 0
+                        game.TweenService:Create(
+                            static,
+                            TweenInfo.new(2),
+                            {
+                                Volume = 10
+                            }
+                        ):Play()
+
                         task.wait(2)
 
-                        viewLoop = false
+                        sceneing = false
 
                         game.TweenService:Create(
-                            img,
+                            ImageLabel,
                             TweenInfo.new(1),
                             {
                                 ImageTransparency = 1
                             }
                         ):Play()
 
-                        static:Destroy()
+                        game.TweenService:Create(
+                            static,
+                            TweenInfo.new(1),
+                            {
+                                Volume = 0
+                            }
+                        ):Play()
+
+                        ripperscare.Anchored = false
+                        ripperscare.CanCollide = false
 
                         if root then
                             root.Anchored = false
                         end
 
-                        pcall(function()
-                            repStorage.GameStats[
-                                "Player_" .. char.Name
-                            ].Total.DeathCause.Value = "Ripper"
-                        end)
-
-                        pcall(function()
-                            firesignal(
-                                repStorage.Bricks.DeathHint.OnClientEvent,
-                                {
-                                    "You died to who you call Ripper...",
-                                    "It's presence is known by the red lights...",
-                                    "Hide when this happens!"
-                                }
-                            )
-                        end)
+                        ForceRipperDeathHint(char)
 
                         local humanoid = char:FindFirstChildWhichIsA("Humanoid")
 
@@ -344,6 +444,13 @@ local function Ripper()
                                 humanoid.Health = 0
                             end
                         end
+
+                        task.delay(0.05, function()
+                            ForceRipperDeathHint(char)
+                        end)
+                        task.delay(0.25, function()
+                            ForceRipperDeathHint(char)
+                        end)
                     end)()
                 end
             end
