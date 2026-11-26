@@ -53,7 +53,7 @@ G.LoadGithubModel = function(url)
     return nil
 end
 
--- SILENCE ACHIEVEMENT (В СТИЛЕ REBOUND)
+-- SILENCE ACHIEVEMENT
 local SilenceAchievement = {
     Title = "Eyes Closed Ears open",
     Desc = "Stay silent or I wont be heard",
